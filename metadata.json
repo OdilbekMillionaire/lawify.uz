@@ -1,0 +1,7 @@
+{
+  "name": "LAWIFY - Uzbekistan Legal AI",
+  "description": "AI-powered legal assistant for Uzbekistan legislation supporting Uzbek, Russian, and English.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
