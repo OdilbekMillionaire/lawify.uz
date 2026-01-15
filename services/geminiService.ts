@@ -69,7 +69,7 @@ export const verifyPaymentScreenshot = async (
   expectedAmount: string // e.g., "119 000"
 ): Promise<{ verified: boolean; reason: string }> => {
   try {
-    const cleanAmount = expectedAmount.replace(/\D/g, ''); // "119000"
+    const cleanAmount = parseInt(expectedAmount.replace(/\D/g, ''), 10); // 119000
     
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash-image', // Fast vision model
@@ -86,12 +86,13 @@ export const verifyPaymentScreenshot = async (
             
             Task:
             1. Verify if it is a successful transaction receipt.
-            2. Extract the amount and check if it matches exactly ${cleanAmount} UZS (ignore spaces).
+            2. Extract the numeric amount (in UZS).
+            3. Check if the extracted amount is EQUAL TO OR GREATER THAN ${cleanAmount}. (Users may pay slightly more due to commissions, which is valid).
             
             Return ONLY a raw JSON object (do NOT wrap in markdown code blocks) with this structure:
             {
               "verified": boolean, 
-              "reason": "string explaining why valid or invalid (e.g. 'Amount matches', 'Blurry image', 'Wrong amount')"
+              "reason": "string explaining why valid or invalid (e.g. 'Amount covers the plan', 'Blurry image', 'Insufficient amount')"
             }`
           }
         ]
@@ -123,7 +124,8 @@ export const generateLegalResponse = async (
   language: Language,
   settings: UserSettings,
   chatHistory: string,
-  additionalContext: string = ""
+  additionalContext: string = "",
+  isPro: boolean = false
 ): Promise<{ text: string, sources: Source[] }> => {
   
   // 1. Classification & Clarification Check
@@ -255,18 +257,27 @@ export const generateLegalResponse = async (
       }
     }
 
+    // --- MODEL SELECTION LOGIC ---
+    // If user is PRO: Use Gemini 3 Pro with Thinking (Deep Reasoning).
+    // If user is FREE: Use Gemini 3 Flash (Fast, standard reasoning).
+    const selectedModel = isPro ? 'gemini-3-pro-preview' : 'gemini-3-flash-preview';
+    const config: any = {
+      systemInstruction: systemInstruction,
+      tools: [{ googleSearch: {} }], 
+    };
+
+    if (isPro) {
+        // Enable Thinking only for Pro model
+        config.thinkingConfig = { thinkingBudget: 2048 };
+    }
+
     const response = await ai.models.generateContent({
-      model: 'gemini-3-pro-preview',
+      model: selectedModel,
       contents: {
         role: 'user',
         parts: parts
       },
-      config: {
-        systemInstruction: systemInstruction,
-        // ENABLE GOOGLE SEARCH TOOL
-        tools: [{ googleSearch: {} }], 
-        thinkingConfig: { thinkingBudget: 2048 }, 
-      }
+      config: config
     });
 
     const text = response.text || "I apologize, but I could not generate a response at this time.";

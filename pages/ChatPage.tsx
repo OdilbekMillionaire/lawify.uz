@@ -1,7 +1,5 @@
-
-
 import React, { useState, useEffect } from 'react';
-import { Language, UserSettings, Message, Attachment } from '../types';
+import { Language, UserSettings, Message, Attachment, View } from '../types';
 import { TRANSLATIONS } from '../constants';
 import ChatInterface from '../components/ChatInterface';
 import { generateLegalResponse, textToSpeech } from '../services/geminiService';
@@ -31,8 +29,24 @@ const ChatPage: React.FC<ChatPageProps> = ({
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [showLimitModal, setShowLimitModal] = useState(false);
+  const [usageCount, setUsageCount] = useState(0);
   
   const t = TRANSLATIONS[language];
+
+  // Initialize usage count on mount
+  useEffect(() => {
+    const today = new Date().toISOString().split('T')[0];
+    const usageData = localStorage.getItem('lawify_daily_usage');
+    if (usageData) {
+         const parsed = JSON.parse(usageData);
+         if (parsed.date === today) {
+             setUsageCount(parsed.count);
+         } else {
+             setUsageCount(0); // New day
+         }
+    }
+  }, []);
 
   // Initialize with restored messages if available
   useEffect(() => {
@@ -69,6 +83,33 @@ const ChatPage: React.FC<ChatPageProps> = ({
     setMessages(prev => [...prev, newMessage]);
   };
 
+  // --- USAGE LIMIT CHECKER (Local Enforcement) ---
+  const checkUsageLimit = (): boolean => {
+      if (isPro) return true; // No limits for Pro
+
+      const today = new Date().toISOString().split('T')[0];
+      const usageData = localStorage.getItem('lawify_daily_usage');
+      let currentUsage = { date: today, count: 0 };
+
+      if (usageData) {
+          const parsed = JSON.parse(usageData);
+          if (parsed.date === today) {
+              currentUsage = parsed;
+          }
+      }
+
+      if (currentUsage.count >= 5) { // LIMIT: 5 REQUESTS PER DAY
+          setShowLimitModal(true);
+          return false;
+      }
+
+      // Increment
+      currentUsage.count += 1;
+      localStorage.setItem('lawify_daily_usage', JSON.stringify(currentUsage));
+      setUsageCount(currentUsage.count);
+      return true;
+  };
+
   const generateAIResponse = async (historyMessages: Message[], userPrompt: string, attachment?: Attachment) => {
     setIsLoading(true);
     try {
@@ -82,7 +123,8 @@ const ChatPage: React.FC<ChatPageProps> = ({
         language, 
         settings, 
         historyStr,
-        userProfileContext 
+        userProfileContext,
+        isPro // PASS PRO FLAG TO SWITCH MODELS
       );
 
       addMessage(responseText, 'model', undefined, sources);
@@ -104,11 +146,18 @@ const ChatPage: React.FC<ChatPageProps> = ({
         return;
     }
 
+    // Feature Gate: Daily Usage Limit
+    if (!checkUsageLimit()) {
+        return;
+    }
+
     addMessage(text, 'user', attachment);
     await generateAIResponse(messages, text, attachment);
   };
 
   const handleRegenerate = async () => {
+      if (!checkUsageLimit()) return;
+
       const lastUserMessageIndex = [...messages].reverse().findIndex(m => m.role === 'user');
       
       if (lastUserMessageIndex !== -1) {
@@ -121,6 +170,8 @@ const ChatPage: React.FC<ChatPageProps> = ({
   };
 
   const handleEditMessage = async (messageId: string, newText: string) => {
+      if (!checkUsageLimit()) return;
+
       const msgIndex = messages.findIndex(m => m.id === messageId);
       if (msgIndex === -1) return;
 
@@ -156,6 +207,50 @@ const ChatPage: React.FC<ChatPageProps> = ({
           source.buffer = buffer;
           source.connect(ctx.destination);
           source.start();
+      }
+  };
+
+  // --- PDF EXPORT FUNCTION ---
+  const handleExportPDF = () => {
+      if (!isPro) {
+          alert(language === Language.UZ 
+              ? "PDF eksport qilish faqat Pro foydalanuvchilar uchun!" 
+              : "Export to PDF is a Pro feature!");
+          return;
+      }
+      
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+          const content = messages.map(m => `
+              <div style="margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                  <strong style="color: ${m.role === 'user' ? '#2563eb' : '#059669'};">
+                      ${m.role === 'user' ? 'YOU' : 'AI LAWYER'}:
+                  </strong>
+                  <div style="white-space: pre-wrap; font-family: sans-serif; margin-top: 5px;">
+                      ${m.text.replace(/\n/g, '<br/>')}
+                  </div>
+              </div>
+          `).join('');
+
+          printWindow.document.write(`
+              <html>
+                  <head>
+                      <title>Legal Consultation Export - LAWIFY</title>
+                      <style>
+                          body { font-family: 'Times New Roman', serif; padding: 40px; color: #333; }
+                          h1 { text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; }
+                          .footer { margin-top: 50px; text-align: center; font-size: 10px; color: #666; }
+                      </style>
+                  </head>
+                  <body>
+                      <h1>LAWIFY - Legal Consultation Transcript</h1>
+                      <div class="content">${content}</div>
+                      <div class="footer">Generated by Lawify AI Legal Assistant. Not a substitute for professional legal counsel.</div>
+                      <script>window.print();</script>
+                  </body>
+              </html>
+          `);
+          printWindow.document.close();
       }
   };
 
@@ -264,6 +359,41 @@ const ChatPage: React.FC<ChatPageProps> = ({
        {isSettingsOpen && (
            <div onClick={() => setIsSettingsOpen(false)} className="fixed inset-0 bg-black/10 backdrop-blur-sm z-10"></div>
        )}
+       
+       {/* Limit Reached Modal (Polite) */}
+       {showLimitModal && (
+           <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
+                <div className="bg-white rounded-3xl p-8 w-full max-w-sm shadow-2xl relative text-center">
+                    <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                        ⏳
+                    </div>
+                    <h3 className="text-xl font-serif font-bold text-slate-900 mb-2">{t.limitReachedTitle}</h3>
+                    <p className="text-sm text-gray-500 mb-6 leading-relaxed">
+                        {t.limitReachedBody}
+                    </p>
+                    
+                    <div className="space-y-3">
+                        <button 
+                            onClick={() => {
+                                // Navigate to plans logic would go here, effectively we rely on user clicking "Plans" in sidebar
+                                // but we can simulate navigation if we had access to setCurrentView or just close and let them navigate
+                                setShowLimitModal(false);
+                                // Hacky way to switch view if needed or just close
+                            }} 
+                            className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-200 hover:bg-blue-700 transition-colors"
+                        >
+                            {t.limitUpgrade}
+                        </button>
+                        <button 
+                            onClick={() => setShowLimitModal(false)}
+                            className="w-full py-3 text-gray-500 font-medium hover:text-gray-700"
+                        >
+                            {t.limitReturn}
+                        </button>
+                    </div>
+                </div>
+           </div>
+       )}
 
        {/* Chat Area */}
        <div className="flex-1 flex flex-col h-full bg-white/50 relative">
@@ -276,13 +406,24 @@ const ChatPage: React.FC<ChatPageProps> = ({
                </h2>
                <div className="flex items-center space-x-2">
                    {messages.length > 0 && (
-                       <button 
-                        onClick={handleClearChat}
-                        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Clear Chat"
-                       >
-                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                       </button>
+                       <>
+                           {/* PDF EXPORT BUTTON */}
+                           <button 
+                                onClick={handleExportPDF}
+                                className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                title="Export to PDF (Pro)"
+                           >
+                               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                           </button>
+                           
+                           <button 
+                            onClick={handleClearChat}
+                            className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Clear Chat"
+                           >
+                               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                           </button>
+                       </>
                    )}
                    <button 
                     onClick={() => setIsSettingsOpen(true)}
@@ -305,6 +446,8 @@ const ChatPage: React.FC<ChatPageProps> = ({
                 onFeedback={handleFeedback}
                 onTTS={handleTTS}
                 initialInputValue={initialPrompt}
+                isPro={isPro}
+                usageCount={usageCount}
             />
           </div>
        </div>

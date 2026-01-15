@@ -13,6 +13,8 @@ interface ChatInterfaceProps {
   onRegenerate?: () => void;
   onFeedback?: (messageId: string, type: 'like' | 'dislike') => void;
   initialInputValue?: string;
+  isPro?: boolean;
+  usageCount?: number;
 }
 
 // Utility to escape regex characters
@@ -29,7 +31,9 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   onTTS,
   onRegenerate,
   onFeedback,
-  initialInputValue
+  initialInputValue,
+  isPro = false,
+  usageCount = 0
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [inputText, setInputText] = useState('');
@@ -669,6 +673,14 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
       {/* Input Area */}
       <div className="bg-white p-4 border-t border-gray-100">
+        {!isPro && (
+            <div className="text-xs text-gray-400 mb-2 text-center flex items-center justify-center">
+                 <span className={`px-2 py-0.5 rounded-full border ${usageCount >= 5 ? 'bg-red-50 text-red-500 border-red-100' : 'bg-gray-50 text-gray-500 border-gray-100'}`}>
+                    {t.freeUsage} <strong>{usageCount} / 5</strong>
+                 </span>
+            </div>
+        )}
+
         {selectedAttachment && (
             <div className="flex items-center mb-2 p-2 bg-blue-50 rounded-lg border border-blue-100 animate-slide-up">
                 <svg className="w-5 h-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>

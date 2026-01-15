@@ -1,3 +1,4 @@
+
 import { Language, UserSettings } from './types';
 
 export const TRANSLATIONS = {
@@ -193,6 +194,13 @@ export const TRANSLATIONS = {
     
     currency: "so'm",
     bestValue: "Eng Foydali",
+    
+    // Usage Limits
+    limitReachedTitle: "Kunlik limit tugadi",
+    limitReachedBody: "Bugungi bepul 5 ta savol limitidan foydalandingiz. Xizmatimiz sizga ma'qul keldi degan umiddamiz! Davom ettirish uchun ertaga qaytishingiz yoki Pro tarifiga o'tib, cheklovsiz foydalanishingiz mumkin.",
+    limitUpgrade: "Pro tariflarni ko'rish",
+    limitReturn: "Ertaga qaytish",
+    freeUsage: "Bepul so'rovlar:",
   },
   [Language.RU]: {
     title: "LAWIFY",
@@ -385,6 +393,13 @@ export const TRANSLATIONS = {
 
     currency: "сум",
     bestValue: "Выгодно",
+
+    // Usage Limits
+    limitReachedTitle: "Дневной лимит исчерпан",
+    limitReachedBody: "Вы использовали 5 бесплатных вопросов на сегодня. Надеемся, они были полезны! Чтобы продолжить сейчас, вы можете перейти на Pro или вернуться завтра.",
+    limitUpgrade: "Смотреть тарифы Pro",
+    limitReturn: "Вернуться завтра",
+    freeUsage: "Бесплатные запросы:",
   },
   [Language.EN]: {
     title: "LAWIFY",
@@ -577,6 +592,13 @@ export const TRANSLATIONS = {
 
     currency: "UZS",
     bestValue: "Best Value",
+    
+    // Usage Limits
+    limitReachedTitle: "Daily Limit Reached",
+    limitReachedBody: "You've used your 5 free questions for today. We hope they were helpful! To continue immediately with unlimited access and deeper analysis, consider upgrading to Pro.",
+    limitUpgrade: "View Pro Plans",
+    limitReturn: "Come back tomorrow",
+    freeUsage: "Free usage:",
   }
 };
 
@@ -588,8 +610,7 @@ export const INITIAL_SETTINGS: UserSettings = {
   documentType: 'General',
   perspective: 'Neutral',
 };
-
-// Database of facts for "Did You Know" section
+// ... rest of file (TOPICS_DATA, DID_YOU_KNOW_FACTS) remains unchanged ...
 export const DID_YOU_KNOW_FACTS = {
   [Language.UZ]: [
     { title: "Yangi Mehnat Kodeksi", content: "2023-yilgi Mehnat kodeksi xodimlar uchun yillik asosiy ta'tilni kamida 21 kalendar kuni etib belgiladi.", button: "Ta'til haqida so'rash" },

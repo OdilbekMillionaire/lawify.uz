@@ -55,7 +55,7 @@ const Plans: React.FC<PlansProps> = ({ onNavigate, language, userProfile, onLogi
         btnColor: "bg-gray-100 text-gray-600 hover:bg-gray-200",
         isCurrent: userProfile ? !userProfile.is_pro : true,
         features: [
-            { text: `3 ${t.featRequestLimit}`, included: true },
+            { text: `5 ${t.featRequestLimit}`, included: true },
             { text: t.featNoDocs, included: false },
             { text: t.featSpeedNormal, included: true },
             { text: t.featLive, included: false },
@@ -77,7 +77,7 @@ const Plans: React.FC<PlansProps> = ({ onNavigate, language, userProfile, onLogi
             { text: t.featUnlimited, included: true },
             { text: `5 ${t.featDocs}`, included: true },
             { text: t.featSpeedFast, included: true },
-            { text: `10 ${t.featLiveLimit}`, included: true },
+            { text: `10 ${t.featLiveLimit} ${t.startLive}`, included: true },
             { text: t.featMobile, included: true },
             { text: t.featSupport, included: true },
         ]
@@ -95,7 +95,7 @@ const Plans: React.FC<PlansProps> = ({ onNavigate, language, userProfile, onLogi
             { text: t.featUnlimited, included: true },
             { text: `20 ${t.featDocs}`, included: true },
             { text: t.featSpeedFast, included: true },
-            { text: `30 ${t.featLiveLimit}`, included: true },
+            { text: `30 ${t.featLiveLimit} ${t.startLive}`, included: true },
             { text: t.featHistory, included: true },
             { text: t.featExport, included: true },
             { text: t.featSupport, included: true },
