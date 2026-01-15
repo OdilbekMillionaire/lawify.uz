@@ -11,7 +11,8 @@ export enum View {
   LIBRARY = 'library',
   HISTORY = 'history',
   TOPICS = 'topics',
-  PROFILE = 'profile'
+  PROFILE = 'profile',
+  PLANS = 'plans'
 }
 
 export enum LegalArea {

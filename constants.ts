@@ -51,6 +51,8 @@ export const TRANSLATIONS = {
     navHistory: "Tarix",
     navTopics: "Mavzular",
     navProfile: "Profil",
+    navPlans: "Tariflar",
+    upgradeBtn: "Premiumga o'tish",
 
     // Dashboard
     dashboardWelcome: "Xush kelibsiz",
@@ -154,6 +156,43 @@ export const TRANSLATIONS = {
     filterLast24h: "Oxirgi 24 soat",
     filterLastWeek: "Oxirgi hafta",
     filterAllTime: "Barcha vaqt",
+
+    // PLANS
+    plansTitle: "Tarif Rejalari",
+    plansSubtitle: "Ehtiyojingizga mos tarifni tanlang. Istalgan vaqtda bekor qilish mumkin.",
+    currentPlan: "Joriy Tarif",
+    subscribe: "Tanlash",
+    
+    // Features
+    featRequestLimit: "so'rov / kun",
+    featUnlimited: "Cheksiz so'rovlar",
+    featDocs: "ta hujjat tahlili",
+    featNoDocs: "Hujjat yuklab bo'lmaydi",
+    featSpeedNormal: "Standart tezlik",
+    featSpeedFast: "Yuqori tezlik (Pro)",
+    featLive: "Jonli ovozli suhbat",
+    featLiveLimit: "daq/kun",
+    featReasoning: "Chuqur huquqiy tahlil",
+    featSupport: "Mijozlarni qo'llab-quvvatlash",
+    featMobile: "Mobil qurilmalarda ishlash",
+    featHistory: "Tarixni saqlash",
+    featAds: "Reklamasiz interfeys",
+    featExport: "Hujjatlarni PDF formatda yuklash",
+    
+    // Plan Names & Prices
+    pFreeName: "Bepul",
+    pFreePrice: "0",
+    pDayName: "Kunlik Pro",
+    pDayPrice: "15 000",
+    pWeekName: "Haftalik Pro",
+    pWeekPrice: "49 000",
+    pMonthName: "Oylik Pro",
+    pMonthPrice: "119 000",
+    pLawyerName: "Yurist Pro",
+    pLawyerPrice: "299 000",
+    
+    currency: "so'm",
+    bestValue: "Eng Foydali",
   },
   [Language.RU]: {
     title: "LAWIFY",
@@ -204,6 +243,8 @@ export const TRANSLATIONS = {
     navHistory: "История",
     navTopics: "Темы",
     navProfile: "Профиль",
+    navPlans: "Тарифы",
+    upgradeBtn: "Купить Premium",
 
     // Dashboard
     dashboardWelcome: "Добро пожаловать",
@@ -307,6 +348,43 @@ export const TRANSLATIONS = {
     filterLast24h: "За 24 часа",
     filterLastWeek: "За неделю",
     filterAllTime: "Все время",
+
+    // PLANS
+    plansTitle: "Тарифные Планы",
+    plansSubtitle: "Выберите подходящий тариф. Можно отменить в любое время.",
+    currentPlan: "Текущий план",
+    subscribe: "Выбрать",
+
+    // Features
+    featRequestLimit: "запросов / день",
+    featUnlimited: "Безлимитные запросы",
+    featDocs: "анализ документов",
+    featNoDocs: "Без загрузки документов",
+    featSpeedNormal: "Стандартная скорость",
+    featSpeedFast: "Высокая скорость (Pro)",
+    featLive: "Живой голосовой чат",
+    featLiveLimit: "мин/день",
+    featReasoning: "Глубокий юр. анализ",
+    featSupport: "Поддержка клиентов",
+    featMobile: "Мобильный доступ",
+    featHistory: "Сохранение истории",
+    featAds: "Без рекламы",
+    featExport: "Экспорт в PDF",
+
+    // Plan Names & Prices
+    pFreeName: "Бесплатный",
+    pFreePrice: "0",
+    pDayName: "Дневной Pro",
+    pDayPrice: "15 000",
+    pWeekName: "Недельный Pro",
+    pWeekPrice: "49 000",
+    pMonthName: "Месячный Pro",
+    pMonthPrice: "119 000",
+    pLawyerName: "Юрист Pro",
+    pLawyerPrice: "299 000",
+
+    currency: "сум",
+    bestValue: "Выгодно",
   },
   [Language.EN]: {
     title: "LAWIFY",
@@ -357,6 +435,8 @@ export const TRANSLATIONS = {
     navHistory: "History",
     navTopics: "Topics",
     navProfile: "Profile",
+    navPlans: "Pricing",
+    upgradeBtn: "Upgrade to Pro",
 
     // Dashboard
     dashboardWelcome: "Welcome Back",
@@ -460,6 +540,43 @@ export const TRANSLATIONS = {
     filterLast24h: "Last 24 Hours",
     filterLastWeek: "Last Week",
     filterAllTime: "All Time",
+
+    // PLANS
+    plansTitle: "Pricing Plans",
+    plansSubtitle: "Select the plan that fits your needs. Cancel anytime.",
+    currentPlan: "Current Plan",
+    subscribe: "Subscribe",
+
+    // Features
+    featRequestLimit: "requests / day",
+    featUnlimited: "Unlimited requests",
+    featDocs: "document analyses",
+    featNoDocs: "No document uploads",
+    featSpeedNormal: "Standard Speed",
+    featSpeedFast: "Pro Speed",
+    featLive: "Live Voice Chat",
+    featLiveLimit: "min/day",
+    featReasoning: "Deep Legal Reasoning",
+    featSupport: "Customer Support",
+    featMobile: "Mobile Access",
+    featHistory: "History Retention",
+    featAds: "Ad-free Experience",
+    featExport: "PDF Export",
+
+    // Plan Names & Prices
+    pFreeName: "Free",
+    pFreePrice: "0",
+    pDayName: "Day Pro",
+    pDayPrice: "15,000",
+    pWeekName: "Week Pro",
+    pWeekPrice: "49,000",
+    pMonthName: "Month Pro",
+    pMonthPrice: "119,000",
+    pLawyerName: "Lawyer Pro",
+    pLawyerPrice: "299,000",
+
+    currency: "UZS",
+    bestValue: "Best Value",
   }
 };
 

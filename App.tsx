@@ -11,6 +11,7 @@ import Library from './pages/Library';
 import History from './pages/History';
 import Topics from './pages/Topics';
 import Profile from './pages/Profile';
+import Plans from './pages/Plans';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>(View.DASHBOARD);
@@ -76,6 +77,8 @@ const App: React.FC = () => {
                     setSettings={setSettings}
                 />
               );
+          case View.PLANS:
+              return <Plans onNavigate={setCurrentView} language={language} />;
           default:
               return <Dashboard onNavigate={setCurrentView} language={language} onSelectQuickLink={handleTopicSelect} />;
       }

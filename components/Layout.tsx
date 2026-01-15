@@ -97,6 +97,11 @@ const Layout: React.FC<LayoutProps> = ({
                 icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>}
             />
             <NavItem 
+                view={View.PLANS} 
+                label={t.navPlans} 
+                icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>}
+            />
+             <NavItem 
                 view={View.PROFILE} 
                 label={t.navProfile} 
                 icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>}
@@ -104,6 +109,17 @@ const Layout: React.FC<LayoutProps> = ({
         </div>
 
         <div className="p-6 border-t border-gray-100 bg-gray-50/50">
+             {/* Upgrade CTA */}
+             <div className="mb-4 bg-gradient-to-br from-indigo-50 to-blue-50 border border-blue-100 rounded-xl p-3 text-center">
+                 <p className="text-xs font-semibold text-blue-900 mb-2">{t.navPlans}</p>
+                 <button 
+                    onClick={() => onNavigate(View.PLANS)}
+                    className="w-full bg-white text-blue-600 text-xs font-bold py-2 rounded-lg shadow-sm border border-blue-100 hover:bg-blue-50 transition-colors"
+                 >
+                     {t.upgradeBtn}
+                 </button>
+             </div>
+
              {/* Live Chat CTA */}
              <button 
                 onClick={onStartLive}
