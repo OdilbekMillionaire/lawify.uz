@@ -1,4 +1,5 @@
 
+
 export enum Language {
   UZ = 'uz',
   RU = 'ru',
@@ -33,6 +34,16 @@ export interface UserSettings {
   clarifyingQuestions: boolean;
   documentType: 'General' | 'Contract' | 'Letter' | 'Application';
   perspective: 'Neutral' | 'Pro-Consumer' | 'Pro-Business';
+}
+
+export interface UserProfile {
+  id: string;
+  email: string | null;
+  full_name: string | null;
+  avatar_url: string | null;
+  is_pro: boolean;
+  plan_type: 'free' | 'day' | 'week' | 'month' | 'lawyer';
+  subscription_end_date: string | null;
 }
 
 export interface Attachment {

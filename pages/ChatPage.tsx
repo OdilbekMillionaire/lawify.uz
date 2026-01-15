@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { Language, UserSettings, Message, Attachment } from '../types';
 import { TRANSLATIONS } from '../constants';
@@ -14,6 +15,7 @@ interface ChatPageProps {
   initialPrompt?: string;
   onPromptHandled?: () => void;
   initialMessages?: Message[];
+  isPro: boolean;
 }
 
 const ChatPage: React.FC<ChatPageProps> = ({ 
@@ -23,7 +25,8 @@ const ChatPage: React.FC<ChatPageProps> = ({
     onBack,
     initialPrompt,
     onPromptHandled,
-    initialMessages
+    initialMessages,
+    isPro
 }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -47,10 +50,9 @@ const ChatPage: React.FC<ChatPageProps> = ({
     }
   }, [messages]);
 
-  // Handle Initial Prompt (from Template/Topic) - Only set it for pre-fill, don't send
+  // Handle Initial Prompt (from Template/Topic)
   useEffect(() => {
       if (initialPrompt && initialPrompt.trim() !== '') {
-          // We don't auto-send anymore. The ChatInterface will pick this up via initialInputValue.
           if (onPromptHandled) onPromptHandled();
       }
   }, [initialPrompt]);
@@ -72,8 +74,7 @@ const ChatPage: React.FC<ChatPageProps> = ({
     try {
       const historyStr = historyMessages.filter(m => m.role !== 'model' || !m.isThinking).map(m => `${m.role}: ${m.text}`).join('\n');
       
-      // Mock Profile Context - In a real app, this would come from a user context/store
-      const userProfileContext = "User is seeking legal advice for personal or small business matters in Uzbekistan.";
+      const userProfileContext = isPro ? "User is a PREMIUM PRO member. Provide detailed, priority legal analysis." : "User is a Free plan member.";
 
       const { text: responseText, sources } = await generateLegalResponse(
         userPrompt, 
@@ -81,7 +82,7 @@ const ChatPage: React.FC<ChatPageProps> = ({
         language, 
         settings, 
         historyStr,
-        userProfileContext // Pass additional context
+        userProfileContext 
       );
 
       addMessage(responseText, 'model', undefined, sources);
@@ -95,27 +96,26 @@ const ChatPage: React.FC<ChatPageProps> = ({
   };
 
   const handleSendMessage = async (text: string, attachment?: Attachment) => {
+    // Feature Gate: Document Uploads
+    if (attachment && !isPro) {
+        alert(language === Language.UZ 
+            ? "Hujjatlarni tahlil qilish faqat Pro foydalanuvchilar uchun! Iltimos, obuna bo'ling."
+            : "Document analysis is a Pro feature! Please upgrade to Pro to upload files.");
+        return;
+    }
+
     addMessage(text, 'user', attachment);
-    // Pass current messages as history (excluding the one we just added in state, as it might not be there yet due to closure, but actually in this flow we need to be careful. 
-    // safest is to use the callback or just pass 'messages' knowing it's the history *before* this new prompt)
     await generateAIResponse(messages, text, attachment);
   };
 
   const handleRegenerate = async () => {
-      // Find the last user message
       const lastUserMessageIndex = [...messages].reverse().findIndex(m => m.role === 'user');
       
       if (lastUserMessageIndex !== -1) {
           const realIndex = messages.length - 1 - lastUserMessageIndex;
           const userMsg = messages[realIndex];
-          
-          // Remove all messages after the last user message (inclusive or exclusive? usually we want to keep the user message and regenerate the response)
-          // Actually, we want to regenerate the RESPONSE to the last user message.
-          // So we keep history up to (and including) the last user message.
           const newHistory = messages.slice(0, realIndex + 1);
           setMessages(newHistory);
-          
-          // Pass history excluding the last user message to the generator context, but providing the last message as the prompt
           await generateAIResponse(newHistory.slice(0, -1), userMsg.text, userMsg.attachment);
       }
   };
@@ -124,39 +124,22 @@ const ChatPage: React.FC<ChatPageProps> = ({
       const msgIndex = messages.findIndex(m => m.id === messageId);
       if (msgIndex === -1) return;
 
-      // 1. Slice history up to this message (effectively deleting everything after it)
       const newHistory = messages.slice(0, msgIndex);
       
-      // 2. Add the updated user message
       const updatedMessage: Message = {
           ...messages[msgIndex],
           text: newText,
           timestamp: Date.now()
       };
       
-      // Update state to show the edited message and remove subsequent ones
       setMessages([...newHistory, updatedMessage]);
-
-      // 3. Trigger AI response based on the "rewound" history
       await generateAIResponse(newHistory, newText, updatedMessage.attachment);
   };
 
   const handleFeedback = (messageId: string, type: 'like' | 'dislike') => {
-      // Update UI state
       setMessages(prev => prev.map(m => 
           m.id === messageId ? { ...m, feedback: type } : m
       ));
-
-      // Find the message and the preceding user prompt for logging
-      const msgIndex = messages.findIndex(m => m.id === messageId);
-      if (msgIndex > 0) { // Must be at least 1 previous message (the user prompt)
-          const aiMessage = messages[msgIndex];
-          const userMessage = messages[msgIndex - 1];
-          
-          if (aiMessage.role === 'model' && userMessage.role === 'user') {
-              logFeedback(messageId, userMessage.text, aiMessage.text, type);
-          }
-      }
   };
 
   const handleClearChat = () => {
@@ -289,6 +272,7 @@ const ChatPage: React.FC<ChatPageProps> = ({
                <h2 className="font-serif font-bold text-slate-800 flex items-center">
                    <span className="w-2 h-2 rounded-full bg-green-500 mr-2 animate-pulse"></span>
                    Online Consultation
+                   {isPro && <span className="ml-2 bg-orange-100 text-orange-600 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">PRO</span>}
                </h2>
                <div className="flex items-center space-x-2">
                    {messages.length > 0 && (

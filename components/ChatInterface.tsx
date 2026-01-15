@@ -452,7 +452,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                         {language === Language.UZ ? "O'ZBEKISTONNING ENG YAXSHI RASMIY AI YURISTI" : "UZBEKISTAN'S PREMIER AI LEGAL ADVISOR"}
                     </span>
                     <span className="text-[10px] text-emerald-700 font-medium">
-                        {language === Language.UZ ? "100% O'zbekiston Qonunchiligi asosida" : "100% Based on Uzbekistan Legislation"}
+                        {language === Language.UZ ? "100% O'zbekiston qonunchiligi asosida" : "100% Based on Uzbekistan Legislation"}
                     </span>
                 </div>
                  <svg className="w-6 h-6 text-emerald-500 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>

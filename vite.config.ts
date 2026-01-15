@@ -11,7 +11,8 @@ export default defineConfig(({ mode }) => {
       'process.env.API_KEY': JSON.stringify(env.API_KEY)
     },
     server: {
-      port: 8080
+      port: 3000,
+      host: true // This allows the server to be accessed via network IP if needed
     }
   };
 });

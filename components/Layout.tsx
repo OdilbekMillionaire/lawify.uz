@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Language } from '../types';
+import { View, Language, UserProfile } from '../types';
 import { TRANSLATIONS } from '../constants';
 
 interface LayoutProps {
@@ -9,6 +9,8 @@ interface LayoutProps {
   language: Language;
   onLanguageChange: (lang: Language) => void;
   onStartLive: () => void;
+  userProfile: UserProfile | null;
+  onLogin: () => void;
 }
 
 const Layout: React.FC<LayoutProps> = ({ 
@@ -17,7 +19,9 @@ const Layout: React.FC<LayoutProps> = ({
   onNavigate, 
   language, 
   onLanguageChange,
-  onStartLive
+  onStartLive,
+  userProfile,
+  onLogin
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const t = TRANSLATIONS[language];
@@ -109,16 +113,37 @@ const Layout: React.FC<LayoutProps> = ({
         </div>
 
         <div className="p-6 border-t border-gray-100 bg-gray-50/50">
-             {/* Upgrade CTA */}
-             <div className="mb-4 bg-gradient-to-br from-indigo-50 to-blue-50 border border-blue-100 rounded-xl p-3 text-center">
-                 <p className="text-xs font-semibold text-blue-900 mb-2">{t.navPlans}</p>
+             {/* User Status / Login */}
+             {userProfile ? (
+                 <div className="mb-4 flex items-center p-2 bg-white rounded-lg border border-gray-100 shadow-sm">
+                     <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold mr-2 overflow-hidden">
+                         {userProfile.avatar_url ? (
+                             <img src={userProfile.avatar_url} alt="User" className="w-full h-full object-cover" />
+                         ) : (
+                             userProfile.email ? userProfile.email[0].toUpperCase() : 'U'
+                         )}
+                     </div>
+                     <div className="flex-1 min-w-0">
+                         <p className="text-xs font-bold text-gray-800 truncate">{userProfile.full_name || userProfile.email}</p>
+                         <p className="text-[10px] text-gray-500 flex items-center">
+                             {userProfile.is_pro ? (
+                                 <span className="text-orange-500 font-bold flex items-center">
+                                     <svg className="w-3 h-3 mr-0.5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                                     PRO
+                                 </span>
+                             ) : 'Free Plan'}
+                         </p>
+                     </div>
+                 </div>
+             ) : (
                  <button 
-                    onClick={() => onNavigate(View.PLANS)}
-                    className="w-full bg-white text-blue-600 text-xs font-bold py-2 rounded-lg shadow-sm border border-blue-100 hover:bg-blue-50 transition-colors"
+                    onClick={onLogin}
+                    className="w-full mb-4 bg-white text-gray-700 text-xs font-bold py-2 rounded-lg shadow-sm border border-gray-200 hover:bg-gray-50 flex items-center justify-center"
                  >
-                     {t.upgradeBtn}
+                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+                     Login / Register
                  </button>
-             </div>
+             )}
 
              {/* Live Chat CTA */}
              <button 

@@ -62,6 +62,59 @@ function createBlob(data: Float32Array): { data: string; mimeType: string } {
   };
 }
 
+// --- Payment Verification Service ---
+
+export const verifyPaymentScreenshot = async (
+  base64Image: string, 
+  expectedAmount: string // e.g., "119 000"
+): Promise<{ verified: boolean; reason: string }> => {
+  try {
+    const cleanAmount = expectedAmount.replace(/\D/g, ''); // "119000"
+    
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash-image', // Fast vision model
+      contents: {
+        parts: [
+          {
+            inlineData: {
+              mimeType: 'image/jpeg', // Assuming jpeg/png, standardizing request
+              data: base64Image
+            }
+          },
+          {
+            text: `Analyze this image. It should be a digital payment receipt from a banking app (like Click, Payme, Uzum, Apelsin) for a transfer in Uzbekistan.
+            
+            Task:
+            1. Verify if it is a successful transaction receipt.
+            2. Extract the amount and check if it matches exactly ${cleanAmount} UZS (ignore spaces).
+            
+            Return ONLY a raw JSON object (do NOT wrap in markdown code blocks) with this structure:
+            {
+              "verified": boolean, 
+              "reason": "string explaining why valid or invalid (e.g. 'Amount matches', 'Blurry image', 'Wrong amount')"
+            }`
+          }
+        ]
+      }
+    });
+
+    let resultText = response.text || "{}";
+    
+    // Clean up potential markdown formatting (```json ... ```)
+    resultText = resultText.replace(/```json/g, "").replace(/```/g, "").trim();
+
+    const result = JSON.parse(resultText);
+    
+    return {
+      verified: result.verified === true,
+      reason: result.reason || "Verification failed"
+    };
+  } catch (error) {
+    console.error("Payment Verification Error:", error);
+    return { verified: false, reason: "AI could not process the image. Please try a clearer screenshot." };
+  }
+};
+
 // --- Text Generation Service ---
 
 export const generateLegalResponse = async (

@@ -1,13 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { View, Language, UserSettings } from '../types';
+import React, { useState, useRef } from 'react';
+import { View, Language, UserSettings, UserProfile } from '../types';
 import { TRANSLATIONS } from '../constants';
 import { getHistory } from '../services/storage';
+import { updateUserProfile } from '../services/supabaseClient';
 
 interface ProfileProps {
   onNavigate: (view: View) => void;
   language: Language;
   settings: UserSettings;
   setSettings: (s: UserSettings) => void;
+  userProfile: UserProfile | null;
+  onLogin: () => void;
+  onLogout: () => void;
+  refreshProfile: () => void;
 }
 
 interface OptionCardProps {
@@ -36,90 +41,122 @@ const OptionCard: React.FC<OptionCardProps> = ({ label, selected, onClick, icon 
   </button>
 );
 
-const Profile: React.FC<ProfileProps> = ({ onNavigate, language, settings, setSettings }) => {
+const PRESET_AVATARS = [
+    "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix",
+    "https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka",
+    "https://api.dicebear.com/7.x/avataaars/svg?seed=Willow",
+    "https://api.dicebear.com/7.x/avataaars/svg?seed=Trouble",
+    "https://api.dicebear.com/7.x/avataaars/svg?seed=Gizmo",
+    "https://api.dicebear.com/7.x/avataaars/svg?seed=Cuddles"
+];
+
+const Profile: React.FC<ProfileProps> = ({ onNavigate, language, settings, setSettings, userProfile, onLogin, onLogout, refreshProfile }) => {
   const t = TRANSLATIONS[language];
   const history = getHistory();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  
   const stats = {
       consultations: history.length,
       savedDocs: 0 // Mocked for now
   };
 
-  // Profile State
-  const [profileImage, setProfileImage] = useState<string | null>(localStorage.getItem('user_avatar'));
-  const [name, setName] = useState(localStorage.getItem('user_name') || "User Name");
-  const [email, setEmail] = useState(localStorage.getItem('user_email') || "user@example.com");
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64 = reader.result as string;
-        setProfileImage(base64);
-        localStorage.setItem('user_avatar', base64);
-      };
-      reader.readAsDataURL(file);
-    }
+  const handleAvatarUpdate = async (newUrl: string) => {
+      if (!userProfile) return;
+      setLoading(true);
+      try {
+          await updateUserProfile(userProfile.id, { avatar_url: newUrl });
+          refreshProfile();
+          setIsAvatarModalOpen(false);
+      } catch (e) {
+          console.error(e);
+          alert("Failed to update avatar");
+      } finally {
+          setLoading(false);
+      }
   };
 
-  const handleSave = () => {
-      localStorage.setItem('user_name', name);
-      localStorage.setItem('user_email', email);
-      alert("Profile updated successfully!");
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+              const result = reader.result as string;
+              // Ideally upload to storage, but using base64 for demo
+              handleAvatarUpdate(result);
+          };
+          reader.readAsDataURL(file);
+      }
   };
+
+  if (!userProfile) {
+      return (
+          <div className="h-full flex flex-col items-center justify-center p-6 bg-slate-50">
+               <h2 className="text-3xl font-serif font-bold text-slate-900 mb-4">{t.profileTitle}</h2>
+               <p className="text-slate-500 mb-8">Please login to manage your profile and subscription.</p>
+               <button 
+                  onClick={onLogin}
+                  className="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-700 shadow-lg"
+               >
+                   Login / Register
+               </button>
+          </div>
+      )
+  }
 
   return (
     <div className="h-full overflow-y-auto p-6 md:p-10 bg-slate-50">
         <div className="max-w-5xl mx-auto space-y-10">
-            <div className="space-y-2 animate-fade-in">
-                <h2 className="text-3xl font-serif font-bold text-slate-900">{t.profileTitle}</h2>
-                <p className="text-slate-500">{t.profileSubtitle}</p>
+            <div className="space-y-2 animate-fade-in flex justify-between items-end">
+                <div>
+                    <h2 className="text-3xl font-serif font-bold text-slate-900">{t.profileTitle}</h2>
+                    <p className="text-slate-500">{t.profileSubtitle}</p>
+                </div>
+                <button 
+                    onClick={onLogout}
+                    className="text-red-500 hover:text-red-700 font-medium text-sm"
+                >
+                    Logout
+                </button>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 {/* Left Column: Personal Info & Stats */}
                 <div className="lg:col-span-4 space-y-6">
                      {/* Personal Info Card */}
-                    <div className="bg-white p-8 rounded-3xl shadow-lg border border-gray-100 animate-fade-in-up flex flex-col items-center relative overflow-hidden">
+                    <div className="bg-white p-8 rounded-3xl shadow-lg border border-gray-100 animate-fade-in-up flex flex-col items-center relative overflow-hidden group">
                         <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-blue-50 to-white z-0"></div>
                         
-                        <div className="relative z-10 mb-4 group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
-                            <div className="w-28 h-28 rounded-full border-4 border-white shadow-xl overflow-hidden bg-white flex items-center justify-center relative">
-                                {profileImage ? (
-                                    <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
+                        <div className="relative z-10 mb-4 cursor-pointer" onClick={() => setIsAvatarModalOpen(true)}>
+                            <div className="w-28 h-28 rounded-full border-4 border-white shadow-xl overflow-hidden bg-white flex items-center justify-center relative text-blue-600 text-4xl font-bold group-hover:ring-4 ring-blue-100 transition-all">
+                                {userProfile.avatar_url ? (
+                                    <img src={userProfile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
                                 ) : (
-                                    <div className="text-blue-600 text-4xl font-bold">
-                                        {name.charAt(0).toUpperCase()}
-                                    </div>
+                                    userProfile.email ? userProfile.email[0].toUpperCase() : 'U'
                                 )}
-                                {/* Overlay on hover */}
-                                <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
-                                     <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                
+                                <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                                 </div>
                             </div>
-                            <input 
-                                type="file" 
-                                ref={fileInputRef} 
-                                className="hidden" 
-                                accept="image/*"
-                                onChange={handleImageUpload}
-                            />
                         </div>
                         
-                        <div className="w-full space-y-3 z-10">
-                            <input 
-                                type="text" 
-                                value={name} 
-                                onChange={(e) => setName(e.target.value)}
-                                className="w-full text-center font-bold text-xl text-slate-800 bg-transparent border-b border-transparent hover:border-gray-300 focus:border-blue-500 focus:outline-none transition-colors"
-                            />
-                            <input 
-                                type="email" 
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className="w-full text-center text-sm text-gray-500 bg-transparent border-b border-transparent hover:border-gray-300 focus:border-blue-500 focus:outline-none transition-colors"
-                            />
+                        <div className="w-full space-y-1 z-10 text-center">
+                            <h3 className="font-bold text-xl text-slate-800">{userProfile.full_name || "User"}</h3>
+                            <p className="text-sm text-gray-500">{userProfile.email}</p>
+                            
+                            <div className="mt-4 inline-block">
+                                {userProfile.is_pro ? (
+                                    <span className="bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                                        {userProfile.plan_type} PLAN
+                                    </span>
+                                ) : (
+                                    <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                                        FREE PLAN
+                                    </span>
+                                )}
+                            </div>
                         </div>
                     </div>
 
@@ -143,12 +180,6 @@ const Profile: React.FC<ProfileProps> = ({ onNavigate, language, settings, setSe
                 <div className="lg:col-span-8 bg-white p-8 rounded-3xl shadow-sm border border-gray-100 animate-fade-in-up delay-100">
                     <div className="flex items-center justify-between mb-8">
                         <h3 className="font-serif font-bold text-2xl text-slate-800">{t.settings}</h3>
-                        <button 
-                            onClick={handleSave}
-                            className="bg-blue-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-blue-700 transition-all shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 active:scale-95"
-                        >
-                            {t.profileSave}
-                        </button>
                     </div>
                     
                     <div className="space-y-10">
@@ -223,6 +254,63 @@ const Profile: React.FC<ProfileProps> = ({ onNavigate, language, settings, setSe
                 </div>
             </div>
         </div>
+
+        {/* Avatar Selection Modal */}
+        {isAvatarModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                <div className="bg-white rounded-2xl p-6 w-full max-w-lg shadow-2xl relative animate-fade-in">
+                    <button 
+                        onClick={() => setIsAvatarModalOpen(false)}
+                        className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+                    >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                    
+                    <h3 className="text-xl font-bold text-slate-900 mb-6">Choose Avatar</h3>
+                    
+                    {/* Custom Upload */}
+                    <div className="mb-6">
+                         <div 
+                            onClick={() => fileInputRef.current?.click()}
+                            className="border-2 border-dashed border-gray-300 hover:border-blue-400 rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer transition-colors"
+                         >
+                             <input 
+                                type="file" 
+                                ref={fileInputRef} 
+                                onChange={handleFileUpload}
+                                accept="image/*"
+                                className="hidden"
+                             />
+                             <div className="w-12 h-12 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mb-2">
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                             </div>
+                             <span className="text-sm font-bold text-gray-600">Upload Photo</span>
+                         </div>
+                    </div>
+
+                    <div className="border-t border-gray-100 my-4 pt-4">
+                        <p className="text-xs font-bold text-gray-400 uppercase mb-4">Or choose a preset</p>
+                        <div className="grid grid-cols-4 gap-4">
+                            {PRESET_AVATARS.map((url, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => handleAvatarUpdate(url)}
+                                    className="aspect-square rounded-full overflow-hidden border-2 border-transparent hover:border-blue-500 hover:scale-105 transition-all"
+                                >
+                                    <img src={url} alt={`Avatar ${idx + 1}`} className="w-full h-full object-cover bg-gray-50" />
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                    
+                    {loading && (
+                        <div className="absolute inset-0 bg-white/80 flex items-center justify-center rounded-2xl">
+                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        )}
     </div>
   );
 };

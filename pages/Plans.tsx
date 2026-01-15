@@ -1,14 +1,39 @@
-import React from 'react';
-import { View, Language } from '../types';
+import React, { useState } from 'react';
+import { View, Language, UserProfile } from '../types';
 import { TRANSLATIONS } from '../constants';
+import PaymentModal from '../components/PaymentModal';
 
 interface PlansProps {
   onNavigate: (view: View) => void;
   language: Language;
+  userProfile: UserProfile | null;
+  onLogin: () => void;
+  refreshProfile: () => void;
 }
 
-const Plans: React.FC<PlansProps> = ({ onNavigate, language }) => {
+const Plans: React.FC<PlansProps> = ({ onNavigate, language, userProfile, onLogin, refreshProfile }) => {
   const t = TRANSLATIONS[language];
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<{
+      key: 'day' | 'week' | 'month' | 'lawyer';
+      name: string;
+      price: string;
+  } | null>(null);
+
+  const handleSubscribe = async (planKey: 'day' | 'week' | 'month' | 'lawyer', planName: string, planPrice: string) => {
+      if (!userProfile) {
+          onLogin();
+          return;
+      }
+
+      setSelectedPlan({ key: planKey, name: planName, price: planPrice });
+      setIsPaymentModalOpen(true);
+  };
+
+  const handlePaymentSuccess = () => {
+      refreshProfile();
+      alert("Welcome to Pro!");
+  };
 
   // Feature Icons
   const CheckIcon = () => (
@@ -21,13 +46,14 @@ const Plans: React.FC<PlansProps> = ({ onNavigate, language }) => {
 
   const plans = [
     {
+        key: 'free',
         name: t.pFreeName,
         price: t.pFreePrice,
         period: "", // One-time or forever
         color: "bg-white",
         border: "border-gray-200",
         btnColor: "bg-gray-100 text-gray-600 hover:bg-gray-200",
-        isCurrent: true,
+        isCurrent: userProfile ? !userProfile.is_pro : true,
         features: [
             { text: `3 ${t.featRequestLimit}`, included: true },
             { text: t.featNoDocs, included: false },
@@ -38,6 +64,7 @@ const Plans: React.FC<PlansProps> = ({ onNavigate, language }) => {
         ]
     },
     {
+        key: 'day',
         name: t.pDayName,
         price: t.pDayPrice,
         period: "/ 24h",
@@ -45,6 +72,7 @@ const Plans: React.FC<PlansProps> = ({ onNavigate, language }) => {
         border: "border-blue-200",
         btnColor: "bg-blue-600 text-white hover:bg-blue-700",
         popular: false,
+        isCurrent: userProfile?.plan_type === 'day',
         features: [
             { text: t.featUnlimited, included: true },
             { text: `5 ${t.featDocs}`, included: true },
@@ -55,12 +83,14 @@ const Plans: React.FC<PlansProps> = ({ onNavigate, language }) => {
         ]
     },
     {
+        key: 'week',
         name: t.pWeekName,
         price: t.pWeekPrice,
         period: "/ 7d",
         color: "bg-white",
         border: "border-gray-200",
         btnColor: "bg-blue-600 text-white hover:bg-blue-700",
+        isCurrent: userProfile?.plan_type === 'week',
         features: [
             { text: t.featUnlimited, included: true },
             { text: `20 ${t.featDocs}`, included: true },
@@ -72,6 +102,7 @@ const Plans: React.FC<PlansProps> = ({ onNavigate, language }) => {
         ]
     },
     {
+        key: 'month',
         name: t.pMonthName,
         price: t.pMonthPrice,
         period: "/ 30d",
@@ -80,6 +111,7 @@ const Plans: React.FC<PlansProps> = ({ onNavigate, language }) => {
         btnColor: "bg-blue-500 text-white hover:bg-blue-600",
         textInverse: true,
         popular: true,
+        isCurrent: userProfile?.plan_type === 'month',
         features: [
             { text: t.featUnlimited, included: true },
             { text: `100 ${t.featDocs}`, included: true },
@@ -92,12 +124,14 @@ const Plans: React.FC<PlansProps> = ({ onNavigate, language }) => {
         ]
     },
     {
+        key: 'lawyer',
         name: t.pLawyerName,
         price: t.pLawyerPrice,
         period: "/ 30d",
         color: "bg-gradient-to-br from-yellow-50 to-amber-50",
         border: "border-amber-200",
         btnColor: "bg-amber-600 text-white hover:bg-amber-700",
+        isCurrent: userProfile?.plan_type === 'lawyer',
         features: [
             { text: t.featUnlimited, included: true },
             { text: `Unlimited ${t.featDocs}`, included: true },
@@ -152,8 +186,9 @@ const Plans: React.FC<PlansProps> = ({ onNavigate, language }) => {
                         </ul>
 
                         <button 
-                            className={`w-full py-4 rounded-xl font-bold transition-all shadow-sm focus:outline-none focus:ring-4 focus:ring-opacity-50 ${plan.btnColor}`}
-                            disabled={plan.isCurrent}
+                            className={`w-full py-4 rounded-xl font-bold transition-all shadow-sm focus:outline-none focus:ring-4 focus:ring-opacity-50 ${plan.btnColor} disabled:opacity-50 disabled:cursor-not-allowed`}
+                            disabled={plan.isCurrent || (plan.key === 'free')}
+                            onClick={() => handleSubscribe(plan.key as any, plan.name, plan.price)}
                         >
                             {plan.isCurrent ? t.currentPlan : t.subscribe}
                         </button>
@@ -162,9 +197,21 @@ const Plans: React.FC<PlansProps> = ({ onNavigate, language }) => {
             </div>
             
             <div className="mt-12 text-center text-sm text-gray-400">
-                <p>Prices include all applicable taxes. Secure payment processing provided by Payme/Click (Coming Soon).</p>
+                <p>Prices include all applicable taxes. Secure payment processing provided by Payme/Click.</p>
             </div>
         </div>
+
+        {selectedPlan && userProfile && (
+            <PaymentModal 
+                isOpen={isPaymentModalOpen}
+                onClose={() => setIsPaymentModalOpen(false)}
+                planName={selectedPlan.name}
+                amount={selectedPlan.price}
+                planKey={selectedPlan.key}
+                userId={userProfile.id}
+                onSuccess={handlePaymentSuccess}
+            />
+        )}
     </div>
   );
 };
