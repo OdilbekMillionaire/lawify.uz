@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Language, UserSettings, View, Message, UserProfile } from './types';
 import { INITIAL_SETTINGS } from './constants';
@@ -5,6 +6,7 @@ import Layout from './components/Layout';
 import LiveSessionModal from './components/LiveSessionModal';
 import AuthModal from './components/AuthModal';
 import { supabase } from './services/supabaseClient';
+import { saveSession } from './services/storage'; // Import saveSession
 
 // Pages
 import Dashboard from './pages/Dashboard';
@@ -14,6 +16,7 @@ import History from './pages/History';
 import Topics from './pages/Topics';
 import Profile from './pages/Profile';
 import Plans from './pages/Plans';
+import OdilbekPage from './pages/OdilbekPage';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>(View.DASHBOARD);
@@ -55,7 +58,6 @@ const App: React.FC = () => {
 
   const fetchProfile = async (currentUser: any) => {
     try {
-        // 1. Try to get the profile
         const { data, error } = await supabase
             .from('profiles')
             .select('*')
@@ -65,7 +67,6 @@ const App: React.FC = () => {
         if (data) {
             setUserProfile(data);
         } else {
-            // 2. If profile doesn't exist (First time login), create it!
             const newProfile = {
                 id: currentUser.id,
                 email: currentUser.email,
@@ -114,10 +115,14 @@ const App: React.FC = () => {
     setCurrentView(View.CHAT);
   };
 
-  const handleRestoreSession = (messages: Message[]) => {
+  const handleRestoreSession = (messages: Message[], type: 'lawyer' | 'odilbek') => {
       setRestoredMessages(messages);
       setInitialPrompt('');
-      setCurrentView(View.CHAT);
+      if (type === 'odilbek') {
+          setCurrentView(View.ODILBEK);
+      } else {
+          setCurrentView(View.CHAT);
+      }
   };
 
   const handleStartLive = () => {
@@ -129,6 +134,32 @@ const App: React.FC = () => {
           return;
       }
       setIsLiveOpen(true);
+  };
+
+  const handleOpenOdilbek = (context: string) => {
+      // Create a new session for Odilbek with the context pre-loaded
+      const sessionId = Date.now().toString();
+      const initialMsgs: Message[] = [
+          {
+              id: sessionId,
+              role: 'user',
+              text: `Please explain this context: "${context.slice(0, 100)}..."`, // Hidden prompt basically
+              timestamp: Date.now() - 1000
+          },
+          {
+              id: (Date.now() + 1).toString(),
+              role: 'model',
+              text: language === Language.UZ 
+                ? `Assalomu alaykum! Men Odilbekman. Advokatimizning maslahatini tushunishga qiynalyapsizmi? Menga yuboring, oddiy qilib tushuntirib beraman.\n\n**Advice Context:**\n> *${context.slice(0, 300)}...*`
+                : `Hello! I'm Odilbek. Is the lawyer's advice a bit complex? Let me break it down for you.\n\n**Advice Context:**\n> *${context.slice(0, 300)}...*`,
+              timestamp: Date.now()
+          }
+      ];
+      
+      // Save immediately to history so it persists
+      saveSession(initialMsgs, 'odilbek', `Explanation: ${context.slice(0, 30)}...`);
+      setRestoredMessages(initialMsgs);
+      setCurrentView(View.ODILBEK);
   };
 
   // Render current view
@@ -157,7 +188,16 @@ const App: React.FC = () => {
                     onPromptHandled={() => setInitialPrompt('')}
                     initialMessages={restoredMessages}
                     isPro={userProfile?.is_pro || false}
+                    onAskOdilbek={handleOpenOdilbek}
                 />
+              );
+          case View.ODILBEK:
+              return (
+                  <OdilbekPage
+                      language={language}
+                      onBack={() => setCurrentView(View.CHAT)}
+                      initialMessages={restoredMessages} // Pass restored/new session
+                  />
               );
           case View.LIBRARY:
               return <Library onNavigate={setCurrentView} onSelectTemplate={handleTemplateSelect} language={language} />;

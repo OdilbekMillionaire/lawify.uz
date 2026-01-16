@@ -1,16 +1,18 @@
+
 import React, { useEffect, useState } from 'react';
 import { View, Language, ChatSession, Message } from '../types';
 import { getHistory, clearHistory } from '../services/storage';
-import { TRANSLATIONS } from '../constants'; // Import translations
+import { TRANSLATIONS } from '../constants'; 
 
 interface HistoryProps {
   onNavigate: (view: View) => void;
   language?: Language; 
-  onRestore: (messages: Message[]) => void;
+  onRestore: (messages: Message[], type: 'lawyer' | 'odilbek') => void;
 }
 
 const History: React.FC<HistoryProps> = ({ language = Language.UZ, onRestore }) => {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
+  const [activeTab, setActiveTab] = useState<'lawyer' | 'odilbek'>('lawyer');
   const t = TRANSLATIONS[language]; 
 
   useEffect(() => {
@@ -23,6 +25,8 @@ const History: React.FC<HistoryProps> = ({ language = Language.UZ, onRestore }) 
           setSessions([]);
       }
   }
+
+  const filteredSessions = sessions.filter(s => s.type === activeTab);
 
   return (
     <div className="h-full overflow-y-auto p-6 md:p-10 bg-slate-50">
@@ -37,28 +41,63 @@ const History: React.FC<HistoryProps> = ({ language = Language.UZ, onRestore }) 
                 )}
             </div>
 
-            {sessions.length === 0 ? (
+            {/* Tabs */}
+            <div className="flex space-x-1 bg-white p-1 rounded-xl border border-gray-200 w-fit shadow-sm">
+                <button
+                    onClick={() => setActiveTab('lawyer')}
+                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                        activeTab === 'lawyer' 
+                        ? 'bg-blue-600 text-white shadow' 
+                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                    }`}
+                >
+                    ⚖️ {language === Language.UZ ? "AI Yurist" : "AI Lawyer"}
+                </button>
+                <button
+                    onClick={() => setActiveTab('odilbek')}
+                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                        activeTab === 'odilbek' 
+                        ? 'bg-amber-500 text-white shadow' 
+                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                    }`}
+                >
+                    🧑‍🏫 Odilbek
+                </button>
+            </div>
+
+            {filteredSessions.length === 0 ? (
                 <div className="text-center py-20 text-gray-400">
                     <svg className="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     <p>{t.historyEmpty}</p>
+                    <p className="text-xs mt-2 text-gray-400">({activeTab === 'lawyer' ? 'No legal consultations found' : 'No Odilbek explanations found'})</p>
                 </div>
             ) : (
                 <div className="space-y-4">
-                    {sessions.map((session) => (
+                    {filteredSessions.map((session) => (
                         <div 
                             key={session.id} 
-                            onClick={() => onRestore(session.messages)}
-                            className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all group cursor-pointer hover:border-blue-200"
+                            onClick={() => onRestore(session.messages, session.type)}
+                            className={`p-5 rounded-xl shadow-sm border transition-all group cursor-pointer hover:shadow-md ${
+                                session.type === 'odilbek' 
+                                ? 'bg-amber-50 border-amber-100 hover:border-amber-300' 
+                                : 'bg-white border-gray-100 hover:border-blue-200'
+                            }`}
                         >
                             <div className="flex justify-between items-start mb-2">
-                                <h3 className="font-semibold text-slate-800 text-lg group-hover:text-blue-600 transition-colors">{session.title}</h3>
+                                <h3 className={`font-semibold text-lg transition-colors ${
+                                    session.type === 'odilbek' ? 'text-amber-900 group-hover:text-amber-700' : 'text-slate-800 group-hover:text-blue-600'
+                                }`}>
+                                    {session.title}
+                                </h3>
                                 <span className="text-xs text-gray-400">{new Date(session.date).toLocaleDateString()}</span>
                             </div>
                             <p className="text-sm text-gray-500 line-clamp-2">{session.preview}</p>
                              <div className="mt-3 flex items-center text-xs text-gray-400 space-x-4">
                                 <span>{session.messages.length} {t.historyMessages}</span>
-                                <span className="flex items-center text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    Click to view
+                                <span className={`flex items-center opacity-0 group-hover:opacity-100 transition-opacity ${
+                                    session.type === 'odilbek' ? 'text-amber-600' : 'text-blue-500'
+                                }`}>
+                                    Click to continue
                                     <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
                                 </span>
                             </div>

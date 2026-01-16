@@ -1,15 +1,20 @@
+
 import { GoogleGenAI, LiveServerMessage, Modality } from "@google/genai";
 import { Language, UserSettings, Attachment, Source } from "../types";
 
 // --- Configuration ---
-// For Vercel/Vite, we use process.env.API_KEY which is defined in vite.config.ts
+// Primary Key for Main Lawyer
 const apiKey = process.env.API_KEY;
+
+// Secondary Key for Odilbek (Fallback to main if missing)
+const odilbekKey = process.env.ODILBEK_API_KEY || apiKey;
 
 if (!apiKey) {
   console.warn("API Key is missing! Please set API_KEY in your Vercel Project Settings.");
 }
 
 const ai = new GoogleGenAI({ apiKey: apiKey || "dummy_key" });
+const odilbekAi = new GoogleGenAI({ apiKey: odilbekKey || "dummy_key" });
 
 // --- Audio Helper Functions (Live API) ---
 function encode(bytes: Uint8Array) {
@@ -114,6 +119,64 @@ export const verifyPaymentScreenshot = async (
     console.error("Payment Verification Error:", error);
     return { verified: false, reason: "AI could not process the image. Please try a clearer screenshot." };
   }
+};
+
+// --- Odilbek Service (Unlimited) ---
+// Uses `odilbekAi` client (potentially different API Key)
+export const generateOdilbekResponse = async (
+    prompt: string,
+    language: Language,
+    chatHistory: string,
+    legalContext: string // The advice from the Lawyer
+): Promise<string> => {
+    try {
+        const systemInstruction = `
+        You are Odilbek, a friendly and helpful legal assistant/tutor in Uzbekistan.
+        Current Language: ${language}.
+        
+        YOUR ROLE:
+        You are NOT a judge or a formal lawyer. You are a "legal translator" for common people.
+        Your main job is to explain the "Official Legal Advice" (provided in context) in very simple, easy-to-understand terms.
+        
+        CONTEXT:
+        The user has asked you to explain something, possibly related to a previous legal consultation.
+        Official Advice Context (if any): "${legalContext}"
+
+        INSTRUCTIONS:
+        1. **Analyze the Context**: Specifically scan the provided advice for complex legal terms (e.g., "da'vogar" (plaintiff), "javobgar" (defendant), "kassatsiya", "restitutsiya", "aliment", "subsidiya") or specific article numbers.
+        2. **Elaborate**: For any identified complex term, provide a simple, "human" explanation. Use analogies if helpful (e.g., "Think of 'kassatsiya' like asking a higher referee to review a goal decision").
+        3. **Tone**: Friendly, patient, educational, reassuring. Like a smart older brother.
+        4. **Clarify Steps**: If the advice mentions steps (like filing a document), briefly explain *why* that step is important in simple words.
+        5. **Limitations**: Do NOT contradict the official advice. If the user asks for *new* legal advice, remind them you are here to explain the existing advice, but offer a general common-sense answer if safe.
+        6. **Search**: Do NOT use the "Google Search" tool unless absolutely necessary. Rely on your knowledge and the provided context.
+        7. **Encouragement**: Always end with a short encouraging remark.
+        
+        Example Interaction:
+        Context: "According to Article 15 of the Family Code..."
+        User: "What does that mean?"
+        Odilbek: "Good question! Article 15 is basically the rule about [topic]. In simple terms, it means [simple explanation]. In your situation, this is important because..."
+        `;
+
+        // Using gemini-3-flash-preview as requested for efficiency
+        const response = await odilbekAi.models.generateContent({
+            model: 'gemini-3-flash-preview', 
+            contents: {
+                role: 'user',
+                parts: [
+                    { text: `[SYSTEM: Previous Chat History]\n${chatHistory}` },
+                    { text: `[USER QUERY]: ${prompt}` }
+                ]
+            },
+            config: {
+                systemInstruction: systemInstruction,
+            }
+        });
+
+        return response.text || "Uzr, men hozir javob bera olmayman.";
+    } catch (error) {
+        console.error("Odilbek Error", error);
+        return "Connection error.";
+    }
 };
 
 // --- Text Generation Service ---
@@ -337,159 +400,170 @@ export const textToSpeech = async (text: string): Promise<AudioBuffer | null> =>
     }
 }
 
-// --- Live API Service ---
+// --- Live Session Manager ---
 export class LiveSessionManager {
   private sessionPromise: Promise<any> | null = null;
   private inputAudioContext: AudioContext | null = null;
   private outputAudioContext: AudioContext | null = null;
-  private sources = new Set<AudioBufferSourceNode>();
   private nextStartTime = 0;
+  private sources = new Set<AudioBufferSourceNode>();
+  private onStatusChange: (connected: boolean, speaking: boolean) => void;
+  private onError: (error: string) => void;
+  private stream: MediaStream | null = null;
   private scriptProcessor: ScriptProcessorNode | null = null;
+  private inputSource: MediaStreamAudioSourceNode | null = null;
 
   constructor(
-      private onStatusChange: (connected: boolean, speaking: boolean) => void,
-      private onError: (error: string) => void
-  ) {}
+    onStatusChange: (connected: boolean, speaking: boolean) => void,
+    onError: (error: string) => void
+  ) {
+    this.onStatusChange = onStatusChange;
+    this.onError = onError;
+  }
 
   async start(language: Language) {
     try {
-        // Ensure media devices are supported
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            throw new Error("Audio input is not supported in this browser environment.");
+      this.inputAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
+      this.outputAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
+      this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      
+      const config = {
+        model: 'gemini-2.5-flash-native-audio-preview-12-2025',
+        callbacks: {
+          onopen: () => {
+             console.log("Live Session Connected");
+             this.onStatusChange(true, false);
+             this.setupAudioInput();
+          },
+          onmessage: async (message: LiveServerMessage) => {
+             const base64Audio = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
+             if (base64Audio) {
+                 this.onStatusChange(true, true);
+                 await this.playAudio(base64Audio);
+             }
+             
+             const turnComplete = message.serverContent?.turnComplete;
+             if (turnComplete) {
+                 // Model finished generating turn
+                 // Visualizer might use source queue length instead
+             }
+
+             if (message.serverContent?.interrupted) {
+                 this.stopAudioPlayback();
+                 this.onStatusChange(true, false);
+             }
+          },
+          onerror: (e: any) => {
+             console.error("Live API Error", e);
+             this.onError(e.message || "Connection error");
+             this.stop();
+          },
+          onclose: () => {
+             console.log("Live Session Closed");
+             this.onStatusChange(false, false);
+          }
+        },
+        config: {
+           responseModalities: [Modality.AUDIO],
+           speechConfig: {
+               voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } }
+           },
+           systemInstruction: `You are a helpful legal assistant for Uzbekistan laws. Speak in ${language}. Keep answers concise and helpful.`
         }
+      };
 
-        this.inputAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)({sampleRate: 16000});
-        this.outputAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)({sampleRate: 24000});
-        
-        const outputNode = this.outputAudioContext.createGain();
-        outputNode.connect(this.outputAudioContext.destination);
+      this.sessionPromise = ai.live.connect(config);
 
-        let stream: MediaStream;
-        try {
-            stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        } catch (error: any) {
-            console.error("Microphone access error:", error);
-            throw new Error(error.message || "Microphone permission denied or device not found.");
-        }
-
-        let sysInstruction = "You are LAWIFY, a legal assistant for Uzbekistan. Speak strictly in " + language + ". Use concise answers. ALWAYS Search for answers on lex.uz first.";
-        
-        this.sessionPromise = ai.live.connect({
-            model: 'gemini-2.5-flash-native-audio-preview-12-2025',
-            callbacks: {
-                onopen: () => {
-                    this.onStatusChange(true, false);
-                    
-                    if (!this.inputAudioContext) return;
-                    const source = this.inputAudioContext.createMediaStreamSource(stream);
-                    this.scriptProcessor = this.inputAudioContext.createScriptProcessor(4096, 1, 1);
-                    
-                    this.scriptProcessor.onaudioprocess = (e) => {
-                        const inputData = e.inputBuffer.getChannelData(0);
-                        const pcmBlob = createBlob(inputData);
-                        this.sessionPromise?.then(session => {
-                            session.sendRealtimeInput({ media: pcmBlob });
-                        });
-                    };
-                    
-                    source.connect(this.scriptProcessor);
-                    this.scriptProcessor.connect(this.inputAudioContext.destination);
-                },
-                onmessage: async (message: LiveServerMessage) => {
-                    const base64Audio = message.serverContent?.modelTurn?.parts[0]?.inlineData?.data;
-                    
-                    if (base64Audio && this.outputAudioContext) {
-                        this.onStatusChange(true, true); 
-                        
-                        this.nextStartTime = Math.max(this.nextStartTime, this.outputAudioContext.currentTime);
-                        
-                        const audioBuffer = await decodeAudioData(
-                            decode(base64Audio),
-                            this.outputAudioContext,
-                            24000,
-                            1
-                        );
-                        
-                        const source = this.outputAudioContext.createBufferSource();
-                        source.buffer = audioBuffer;
-                        source.connect(outputNode);
-                        source.addEventListener('ended', () => {
-                             this.sources.delete(source);
-                             if (this.sources.size === 0) {
-                                 this.onStatusChange(true, false); 
-                             }
-                        });
-                        
-                        source.start(this.nextStartTime);
-                        this.nextStartTime += audioBuffer.duration;
-                        this.sources.add(source);
-                    }
-
-                    if (message.serverContent?.interrupted) {
-                         this.stopAudioOutput();
-                    }
-                },
-                onclose: () => {
-                    this.onStatusChange(false, false);
-                },
-                onerror: (e) => {
-                    console.error("Live API Error", e);
-                    this.onError("Connection error");
-                    this.onStatusChange(false, false);
-                }
-            },
-            config: {
-                responseModalities: [Modality.AUDIO],
-                speechConfig: {
-                    voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } }
-                },
-                systemInstruction: sysInstruction,
-                tools: [{ googleSearch: {} }],
-            }
-        });
-    } catch (err: any) {
-        this.stop(); 
-        this.onError(err.message);
+    } catch (e: any) {
+      console.error(e);
+      this.onError(e.message || "Failed to start live session");
     }
   }
 
-  stopAudioOutput() {
+  private setupAudioInput() {
+      if (!this.inputAudioContext || !this.stream) return;
+
+      this.inputSource = this.inputAudioContext.createMediaStreamSource(this.stream);
+      this.scriptProcessor = this.inputAudioContext.createScriptProcessor(4096, 1, 1);
+      
+      this.scriptProcessor.onaudioprocess = (e) => {
+          const inputData = e.inputBuffer.getChannelData(0);
+          const pcmBlob = createBlob(inputData);
+          
+          this.sessionPromise?.then(session => {
+              session.sendRealtimeInput({ media: pcmBlob });
+          });
+      };
+
+      this.inputSource.connect(this.scriptProcessor);
+      this.scriptProcessor.connect(this.inputAudioContext.destination);
+  }
+
+  private async playAudio(base64: string) {
+      if (!this.outputAudioContext) return;
+      
+      try {
+        const audioBuffer = await decodeAudioData(
+            decode(base64), 
+            this.outputAudioContext, 
+            24000, 
+            1
+        );
+
+        this.nextStartTime = Math.max(this.nextStartTime, this.outputAudioContext.currentTime);
+        
+        const source = this.outputAudioContext.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(this.outputAudioContext.destination);
+        
+        source.onended = () => {
+            this.sources.delete(source);
+            if (this.sources.size === 0) {
+                 this.onStatusChange(true, false);
+            }
+        };
+
+        source.start(this.nextStartTime);
+        this.nextStartTime += audioBuffer.duration;
+        this.sources.add(source);
+        this.onStatusChange(true, true);
+
+      } catch (e) {
+          console.error("Audio playback error", e);
+      }
+  }
+
+  private stopAudioPlayback() {
       this.sources.forEach(s => s.stop());
       this.sources.clear();
       this.nextStartTime = 0;
   }
 
-  async stop() {
-      this.stopAudioOutput();
+  stop() {
+      this.stopAudioPlayback();
+      this.sessionPromise?.then(session => session.close());
       
+      if (this.stream) {
+          this.stream.getTracks().forEach(t => t.stop());
+          this.stream = null;
+      }
       if (this.scriptProcessor) {
           this.scriptProcessor.disconnect();
           this.scriptProcessor = null;
       }
-      
+      if (this.inputSource) {
+          this.inputSource.disconnect();
+          this.inputSource = null;
+      }
       if (this.inputAudioContext) {
-          if (this.inputAudioContext.state !== 'closed') {
-             await this.inputAudioContext.close();
-          }
+          this.inputAudioContext.close();
           this.inputAudioContext = null;
       }
-      
       if (this.outputAudioContext) {
-          if (this.outputAudioContext.state !== 'closed') {
-             await this.outputAudioContext.close();
-          }
+          this.outputAudioContext.close();
           this.outputAudioContext = null;
       }
       
-      if (this.sessionPromise) {
-          const sessionPromise = this.sessionPromise;
-          this.sessionPromise = null;
-          try {
-            const session = await sessionPromise;
-            session.close();
-          } catch(e) {
-          }
-      }
       this.onStatusChange(false, false);
   }
 }

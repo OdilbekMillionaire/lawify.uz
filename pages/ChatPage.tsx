@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Language, UserSettings, Message, Attachment, View } from '../types';
 import { TRANSLATIONS } from '../constants';
@@ -14,6 +15,7 @@ interface ChatPageProps {
   onPromptHandled?: () => void;
   initialMessages?: Message[];
   isPro: boolean;
+  onAskOdilbek?: (context: string) => void; // New Prop
 }
 
 const ChatPage: React.FC<ChatPageProps> = ({ 
@@ -24,7 +26,8 @@ const ChatPage: React.FC<ChatPageProps> = ({
     initialPrompt,
     onPromptHandled,
     initialMessages,
-    isPro
+    isPro,
+    onAskOdilbek
 }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -448,6 +451,7 @@ const ChatPage: React.FC<ChatPageProps> = ({
                 initialInputValue={initialPrompt}
                 isPro={isPro}
                 usageCount={usageCount}
+                onAskOdilbek={onAskOdilbek}
             />
           </div>
        </div>

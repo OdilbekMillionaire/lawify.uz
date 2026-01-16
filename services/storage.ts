@@ -3,22 +3,30 @@ import { ChatSession, Message } from "../types";
 
 const STORAGE_KEY = 'lawify_history';
 
-export const saveSession = (messages: Message[]) => {
+export const saveSession = (messages: Message[], type: 'lawyer' | 'odilbek' = 'lawyer', customTitle?: string) => {
   if (messages.length === 0) return;
 
   const history = getHistory();
-  const sessionId = messages[0].timestamp.toString(); // Use first message timestamp as ID
+  // We use the timestamp of the FIRST message as the unique Session ID
+  const sessionId = messages[0].timestamp.toString(); 
   
-  // Create a title from the first user message
-  const firstUserMsg = messages.find(m => m.role === 'user');
-  const title = firstUserMsg ? firstUserMsg.text.slice(0, 40) + (firstUserMsg.text.length > 40 ? '...' : '') : 'New Consultation';
+  // Create a title from the first user message if not provided
+  let title = customTitle;
+  if (!title) {
+    const firstUserMsg = messages.find(m => m.role === 'user');
+    title = firstUserMsg ? firstUserMsg.text.slice(0, 40) + (firstUserMsg.text.length > 40 ? '...' : '') : 'New Consultation';
+  }
+
+  const lastMsg = messages[messages.length - 1];
+  const preview = lastMsg ? (lastMsg.text.slice(0, 60) + '...') : '';
 
   const newSession: ChatSession = {
     id: sessionId,
     title: title,
     date: Date.now(),
-    preview: messages[messages.length - 1].text.slice(0, 60) + '...',
-    messages: messages
+    preview: preview,
+    messages: messages,
+    type: type
   };
 
   // Check if session exists, update it, otherwise add to top
@@ -29,8 +37,8 @@ export const saveSession = (messages: Message[]) => {
     history.unshift(newSession);
   }
 
-  // Limit to 20 saved sessions for local storage sanity
-  if (history.length > 20) history.pop();
+  // Limit to 50 saved sessions to prevent overflow, but keep more than before since we have 2 types now
+  if (history.length > 50) history.pop();
 
   localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
 };
@@ -38,7 +46,14 @@ export const saveSession = (messages: Message[]) => {
 export const getHistory = (): ChatSession[] => {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
+    if (!raw) return [];
+    
+    const parsed = JSON.parse(raw);
+    // Migration for old data that didn't have 'type'
+    return parsed.map((s: any) => ({
+        ...s,
+        type: s.type || 'lawyer'
+    }));
   } catch (e) {
     console.error("Failed to load history", e);
     return [];
@@ -49,9 +64,12 @@ export const clearHistory = () => {
     localStorage.removeItem(STORAGE_KEY);
 };
 
+export const getSessionById = (id: string): ChatSession | undefined => {
+    const history = getHistory();
+    return history.find(s => s.id === id);
+}
+
 export const logFeedback = async (messageId: string, userPrompt: string, aiResponse: string, feedbackType: 'like' | 'dislike') => {
-    // In a real app, this would send data to an analytics backend (e.g., Supabase, Firebase)
-    // for fine-tuning the model later.
     console.group("📝 [Feedback Logged]");
     console.log("Message ID:", messageId);
     console.log("User Input:", userPrompt);

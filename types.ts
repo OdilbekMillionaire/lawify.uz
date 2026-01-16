@@ -1,5 +1,4 @@
 
-
 export enum Language {
   UZ = 'uz',
   RU = 'ru',
@@ -9,6 +8,7 @@ export enum Language {
 export enum View {
   DASHBOARD = 'dashboard',
   CHAT = 'chat',
+  ODILBEK = 'odilbek',
   LIBRARY = 'library',
   HISTORY = 'history',
   TOPICS = 'topics',
@@ -74,6 +74,7 @@ export interface ChatSession {
   date: number;
   preview: string;
   messages: Message[];
+  type: 'lawyer' | 'odilbek'; // Added distinction
 }
 
 export interface LiveConnectionState {

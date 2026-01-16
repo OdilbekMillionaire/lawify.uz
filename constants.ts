@@ -1,6 +1,314 @@
 
 import { Language, UserSettings } from './types';
 
+export const INITIAL_SETTINGS: UserSettings = {
+  answerLength: 'Medium',
+  tone: 'Simple',
+  outputStyle: 'Paragraphs',
+  clarifyingQuestions: true,
+  documentType: 'General',
+  perspective: 'Neutral',
+};
+
+export const DID_YOU_KNOW_FACTS = {
+  [Language.UZ]: [
+    { title: "Yangi Mehnat Kodeksi", content: "2023-yilgi Mehnat kodeksi xodimlar uchun yillik asosiy ta'tilni kamida 21 kalendar kuni etib belgiladi.", button: "Ta'til haqida so'rash" },
+    { title: "O'zini o'zi band qilish", content: "O'zini o'zi band qilgan shaxslar daromad solig'idan ozod etiladi va staj hisoblash uchun ixtiyoriy ijtimoiy soliq to'lashi mumkin.", button: "Soliq imtiyozlari" },
+    { title: "Aliment To'lovlari", content: "Agar ota-ona ishsiz bo'lsa, aliment miqdori o'rtacha oylik ish haqidan kelib chiqib hisoblanadi.", button: "Aliment hisoblash" },
+    { title: "Tadbirkorlik", content: "Yangi ro'yxatdan o'tgan yakka tartibdagi tadbirkorlar faoliyatining dastlabki davrida soliq imtiyozlariga ega bo'lishlari mumkin.", button: "Biznes boshlash" },
+    { title: "Elektron Hukumat", content: "My.gov.uz orqali sudlanmaganlik haqida ma'lumotnoma va boshqa 300+ davlat xizmatlaridan uydan chiqmasdan foydalanishingiz mumkin.", button: "E-xizmatlar" },
+    { title: "Nikoh Shartnomasi", content: "Nikoh shartnomasi er va xotinning mulkiy huquqlarini belgilaydi va nikohdan oldin yoki nikoh davrida istalgan vaqtda tuzilishi mumkin.", button: "Nikoh shartnomasi" },
+    { title: "Meros Huquqi", content: "Vasiyatnoma bo'lmaganda, meros qonun bo'yicha vorislarga (farzandlar, er-xotin va ota-onalar birinchi navbatda) teng miqdorda o'tadi.", button: "Meros tartibi" }
+  ],
+  [Language.RU]: [
+    { title: "Новый Трудовой Кодекс", content: "Новый Трудовой кодекс 2023 года установил минимальный ежегодный отпуск в размере 21 календарного дня.", button: "Спросить об отпуске" },
+    { title: "Самозанятость", content: "Самозанятые лица освобождаются от подоходного налога и могут платить социальный налог для стажа добровольно.", button: "Налоговые льготы" },
+    { title: "Алименты", content: "Если родитель безработный, алименты рассчитываются исходя из средней заработной платы по стране.", button: "Расчет алиментов" },
+    { title: "Предпринимательство", content: "Новые индивидуальные предприниматели могут иметь налоговые каникулы в начальный период деятельности.", button: "Начать бизнес" },
+    { title: "Электронное правительство", content: "Через My.gov.uz можно получить справку о несудимости и еще более 300 госуслуг, не выходя из дома.", button: "Э-услуги" },
+    { title: "Брачный контракт", content: "Брачный договор регулирует имущественные права супругов и может быть заключен как до брака, так и в любой момент в браке.", button: "Брачный контракт" },
+    { title: "Наследство", content: "При отсутствии завещания наследство переходит наследникам по закону (дети, супруг и родители в первую очередь) в равных долях.", button: "Порядок наследования" }
+  ],
+  [Language.EN]: [
+    { title: "New Labor Code", content: "The 2023 Labor Code set the minimum annual leave for employees to at least 21 calendar days.", button: "Ask about Leave" },
+    { title: "Self-Employment", content: "Self-employed individuals are exempt from income tax and can pay voluntary social tax to accrue pension tenure.", button: "Tax Benefits" },
+    { title: "Alimony Payments", content: "If a parent is unemployed, alimony is calculated based on the average national monthly salary.", button: "Calculate Alimony" },
+    { title: "Entrepreneurship", content: "Newly registered individual entrepreneurs may qualify for tax holidays during their initial period.", button: "Start Business" },
+    { title: "E-Government", content: "Via My.gov.uz, you can obtain a criminal record certificate and access over 300+ government services from home.", button: "E-Services" },
+    { title: "Prenuptial Agreement", content: "A marriage contract defines property rights and can be signed before marriage or at any time during the marriage.", button: "Prenup Info" },
+    { title: "Inheritance Law", content: "In the absence of a will, inheritance passes to heirs by law (children, spouse, and parents first) in equal shares.", button: "Inheritance rules" }
+  ]
+};
+
+export const TOPICS_DATA = {
+  [Language.UZ]: [
+    {
+      category: "Oila Huquqi",
+      items: [
+        { title: "Ajrashish tartibi", prompt: "Ajrashish tartibi qanday? Sudga qanday hujjatlar kerak?" },
+        { title: "Aliment undirish", prompt: "Aliment undirish uchun nima qilish kerak? Miqdori qancha?" },
+        { title: "Nikoh shartnomasi", prompt: "Nikoh shartnomasi qanday tuziladi va u nimalarni o'z ichiga oladi?" },
+        { title: "Vasiylik va homiylik", prompt: "Bolaga vasiylikni rasmiylashtirish tartibi qanday?" },
+        { title: "Ikkinchi xotin (Poligamiya)", prompt: "O'zbekistonda ko'p xotinlik uchun qanday javobgarlik bor?" },
+        { title: "Oilaviy zo'ravonlik", prompt: "Oilaviy zo'ravonlik bo'lganda himoya orderini qanday olish mumkin?" }
+      ]
+    },
+    {
+      category: "Mehnat Huquqi",
+      items: [
+        { title: "Mehnat ta'tili", prompt: "Yillik mehnat ta'tili necha kun bo'lishi kerak va qanday hisoblanadi?" },
+        { title: "Ishdan bo'shatish", prompt: "Xodimni ishdan bo'shatishning qonuniy asoslari qanday?" },
+        { title: "Ish haqi va ustamalar", prompt: "Ish haqi kechiktirilsa nima qilish kerak?" },
+        { title: "O'zini o'zi band qilish", prompt: "O'zini o'zi band qilgan shaxs sifatida qanday ro'yxatdan o'tiladi?" },
+        { title: "Dekret ta'tili", prompt: "Homiladorlik va tug'ish ta'tili pullari kim tomonidan to'lanadi?" },
+        { title: "Sinov muddati", prompt: "Ishga kirishda sinov muddati qoidalari qanday?" }
+      ]
+    },
+    {
+      category: "Mulk va Uy-joy",
+      items: [
+        { title: "Uy-joy oldi-sotdisi", prompt: "Uy sotib olishda notarius qanday hujjatlarni talab qiladi?" },
+        { title: "Ijara shartnomasi", prompt: "Ijara shartnomasini soliq organida ro'yxatdan o'tkazish majburiymi?" },
+        { title: "Merosni rasmiylashtirish", prompt: "Merosga egalik qilish huquqi qachon va qanday paydo bo'ladi?" },
+        { title: "Snos (Buzilish)", prompt: "Uy buzilishga tushganda kompensatsiya qanday to'lanadi?" },
+        { title: "Propiska (Ro'yxat)", prompt: "Toshkent shahrida doimiy ro'yxatga turish tartibi qanday?" },
+        { title: "Kadastr", prompt: "Kadastr hujjatini yo'qotib qo'ysa nima qilish kerak?" }
+      ]
+    },
+    {
+      category: "Ta'lim va O'qish",
+      items: [
+        { title: "Super-kontrakt", prompt: "Super-kontrakt narxlari va to'lash tartibi qanday?" },
+        { title: "O'qishni ko'chirish", prompt: "Xorijdan yoki boshqa OTMdan o'qishni ko'chirish (perevod) tartibi." },
+        { title: "Magistratura", prompt: "Magistraturaga kirishda til sertifikati talab qilinadimi?" },
+        { title: "Maktabgacha ta'lim", prompt: "Bolani bog'chaga joylashtirish uchun navbatga qanday turiladi?" }
+      ]
+    },
+    {
+      category: "Avtomobil va YHQ",
+      items: [
+        { title: "Jarima to'lash", prompt: "Jarimani onlayn to'lash va chegirmadan foydalanish tartibi qanday?" },
+        { title: "Tonirovka", prompt: "Avtomobil oynalarini qoraytirish (tonirovka) narxlari va ruxsatnoma olish." },
+        { title: "YTH (Avariya)", prompt: "YTH sodir bo'lganda sug'urta to'lovini olish tartibi qanday?" },
+        { title: "Ishonchnoma", prompt: "Avtomobil boshqarish uchun ishonchnoma (doverennost) turlari." },
+        { title: "Gaz baloni (GBO)", prompt: "Avtomobilga gaz baloni o'rnatish uchun ruxsatnoma kerakmi?" }
+      ]
+    },
+    {
+      category: "Bank va Moliya",
+      items: [
+        { title: "Kredit tarixi", prompt: "Kredit tarixini qanday tekshirish va to'g'irlash mumkin?" },
+        { title: "Ipoteka krediti", prompt: "Yosh oilalar uchun ipoteka krediti shartlari qanday?" },
+        { title: "Firibgarlik", prompt: "Plastik kartadan pul o'g'irlanganda bank javobgarmi?" },
+        { title: "Mikroqarz", prompt: "Mikroqarz olish uchun qanday hujjatlar kerak?" }
+      ]
+    },
+    {
+      category: "Migratsiya va Viza",
+      items: [
+        { title: "Xorijga chiqish pasporti", prompt: "Zagran pasport olish uchun qayerga murojaat qilish kerak?" },
+        { title: "Chet elda ishlash", prompt: "Qonuniy mehnat migratsiyasi agentligi orqali ketish tartibi." },
+        { title: "Fuqarolikni olish", prompt: "O'zbekiston fuqaroligini olish tartibi qanday?" },
+        { title: "Deportatsiya", prompt: "Deportatsiya qilinganligini qanday tekshirish mumkin?" }
+      ]
+    },
+    {
+      category: "Iste'molchilar Huquqi",
+      items: [
+        { title: "Tovarni qaytarish", prompt: "Sifatsiz tovarni qanday qaytarib berish yoki almashtirish mumkin?" },
+        { title: "Kafolat muddati", prompt: "Kafolat muddati ichida tovar buzilsa nima qilish kerak?" },
+        { title: "Kommunal xizmatlar", prompt: "Svet yoki gaz noqonuniy o'chirilganda kimga shikoyat qilish kerak?" },
+        { title: "Onlayn savdo", prompt: "Internet do'kondan olingan mahsulotni qaytarish mumkinmi?" }
+      ]
+    },
+    {
+      category: "Tadbirkorlik (Biznes)",
+      items: [
+        { title: "YATT ochish", prompt: "Yakka tartibdagi tadbirkor sifatida ro'yxatdan o'tish va soliqlar." },
+        { title: "MCHJ ochish", prompt: "MCHJ ochish uchun ustav fondi qancha bo'lishi kerak?" },
+        { title: "Litsenziya olish", prompt: "Qaysi faoliyat turlari uchun litsenziya talab qilinadi?" },
+        { title: "Subsidiyalar", prompt: "Tadbirkorlar uchun davlat tomonidan qanday subsidiyalar bor?" }
+      ]
+    }
+  ],
+  [Language.RU]: [
+    {
+      category: "Семейное Право",
+      items: [
+        { title: "Порядок развода", prompt: "Как подать на развод? Какие документы нужны для суда?" },
+        { title: "Взыскание алиментов", prompt: "Как подать на алименты и как рассчитывается сумма?" },
+        { title: "Брачный договор", prompt: "Как составить брачный контракт и что в нем можно указать?" },
+        { title: "Опека", prompt: "Как оформить опеку над ребенком?" },
+        { title: "Вторая жена", prompt: "Какая ответственность предусмотрена за многоженство в Узбекистане?" },
+        { title: "Охранный ордер", prompt: "Как получить охранный ордер при домашнем насилии?" }
+      ]
+    },
+    {
+      category: "Трудовое Право",
+      items: [
+        { title: "Трудовой отпуск", prompt: "Сколько дней длится ежегодный отпуск и как он оплачивается?" },
+        { title: "Увольнение", prompt: "Законные основания для увольнения сотрудника." },
+        { title: "Задержка зарплаты", prompt: "Что делать, если работодатель задерживает зарплату?" },
+        { title: "Самозанятость", prompt: "Как зарегистрироваться как самозанятый и платить налоги?" },
+        { title: "Декретные", prompt: "Кто выплачивает пособие по беременности и родам?" },
+        { title: "Испытательный срок", prompt: "Правила испытательного срока при приеме на работу." }
+      ]
+    },
+    {
+      category: "Недвижимость",
+      items: [
+        { title: "Купля-продажа", prompt: "Какие документы требует нотариус при покупке квартиры?" },
+        { title: "Аренда жилья", prompt: "Обязательно ли регистрировать договор аренды в налоговой?" },
+        { title: "Наследство", prompt: "Как и в какие сроки нужно вступить в наследство?" },
+        { title: "Снос жилья", prompt: "Какая компенсация положена при сносе дома (снос)?" },
+        { title: "Прописка", prompt: "Порядок получения постоянной прописки в Ташкенте." },
+        { title: "Кадастр", prompt: "Что делать при утере кадастровых документов?" }
+      ]
+    },
+    {
+      category: "Образование",
+      items: [
+        { title: "Супер-контракт", prompt: "Как рассчитывается супер-контракт и можно ли его платить частями?" },
+        { title: "Перевод учебы", prompt: "Порядок перевода (перевод) учебы из зарубежного ВУЗа." },
+        { title: "Магистратура", prompt: "Нужен ли языковой сертификат для поступления в магистратуру?" },
+        { title: "Детский сад", prompt: "Как встать в очередь в государственный детский сад?" }
+      ]
+    },
+    {
+      category: "Авто и ГАИ",
+      items: [
+        { title: "Штрафы ГАИ", prompt: "Как оплатить штраф онлайн со скидкой?" },
+        { title: "Тонировка", prompt: "Сколько стоит разрешение на тонировку стекол авто?" },
+        { title: "Страховка ДТП", prompt: "Порядок получения выплат по страховке после ДТП." },
+        { title: "Доверенность", prompt: "Виды доверенностей на управление автомобилем." },
+        { title: "ГБО (Газ)", prompt: "Нужно ли разрешение на установку газового баллона?" }
+      ]
+    },
+    {
+      category: "Банки и Финансы",
+      items: [
+        { title: "Кредитная история", prompt: "Как проверить и исправить свою кредитную историю?" },
+        { title: "Ипотека", prompt: "Условия ипотечного кредитования для молодых семей." },
+        { title: "Мошенничество", prompt: "Отвечает ли банк за кражу денег с пластиковой карты?" },
+        { title: "Микрозайм", prompt: "Какие документы нужны для получения микрозайма?" }
+      ]
+    },
+    {
+      category: "Миграция и Визы",
+      items: [
+        { title: "Загранпаспорт", prompt: "Где и как получить загранпаспорт?" },
+        { title: "Работа за границей", prompt: "Легальное трудоустройство через Агентство миграции." },
+        { title: "Гражданство", prompt: "Порядок получения гражданства Республики Узбекистан." },
+        { title: "Депортация", prompt: "Как проверить наличие запрета на въезд (депортации)?" }
+      ]
+    },
+    {
+      category: "Права Потребителей",
+      items: [
+        { title: "Возврат товара", prompt: "Как вернуть некачественный товар в магазин?" },
+        { title: "Гарантия", prompt: "Что делать, если товар сломался в период гарантии?" },
+        { title: "Коммунальные услуги", prompt: "Куда жаловаться на незаконное отключение света или газа?" },
+        { title: "Онлайн покупки", prompt: "Можно ли вернуть товар, купленный в интернет-магазине?" }
+      ]
+    },
+    {
+      category: "Бизнес",
+      items: [
+        { title: "Открыть ИП", prompt: "Регистрация индивидуального предпринимателя (ЯТТ) и налоги." },
+        { title: "Открыть ООО", prompt: "Какой уставной фонд нужен для открытия ООО?" },
+        { title: "Лицензии", prompt: "На какие виды деятельности требуется лицензия?" },
+        { title: "Субсидии", prompt: "Какие государственные субсидии есть для предпринимателей?" }
+      ]
+    }
+  ],
+  [Language.EN]: [
+    {
+      category: "Family Law",
+      items: [
+        { title: "Divorce Process", prompt: "What is the divorce procedure in Uzbekistan? Required documents?" },
+        { title: "Alimony", prompt: "How to file for alimony and how is it calculated?" },
+        { title: "Prenuptial Agreement", prompt: "Is a prenuptial agreement valid in Uzbekistan?" },
+        { title: "Child Custody", prompt: "How are child custody disputes resolved?" },
+        { title: "Protection Order", prompt: "How to get a protection order in case of domestic violence?" }
+      ]
+    },
+    {
+      category: "Labor Law",
+      items: [
+        { title: "Annual Leave", prompt: "What is the minimum annual leave under the new Labor Code?" },
+        { title: "Termination", prompt: "Legal grounds for firing an employee." },
+        { title: "Unpaid Salary", prompt: "What to do if the employer delays salary payment?" },
+        { title: "Self-Employment", prompt: "How to register as self-employed in Uzbekistan?" },
+        { title: "Maternity Leave", prompt: "Who pays for maternity leave benefits?" }
+      ]
+    },
+    {
+      category: "Real Estate",
+      items: [
+        { title: "Buying Property", prompt: "What documents does a notary require to buy an apartment?" },
+        { title: "Rent Registration", prompt: "Is it mandatory to register a rental agreement with the tax office?" },
+        { title: "Inheritance", prompt: "What is the deadline for accepting inheritance?" },
+        { title: "Demolition (Snos)", prompt: "Compensation rights when a house is demolished (snos)." },
+        { title: "Propiska", prompt: "How to get permanent registration (propiska) in Tashkent?" }
+      ]
+    },
+    {
+      category: "Education",
+      items: [
+        { title: "Super-contract", prompt: "What is a 'super-contract' for university admission?" },
+        { title: "University Transfer", prompt: "Procedure for transferring studies from abroad to Uzbekistan." },
+        { title: "Masters Degree", prompt: "Is a language certificate required for Masters admission?" },
+        { title: "Kindergarten", prompt: "How to apply for a public kindergarten?" }
+      ]
+    },
+    {
+      category: "Auto & Transport",
+      items: [
+        { title: "Traffic Fines", prompt: "How to pay traffic fines online?" },
+        { title: "Tinting (Tonirovka)", prompt: "Cost and permit for car window tinting." },
+        { title: "Car Insurance", prompt: "How to claim insurance after a car accident?" },
+        { title: "Power of Attorney", prompt: "Types of power of attorney for driving a car." }
+      ]
+    },
+    {
+      category: "Banking & Finance",
+      items: [
+        { title: "Credit Score", prompt: "How to check my credit history?" },
+        { title: "Mortgage", prompt: "Mortgage conditions for young families." },
+        { title: "Card Fraud", prompt: "Is the bank liable for money stolen from a plastic card?" },
+        { title: "Microloans", prompt: "Requirements for obtaining a microloan." }
+      ]
+    },
+    {
+      category: "Migration",
+      items: [
+        { title: "International Passport", prompt: "How to apply for an international travel passport?" },
+        { title: "Working Abroad", prompt: "Legal ways to work abroad via the Migration Agency." },
+        { title: "Citizenship", prompt: "Procedure for obtaining Uzbekistan citizenship." },
+        { title: "Deportation Check", prompt: "How to check if I have a travel ban or deportation?" }
+      ]
+    },
+    {
+      category: "Consumer Rights",
+      items: [
+        { title: "Returns", prompt: "Can I return a defective product?" },
+        { title: "Warranty", prompt: "What are my rights during the warranty period?" },
+        { title: "Utilities", prompt: "Complaint procedure for illegal electricity or gas disconnection." },
+        { title: "Online Shopping", prompt: "Refund rules for online purchases." }
+      ]
+    },
+    {
+      category: "Business",
+      items: [
+        { title: "Sole Proprietorship", prompt: "How to open a YATT (Individual Entrepreneurship)?" },
+        { title: "LLC Registration", prompt: "Minimum capital required to open an LLC." },
+        { title: "Licensing", prompt: "Which business activities require a license?" },
+        { title: "Subsidies", prompt: "Government subsidies available for small businesses." }
+      ]
+    }
+  ]
+};
+
 export const TRANSLATIONS = {
   [Language.UZ]: {
     title: "LAWIFY",
@@ -48,6 +356,7 @@ export const TRANSLATIONS = {
     // Navigation
     navDashboard: "Bosh sahifa",
     navChat: "AI Yurist",
+    navOdilbek: "Odilbek (Tushuntirish)",
     navTemplates: "Andozalar",
     navHistory: "Tarix",
     navTopics: "Mavzular",
@@ -201,6 +510,13 @@ export const TRANSLATIONS = {
     limitUpgrade: "Pro tariflarni ko'rish",
     limitReturn: "Ertaga qaytish",
     freeUsage: "Bepul so'rovlar:",
+
+    // Odilbek
+    odilbekTitle: "Odilbek - Yuridik Tushuntiruvchi",
+    odilbekSubtitle: "AI Yurist maslahatlarini oddiy tilda tushuntirib beraman. Cheklovsiz so'rang!",
+    odilbekWelcome: "Assalomu alaykum! Men Odilbekman. Advokatimiz bergan maslahat tushunarsiz bo'ldimi? Menga yuboring, oddiy qilib tushuntirib beraman.",
+    askOdilbek: "Odilbekdan so'rash (Cheklovsiz)",
+    odilbekAction: "Tushuntirib berish",
   },
   [Language.RU]: {
     title: "LAWIFY",
@@ -247,6 +563,7 @@ export const TRANSLATIONS = {
     // Navigation
     navDashboard: "Главная",
     navChat: "AI Юрист",
+    navOdilbek: "Одилбек (Объяснение)",
     navTemplates: "Шаблоны",
     navHistory: "История",
     navTopics: "Темы",
@@ -400,6 +717,13 @@ export const TRANSLATIONS = {
     limitUpgrade: "Смотреть тарифы Pro",
     limitReturn: "Вернуться завтра",
     freeUsage: "Бесплатные запросы:",
+
+    // Odilbek
+    odilbekTitle: "Одилбек - Правовой Консультант",
+    odilbekSubtitle: "Я объясню советы AI Юриста простым языком. Спрашивайте безлимитно!",
+    odilbekWelcome: "Здравствуйте! Я Одилбек. Совет нашего адвоката показался сложным? Перешлите его мне, я всё объясню простыми словами.",
+    askOdilbek: "Спросить Одилбека (Безлимитно)",
+    odilbekAction: "Объяснить подробно",
   },
   [Language.EN]: {
     title: "LAWIFY",
@@ -446,6 +770,7 @@ export const TRANSLATIONS = {
     // Navigation
     navDashboard: "Dashboard",
     navChat: "AI Lawyer",
+    navOdilbek: "Odilbek (Explainer)",
     navTemplates: "Templates",
     navHistory: "History",
     navTopics: "Topics",
@@ -599,278 +924,12 @@ export const TRANSLATIONS = {
     limitUpgrade: "View Pro Plans",
     limitReturn: "Come back tomorrow",
     freeUsage: "Free usage:",
+
+    // Odilbek
+    odilbekTitle: "Odilbek - Legal Explainer",
+    odilbekSubtitle: "I explain AI Lawyer's advice in simple terms. Ask me anything, unlimited!",
+    odilbekWelcome: "Hello! I'm Odilbek. Did the Lawyer's advice sound too complicated? Send it over, and I'll break it down for you.",
+    askOdilbek: "Ask Odilbek (Unlimited)",
+    odilbekAction: "Explain this",
   }
-};
-
-export const INITIAL_SETTINGS: UserSettings = {
-  answerLength: 'Medium',
-  tone: 'Simple',
-  outputStyle: 'Bullet points',
-  clarifyingQuestions: true,
-  documentType: 'General',
-  perspective: 'Neutral',
-};
-// ... rest of file (TOPICS_DATA, DID_YOU_KNOW_FACTS) remains unchanged ...
-export const DID_YOU_KNOW_FACTS = {
-  [Language.UZ]: [
-    { title: "Yangi Mehnat Kodeksi", content: "2023-yilgi Mehnat kodeksi xodimlar uchun yillik asosiy ta'tilni kamida 21 kalendar kuni etib belgiladi.", button: "Ta'til haqida so'rash" },
-    { title: "O'zini o'zi band qilish", content: "O'zini o'zi band qilgan shaxslar daromad solig'idan ozod etiladi va staj hisoblash uchun ixtiyoriy ijtimoiy soliq to'lashi mumkin.", button: "Soliq imtiyozlari" },
-    { title: "Aliment To'lovlari", content: "Agar ota-ona ishsiz bo'lsa, aliment miqdori o'rtacha oylik ish haqidan kelib chiqib hisoblanadi.", button: "Aliment hisoblash" },
-    { title: "Tadbirkorlik", content: "Yangi ro'yxatdan o'tgan yakka tartibdagi tadbirkorlar faoliyatining dastlabki davrida soliq imtiyozlariga ega bo'lishlari mumkin.", button: "Biznes boshlash" },
-    { title: "Elektron Hukumat", content: "My.gov.uz orqali sudlanmaganlik haqida ma'lumotnoma va boshqa 300+ davlat xizmatlaridan uydan chiqmasdan foydalanishingiz mumkin.", button: "E-xizmatlar" },
-    { title: "Nikoh Shartnomasi", content: "Nikoh shartnomasi er va xotinning mulkiy huquqlarini belgilaydi va nikohdan oldin yoki nikoh davrida istalgan vaqtda tuzilishi mumkin.", button: "Nikoh shartnomasi" },
-    { title: "Meros Huquqi", content: "Vasiyatnoma bo'lmaganda, meros qonun bo'yicha vorislarga (farzandlar, er-xotin va ota-onalar birinchi navbatda) teng miqdorda o'tadi.", button: "Meros tartibi" }
-  ],
-  [Language.RU]: [
-    { title: "Новый Трудовой Кодекс", content: "Новый Трудовой кодекс 2023 года установил минимальный ежегодный отпуск в размере 21 календарного дня.", button: "Спросить об отпуске" },
-    { title: "Самозанятость", content: "Самозанятые лица освобождаются от подоходного налога и могут платить социальный налог для стажа добровольно.", button: "Налоговые льготы" },
-    { title: "Алименты", content: "Если родитель безработный, алименты рассчитываются исходя из средней заработной платы по стране.", button: "Расчет алиментов" },
-    { title: "Предпринимательство", content: "Новые индивидуальные предприниматели могут иметь налоговые каникулы в начальный период деятельности.", button: "Начать бизнес" },
-    { title: "Электронное правительство", content: "Через My.gov.uz можно получить справку о несудимости и еще более 300 госуслуг, не выходя из дома.", button: "Э-услуги" },
-    { title: "Брачный контракт", content: "Брачный договор регулирует имущественные права супругов и может быть заключен как до брака, так и в любой момент в браке.", button: "Брачный контракт" },
-    { title: "Наследство", content: "При отсутствии завещания наследство переходит наследникам по закону (дети, супруг и родители в первую очередь) в равных долях.", button: "Порядок наследования" }
-  ],
-  [Language.EN]: [
-    { title: "New Labor Code", content: "The 2023 Labor Code set the minimum annual leave for employees to at least 21 calendar days.", button: "Ask about Leave" },
-    { title: "Self-Employment", content: "Self-employed individuals are exempt from income tax and can pay voluntary social tax to accrue pension tenure.", button: "Tax Benefits" },
-    { title: "Alimony Payments", content: "If a parent is unemployed, alimony is calculated based on the average national monthly salary.", button: "Calculate Alimony" },
-    { title: "Entrepreneurship", content: "Newly registered individual entrepreneurs may qualify for tax holidays during their initial period.", button: "Start Business" },
-    { title: "E-Government", content: "Via My.gov.uz, you can obtain a criminal record certificate and access over 300+ government services from home.", button: "E-Services" },
-    { title: "Prenuptial Agreement", content: "A marriage contract defines property rights and can be signed before marriage or at any time during the marriage.", button: "Prenup Info" },
-    { title: "Inheritance Law", content: "In the absence of a will, inheritance passes to heirs by law (children, spouse, and parents first) in equal shares.", button: "Inheritance rules" }
-  ]
-};
-
-export const TOPICS_DATA = {
-  [Language.UZ]: [
-    {
-      category: "Oila Huquqi",
-      items: [
-        { title: "Ajrashish tartibi", prompt: "Ajrashish tartibi qanday? Sudga qanday hujjatlar kerak?" },
-        { title: "Aliment undirish", prompt: "Aliment undirish uchun nima qilish kerak? Miqdori qancha?" },
-        { title: "Nikoh shartnomasi", prompt: "Nikoh shartnomasi qanday tuziladi va u nimalarni o'z ichiga oladi?" },
-        { title: "Vasiylik va homiylik", prompt: "Bolaga vasiylikni rasmiylashtirish tartibi qanday?" }
-      ]
-    },
-    {
-      category: "Mehnat Huquqi",
-      items: [
-        { title: "Mehnat ta'tili", prompt: "Yillik mehnat ta'tili necha kun bo'lishi kerak va qanday hisoblanadi?" },
-        { title: "Ishdan bo'shatish", prompt: "Xodimni ishdan bo'shatishning qonuniy asoslari qanday?" },
-        { title: "Ish haqi va ustamalar", prompt: "Ish haqi kechiktirilsa nima qilish kerak?" },
-        { title: "Homiladorlik ta'tili", prompt: "Homiladorlik va tug'ish ta'tili qanday to'lanadi?" }
-      ]
-    },
-    {
-      category: "Mulk va Uy-joy",
-      items: [
-        { title: "Uy-joy oldi-sotdisi", prompt: "Uy-joy oldi-sotdi shartnomasini notariusda tasdiqlash uchun nimalar kerak?" },
-        { title: "Ijara shartnomasi", prompt: "Ijaraga beruvchi va oluvchining huquqlari qanday?" },
-        { title: "Merosni rasmiylashtirish", prompt: "Merosga egalik qilish huquqi qachon va qanday paydo bo'ladi?" },
-        { title: "Kadastr hujjatlari", prompt: "Kadastr pasportini qanday yangilash mumkin?" }
-      ]
-    },
-    {
-      category: "Iste'molchilar Huquqi",
-      items: [
-        { title: "Tovarni qaytarish", prompt: "Sifatsiz tovarni qanday qaytarib berish yoki almashtirish mumkin?" },
-        { title: "Kafolat muddati", prompt: "Kafolat muddati ichida tovar buzilsa nima qilish kerak?" },
-        { title: "Xizmat ko'rsatish sifati", prompt: "Sifatsiz xizmat ko'rsatilganida pulni qaytarishni talab qilsa bo'ladimi?" }
-      ]
-    },
-    {
-      category: "Avtomobil va YHQ",
-      items: [
-        { title: "Jarima to'lash", prompt: "Jarimani onlayn to'lash va chegirmadan foydalanish tartibi qanday?" },
-        { title: "YTH sodir bo'lganda", prompt: "YTH sodir bo'lganda sug'urta to'lovini qanday olish mumkin?" },
-        { title: "Ishonchnoma berish", prompt: "Avtomobil boshqarish uchun ishonchnoma turlari va narxlari." }
-      ]
-    },
-    {
-      category: "Biznes va Soliq",
-      items: [
-        { title: "YATT ochish", prompt: "Yakka tartibdagi tadbirkor sifatida ro'yxatdan o'tish tartibi." },
-        { title: "MCHJ ochish", prompt: "MCHJ ta'sis hujjatlarini qanday tayyorlash kerak?" },
-        { title: "Soliq imtiyozlari", prompt: "Kichik biznes uchun qanday soliq imtiyozlari mavjud?" }
-      ]
-    },
-    {
-      category: "Intellektual Mulk",
-      items: [
-        { title: "Mualliflik huquqi", prompt: "Mualliflik huquqini qanday ro'yxatdan o'tkazish mumkin?" },
-        { title: "Patent olish", prompt: "Ixtiro uchun patent olish tartibi qanday?" },
-        { title: "Savdo belgisi", prompt: "O'z brendimni qanday himoya qilishim mumkin?" }
-      ]
-    },
-    {
-      category: "Qurilish Huquqi",
-      items: [
-        { title: "Qurilish ruxsatnomasi", prompt: "Uy qurish uchun qanday ruxsatnomalar kerak?" },
-        { title: "Yer uchastkasi", prompt: "Yer uchastkasini qanday qilib qonuniy rasmiylashtirish mumkin?" },
-        { title: "Pudrat shartnomasi", prompt: "Qurilish pudrat shartnomasida nimalarga e'tibor berish kerak?" }
-      ]
-    },
-    {
-      category: "Sog'liqni Saqlash",
-      items: [
-        { title: "Tibbiy sug'urta", prompt: "Majburiy tibbiy sug'urta tizimi qanday ishlaydi?" },
-        { title: "Bemor huquqlari", prompt: "Shifokor xatosi tufayli yetkazilgan zararni undirish tartibi." },
-        { title: "Dori vositalari", prompt: "Sifatsiz dori vositalari sotilganda qayerga murojaat qilish kerak?" }
-      ]
-    }
-  ],
-  [Language.RU]: [
-    {
-      category: "Семейное Право",
-      items: [
-        { title: "Порядок развода", prompt: "Как подать на развод? Какие документы нужны для суда?" },
-        { title: "Взыскание алиментов", prompt: "Как подать на алименты и как рассчитывается сумма?" },
-        { title: "Брачный договор", prompt: "Как составить брачный контракт и что в нем можно указать?" },
-        { title: "Опека и попечительство", prompt: "Как оформить опеку над ребенком?" }
-      ]
-    },
-    {
-      category: "Трудовое Право",
-      items: [
-        { title: "Трудовой отпуск", prompt: "Сколько дней длится ежегодный отпуск и как он оплачивается?" },
-        { title: "Увольнение", prompt: "Законные основания для увольнения сотрудника." },
-        { title: "Зарплата и надбавки", prompt: "Что делать, если задерживают зарплату?" },
-        { title: "Декретный отпуск", prompt: "Как рассчитывается и оплачивается декретный отпуск?" }
-      ]
-    },
-    {
-      category: "Имущество и Жилье",
-      items: [
-        { title: "Купля-продажа жилья", prompt: "Какие документы нужны для нотариального оформления купли-продажи квартиры?" },
-        { title: "Договор аренды", prompt: "Права и обязанности арендатора и арендодателя." },
-        { title: "Оформление наследства", prompt: "Как вступить в наследство по закону или завещанию?" },
-        { title: "Кадастр", prompt: "Как восстановить или обновить кадастровые документы?" }
-      ]
-    },
-    {
-      category: "Права Потребителей",
-      items: [
-        { title: "Возврат товара", prompt: "Как вернуть некачественный товар в магазин?" },
-        { title: "Гарантийный срок", prompt: "Что делать, если товар сломался в период гарантии?" },
-        { title: "Некачественные услуги", prompt: "Как вернуть деньги за плохо оказанную услугу?" }
-      ]
-    },
-    {
-      category: "Авто и ПДД",
-      items: [
-        { title: "Оплата штрафов", prompt: "Как оплатить штраф ГАИ со скидкой?" },
-        { title: "ДТП и страховка", prompt: "Как получить страховую выплату при ДТП?" },
-        { title: "Доверенность на авто", prompt: "Виды доверенностей на управление автомобилем." }
-      ]
-    },
-    {
-      category: "Бизнес и Налоги",
-      items: [
-        { title: "Открыть ИП", prompt: "Порядок регистрации индивидуального предпринимателя." },
-        { title: "Регистрация ООО", prompt: "Как открыть ООО и какие документы нужны?" },
-        { title: "Налоговые льготы", prompt: "Какие налоговые льготы есть для малого бизнеса?" }
-      ]
-    },
-    {
-      category: "Интеллектуальная Собственность",
-      items: [
-        { title: "Авторское право", prompt: "Как зарегистрировать авторское право?" },
-        { title: "Получение патента", prompt: "Каков порядок получения патента на изобретение?" },
-        { title: "Торговая марка", prompt: "Как защитить свой бренд и торговую марку?" }
-      ]
-    },
-    {
-      category: "Строительное Право",
-      items: [
-        { title: "Разрешение на строительство", prompt: "Какие разрешения нужны для строительства дома?" },
-        { title: "Земельный участок", prompt: "Как законно оформить земельный участок?" },
-        { title: "Договор подряда", prompt: "На что обратить внимание в договоре строительного подряда?" }
-      ]
-    },
-    {
-      category: "Здравоохранение",
-      items: [
-        { title: "Медицинское страхование", prompt: "Как работает система обязательного медицинского страхования?" },
-        { title: "Права пациентов", prompt: "Порядок возмещения вреда, причиненного врачебной ошибкой." },
-        { title: "Лекарственные средства", prompt: "Куда жаловаться при продаже некачественных лекарств?" }
-      ]
-    }
-  ],
-  [Language.EN]: [
-    {
-      category: "Family Law",
-      items: [
-        { title: "Divorce Procedure", prompt: "What is the procedure for divorce? What documents are needed?" },
-        { title: "Alimony Collection", prompt: "How to file for alimony and how much is it?" },
-        { title: "Prenuptial Agreement", prompt: "How to create a prenuptial agreement?" },
-        { title: "Guardianship", prompt: "How to establish guardianship over a child?" }
-      ]
-    },
-    {
-      category: "Labor Law",
-      items: [
-        { title: "Annual Leave", prompt: "What is the minimum annual leave duration and how is it calculated?" },
-        { title: "Dismissal", prompt: "What are the legal grounds for terminating an employee?" },
-        { title: "Salary Issues", prompt: "What to do if salary payment is delayed?" },
-        { title: "Maternity Leave", prompt: "How is maternity leave paid and calculated?" }
-      ]
-    },
-    {
-      category: "Property & Housing",
-      items: [
-        { title: "Buying Property", prompt: "What documents are required for buying a house/apartment?" },
-        { title: "Rental Agreement", prompt: "What are the rights of landlords and tenants?" },
-        { title: "Inheritance", prompt: "How to claim inheritance under the law?" },
-        { title: "Cadastre", prompt: "How to update cadastral documentation?" }
-      ]
-    },
-    {
-      category: "Consumer Rights",
-      items: [
-        { title: "Return of Goods", prompt: "How to return defective goods to the seller?" },
-        { title: "Warranty", prompt: "What to do if a product breaks during the warranty period?" },
-        { title: "Service Quality", prompt: "Can I get a refund for poor quality services?" }
-      ]
-    },
-    {
-      category: "Auto & Traffic",
-      items: [
-        { title: "Traffic Fines", prompt: "How to pay traffic fines with a discount?" },
-        { title: "Accidents & Insurance", prompt: "How to claim insurance after a traffic accident?" },
-        { title: "Car Power of Attorney", prompt: "Types of power of attorney for driving a car." }
-      ]
-    },
-    {
-      category: "Business & Tax",
-      items: [
-        { title: "Start Sole Proprietorship", prompt: "How to register as an individual entrepreneur?" },
-        { title: "Register LLC", prompt: "Procedure for opening a Limited Liability Company." },
-        { title: "Tax Benefits", prompt: "What tax incentives are available for small businesses?" }
-      ]
-    },
-    {
-      category: "Intellectual Property",
-      items: [
-        { title: "Copyright", prompt: "How to register copyright?" },
-        { title: "Patent", prompt: "What is the procedure for obtaining a patent for an invention?" },
-        { title: "Trademark", prompt: "How can I protect my brand and trademark?" }
-      ]
-    },
-    {
-      category: "Construction Law",
-      items: [
-        { title: "Building Permit", prompt: "What permits are needed to build a house?" },
-        { title: "Land Plot", prompt: "How to legally register a land plot?" },
-        { title: "Contract Agreement", prompt: "What to look for in a construction contract?" }
-      ]
-    },
-    {
-      category: "Healthcare Regulations",
-      items: [
-        { title: "Medical Insurance", prompt: "How does the mandatory health insurance system work?" },
-        { title: "Patient Rights", prompt: "Procedure for compensation of damages caused by medical error." },
-        { title: "Medicines", prompt: "Where to complain about the sale of low-quality medicines?" }
-      ]
-    }
-  ]
 };
