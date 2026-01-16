@@ -1,31 +1,7 @@
 
-import { GoogleGenAI, LiveServerMessage, Modality } from "@google/genai";
 import { Language, UserSettings, Attachment, Source } from "../types";
 
-// --- Configuration ---
-// Primary Key for Main Lawyer
-const apiKey = process.env.API_KEY;
-
-// Secondary Key for Odilbek (Fallback to main if missing)
-const odilbekKey = process.env.ODILBEK_API_KEY || apiKey;
-
-if (!apiKey) {
-  console.warn("API Key is missing! Please set API_KEY in your Vercel Project Settings.");
-}
-
-const ai = new GoogleGenAI({ apiKey: apiKey || "dummy_key" });
-const odilbekAi = new GoogleGenAI({ apiKey: odilbekKey || "dummy_key" });
-
-// --- Audio Helper Functions (Live API) ---
-function encode(bytes: Uint8Array) {
-  let binary = '';
-  const len = bytes.byteLength;
-  for (let i = 0; i < len; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return btoa(binary);
-}
-
+// --- AUDIO HELPERS ---
 function decode(base64: string) {
   const binaryString = atob(base64);
   const len = binaryString.length;
@@ -55,131 +31,34 @@ async function decodeAudioData(
   return buffer;
 }
 
-function createBlob(data: Float32Array): { data: string; mimeType: string } {
-  const l = data.length;
-  const int16 = new Int16Array(l);
-  for (let i = 0; i < l; i++) {
-    int16[i] = data[i] * 32768;
-  }
-  return {
-    data: encode(new Uint8Array(int16.buffer)),
-    mimeType: 'audio/pcm;rate=16000',
-  };
-}
+// --- SECURE API CALLS ---
+// These functions now call your Vercel Backend (/api/...) instead of Google directly.
 
-// --- Payment Verification Service ---
-
-export const verifyPaymentScreenshot = async (
-  base64Image: string, 
-  expectedAmount: string // e.g., "119 000"
-): Promise<{ verified: boolean; reason: string }> => {
+export const verifyPaymentScreenshot = async (base64Image: string, expectedAmount: string) => {
   try {
-    const cleanAmount = parseInt(expectedAmount.replace(/\D/g, ''), 10); // 119000
-    
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash-image', // Fast vision model
-      contents: {
-        parts: [
-          {
-            inlineData: {
-              mimeType: 'image/jpeg', // Assuming jpeg/png, standardizing request
-              data: base64Image
-            }
-          },
-          {
-            text: `Analyze this image. It should be a digital payment receipt from a banking app (like Click, Payme, Uzum, Apelsin) for a transfer in Uzbekistan.
-            
-            Task:
-            1. Verify if it is a successful transaction receipt.
-            2. Extract the numeric amount (in UZS).
-            3. Check if the extracted amount is EQUAL TO OR GREATER THAN ${cleanAmount}. (Users may pay slightly more due to commissions, which is valid).
-            
-            Return ONLY a raw JSON object (do NOT wrap in markdown code blocks) with this structure:
-            {
-              "verified": boolean, 
-              "reason": "string explaining why valid or invalid (e.g. 'Amount covers the plan', 'Blurry image', 'Insufficient amount')"
-            }`
-          }
-        ]
-      }
+    const res = await fetch('/api/verify-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ base64Image, expectedAmount })
     });
-
-    let resultText = response.text || "{}";
-    
-    // Clean up potential markdown formatting (```json ... ```)
-    resultText = resultText.replace(/```json/g, "").replace(/```/g, "").trim();
-
-    const result = JSON.parse(resultText);
-    
-    return {
-      verified: result.verified === true,
-      reason: result.reason || "Verification failed"
-    };
-  } catch (error) {
-    console.error("Payment Verification Error:", error);
-    return { verified: false, reason: "AI could not process the image. Please try a clearer screenshot." };
+    return await res.json();
+  } catch (e) {
+    return { verified: false, reason: "Connection failed" };
   }
 };
 
-// --- Odilbek Service (Unlimited) ---
-// Uses `odilbekAi` client (potentially different API Key)
-export const generateOdilbekResponse = async (
-    prompt: string,
-    language: Language,
-    chatHistory: string,
-    legalContext: string // The advice from the Lawyer
-): Promise<string> => {
+export const generateOdilbekResponse = async (prompt: string, language: Language, chatHistory: string, legalContext: string) => {
     try {
-        const systemInstruction = `
-        You are Odilbek, a friendly and helpful legal assistant/tutor in Uzbekistan.
-        Current Language: ${language}.
-        
-        YOUR ROLE:
-        You are NOT a judge or a formal lawyer. You are a "legal translator" for common people.
-        Your main job is to explain the "Official Legal Advice" (provided in context) in very simple, easy-to-understand terms.
-        
-        CONTEXT:
-        The user has asked you to explain something, possibly related to a previous legal consultation.
-        Official Advice Context (if any): "${legalContext}"
-
-        INSTRUCTIONS:
-        1. **Analyze the Context**: Specifically scan the provided advice for complex legal terms (e.g., "da'vogar" (plaintiff), "javobgar" (defendant), "kassatsiya", "restitutsiya", "aliment", "subsidiya") or specific article numbers.
-        2. **Elaborate**: For any identified complex term, provide a simple, "human" explanation. Use analogies if helpful (e.g., "Think of 'kassatsiya' like asking a higher referee to review a goal decision").
-        3. **Tone**: Friendly, patient, educational, reassuring. Like a smart older brother.
-        4. **Clarify Steps**: If the advice mentions steps (like filing a document), briefly explain *why* that step is important in simple words.
-        5. **Limitations**: Do NOT contradict the official advice. If the user asks for *new* legal advice, remind them you are here to explain the existing advice, but offer a general common-sense answer if safe.
-        6. **Search**: Do NOT use the "Google Search" tool unless absolutely necessary. Rely on your knowledge and the provided context.
-        7. **Encouragement**: Always end with a short encouraging remark.
-        
-        Example Interaction:
-        Context: "According to Article 15 of the Family Code..."
-        User: "What does that mean?"
-        Odilbek: "Good question! Article 15 is basically the rule about [topic]. In simple terms, it means [simple explanation]. In your situation, this is important because..."
-        `;
-
-        // Using gemini-3-flash-preview as requested for efficiency
-        const response = await odilbekAi.models.generateContent({
-            model: 'gemini-3-flash-preview', 
-            contents: {
-                role: 'user',
-                parts: [
-                    { text: `[SYSTEM: Previous Chat History]\n${chatHistory}` },
-                    { text: `[USER QUERY]: ${prompt}` }
-                ]
-            },
-            config: {
-                systemInstruction: systemInstruction,
-            }
+        const res = await fetch('/api/odilbek', {
+            method: 'POST',
+            body: JSON.stringify({ prompt, language, chatHistory })
         });
-
-        return response.text || "Uzr, men hozir javob bera olmayman.";
-    } catch (error) {
-        console.error("Odilbek Error", error);
-        return "Connection error.";
+        const data = await res.json();
+        return data.text;
+    } catch (e) {
+        return "Connection Error";
     }
 };
-
-// --- Text Generation Service ---
 
 export const generateLegalResponse = async (
   prompt: string,
@@ -190,380 +69,162 @@ export const generateLegalResponse = async (
   additionalContext: string = "",
   isPro: boolean = false
 ): Promise<{ text: string, sources: Source[] }> => {
-  
-  // 1. Classification & Clarification Check
-  const articleRegex = /(?:modda|article|статья)\s*\d+/i;
-  const codeRegex = /(?:kodeks|code|кодекс)/i;
-  
-  if (articleRegex.test(prompt) && !codeRegex.test(prompt) && settings.clarifyingQuestions) {
-     let q = "Which code is it? (Family, Criminal, Civil, etc.)";
-     if (language === Language.UZ) q = "Bu qaysi kodeks? (Oila, Jinoyat, Fuqarolik va h.k.)";
-     if (language === Language.RU) q = "О каком кодексе идет речь? (Семейный, Уголовный, Гражданский и т.д.)";
-     return { text: q, sources: [] };
-  }
-
-  // 2. Construct System Instruction with ZERO HALLUCINATION PROTOCOL & LANGUAGE ENFORCEMENT
-  
-  const toneInstruction = settings.tone === 'Professional' 
-    ? "Adopt a formal, authoritative, and precise legal tone."
-    : "Adopt a clear, accessible, and reassuring tone. Explain legal concepts in plain language.";
-
-  const lengthInstruction = settings.answerLength === 'Short'
-    ? "Keep the response concise and direct."
-    : "Provide a comprehensive explanation.";
-
-  const styleInstruction = settings.outputStyle === 'Step-by-step'
-    ? "Structure the 'Action Plan' as a numbered sequential list."
-    : "Use clear bullet points.";
-
-  // Language specific structure labels to prevent English leaks
-  let structureLabels = "";
-  let languageDirective = "";
-
-  if (language === Language.UZ) {
-      languageDirective = "CRITICAL: You MUST answer in O'zbek language (Uzbek). DO NOT write introductory sentences in English like 'Here is the legal advice'. Start directly with the Uzbek content. DO NOT translate headers into English.";
-      structureLabels = `
-      Use ONLY these Uzbek headers for sections:
-      ### **Xulosa**
-      (Write summary here in Uzbek)
-      
-      ### **Qonuniy Asoslar**
-      (List laws here in Uzbek, e.g., "Oila Kodeksi, 15-modda")
-
-      ### **Tushuntirish**
-      (Detailed explanation in Uzbek)
-
-      ### **Harakatlar rejasi**
-      (Action plan in Uzbek)`;
-  } else if (language === Language.RU) {
-      languageDirective = "CRITICAL: You MUST answer in Russian language. DO NOT write introductory sentences in English. Start directly with the Russian content.";
-      structureLabels = `
-      Use ONLY these Russian headers:
-      ### **Резюме**
-      
-      ### **Законодательная база**
-
-      ### **Разъяснение**
-
-      ### **План действий**`;
-  } else {
-      languageDirective = "Answer in English.";
-      structureLabels = `
-      Use these headers:
-      ### **Summary**
-      ### **According to Law**
-      ### **Explanation**
-      ### **Action Plan**`;
-  }
-
-  const systemInstruction = `
-    You are LAWIFY, the official AI legal consultant for Uzbekistan.
-    Current Language Mode: ${language.toUpperCase()}.
-    
-    ${languageDirective}
-
-    YOUR MISSION:
-    Provide legal advice ONLY based on facts found on 'lex.uz' and 'norma.uz'.
-
-    USER PREFERENCES:
-    - ${toneInstruction}
-    - ${lengthInstruction}
-    - ${styleInstruction}
-
-    STRICT RULES (ZERO HALLUCINATION PROTOCOL):
-    1. **SEARCH IS MANDATORY:** You MUST perform a Google Search for every single query using 'site:lex.uz'.
-    2. **COMPREHENSIVE CITATION:** If multiple laws apply, you MUST list ALL of them in the "According to Law" section.
-    3. **OFFICIAL SOURCES ONLY:** Do not invent laws. If you cannot find it on lex.uz, say so.
-    4. **CITATION FORMAT:** Always cite the Code Name and Article Number (e.g., "Oila Kodeksi, 15-modda").
-    5. **NO CONVERSATIONAL FILLER:** Do not start with "Sure, here is the advice". Start directly with the **Summary** section header.
-
-    RESPONSE STRUCTURE:
-    ${structureLabels}
-  `;
-
-  // 3. Call Gemini with Google Search Tool
   try {
-    // POWER MOVE: We inject "site:lex.uz" into the user prompt to force the search engine 
-    // to restrict results to the official government database.
-    
-    let searchContext = "";
-    if (!prompt && attachment?.mimeType.startsWith('audio/')) {
-        // If it's an audio message with no text, ask the model to process audio
-        searchContext = `Listen to the attached audio to understand the user's legal question. Then, search specifically using "site:lex.uz OR site:norma.uz" for relevant legislation. Find relevant Articles (modda). Explain the findings in ${language}.`;
-    } else {
-        searchContext = `Search specifically using "site:lex.uz OR site:norma.uz" for legislation regarding: "${prompt}". Find relevant Articles (modda). Explain the findings in ${language}.`;
-    }
-
-    const parts: any[] = [{ text: searchContext }];
-    
-    // Inject History and Context if available to improve understanding
-    if (chatHistory) {
-        parts.push({ text: `[SYSTEM: The following is the conversation history. Use it to understand context, but prioritize the new query. Do not repeat old answers.]\n${chatHistory}` });
-    }
-
-    if (additionalContext) {
-        parts.push({ text: `[SYSTEM: Additional User Context (e.g. Profile info): ${additionalContext}]` });
-    }
-    
-    if (attachment) {
-      if (attachment.mimeType === "application/pdf" || attachment.mimeType.startsWith("image/") || attachment.mimeType.startsWith("audio/")) {
-        parts.push({
-          inlineData: {
-            mimeType: attachment.mimeType,
-            data: attachment.data 
-          }
-        });
-      } else {
-        parts.push({
-          text: `[SYSTEM: User attached file "${attachment.name}". Use this as context.]`
-        });
-      }
-    }
-
-    // --- MODEL SELECTION LOGIC ---
-    // If user is PRO: Use Gemini 3 Pro with Thinking (Deep Reasoning).
-    // If user is FREE: Use Gemini 3 Flash (Fast, standard reasoning).
-    const selectedModel = isPro ? 'gemini-3-pro-preview' : 'gemini-3-flash-preview';
-    const config: any = {
-      systemInstruction: systemInstruction,
-      tools: [{ googleSearch: {} }], 
-    };
-
-    if (isPro) {
-        // Enable Thinking only for Pro model
-        config.thinkingConfig = { thinkingBudget: 2048 };
-    }
-
-    const response = await ai.models.generateContent({
-      model: selectedModel,
-      contents: {
-        role: 'user',
-        parts: parts
-      },
-      config: config
+    const res = await fetch('/api/legal-advice', {
+        method: 'POST',
+        body: JSON.stringify({ prompt, attachment, language, settings, chatHistory, additionalContext, isPro })
     });
-
-    const text = response.text || "I apologize, but I could not generate a response at this time.";
-    
-    // Extract Grounding Metadata (Sources)
-    const sources: Source[] = [];
-    if (response.candidates?.[0]?.groundingMetadata?.groundingChunks) {
-      response.candidates[0].groundingMetadata.groundingChunks.forEach((chunk: any) => {
-        if (chunk.web?.uri && chunk.web?.title) {
-          sources.push({
-            title: chunk.web.title,
-            uri: chunk.web.uri
-          });
-        }
-      });
-    }
-
-    return { text, sources };
-
-  } catch (error) {
-    console.error("Gemini Error:", error);
-    return { text: "Error connecting to legal services. Please check connection.", sources: [] };
+    if (!res.ok) throw new Error("API Error");
+    return await res.json();
+  } catch (e) {
+    console.error(e);
+    return { text: "Error connecting to Lawify Server.", sources: [] };
   }
 };
 
-// --- TTS Service ---
 export const textToSpeech = async (text: string): Promise<AudioBuffer | null> => {
     try {
-        const cleanText = text.replace(/[*#]/g, '');
-        const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash-preview-tts",
-            contents: [{ parts: [{ text: cleanText }] }],
-            config: {
-                responseModalities: [Modality.AUDIO],
-                speechConfig: {
-                    voiceConfig: {
-                        prebuiltVoiceConfig: { voiceName: 'Kore' },
-                    },
-                },
-            },
+        const res = await fetch('/api/tts', {
+            method: 'POST',
+            body: JSON.stringify({ text })
         });
-
-        const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
-        if (!base64Audio) return null;
+        const data = await res.json();
+        if (!data.audioData) return null;
 
         const ctx = new (window.AudioContext || (window as any).webkitAudioContext)({sampleRate: 24000});
-        const audioBuffer = await decodeAudioData(
-            decode(base64Audio),
-            ctx,
-            24000,
-            1,
-        );
-        return audioBuffer;
+        return await decodeAudioData(decode(data.audioData), ctx, 24000, 1);
     } catch (e) {
-        console.error("TTS Error", e);
         return null;
     }
 }
 
-// --- Live Session Manager ---
+// --- SECURE TURN-BASED LIVE SESSION MANAGER ---
+// Replaces the WebSocket implementation.
+// Logic: Record -> Stop -> Upload -> Get Answer -> TTS -> Play -> Repeat
 export class LiveSessionManager {
-  private sessionPromise: Promise<any> | null = null;
-  private inputAudioContext: AudioContext | null = null;
-  private outputAudioContext: AudioContext | null = null;
-  private nextStartTime = 0;
-  private sources = new Set<AudioBufferSourceNode>();
-  private onStatusChange: (connected: boolean, speaking: boolean) => void;
+  private mediaRecorder: MediaRecorder | null = null;
+  private audioChunks: Blob[] = [];
+  private onStatusChange: (status: 'listening' | 'processing' | 'speaking' | 'idle') => void;
   private onError: (error: string) => void;
-  private stream: MediaStream | null = null;
-  private scriptProcessor: ScriptProcessorNode | null = null;
-  private inputSource: MediaStreamAudioSourceNode | null = null;
+  private language: Language = Language.UZ;
+  private audioContext: AudioContext | null = null;
+  private currentSource: AudioBufferSourceNode | null = null;
+  private active: boolean = false;
 
   constructor(
-    onStatusChange: (connected: boolean, speaking: boolean) => void,
+    onStatusChange: (status: 'listening' | 'processing' | 'speaking' | 'idle') => void,
     onError: (error: string) => void
   ) {
     this.onStatusChange = onStatusChange;
     this.onError = onError;
+    this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({sampleRate: 24000});
   }
 
   async start(language: Language) {
+    this.language = language;
+    this.active = true;
     try {
-      this.inputAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
-      this.outputAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
-      this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      
-      const config = {
-        model: 'gemini-2.5-flash-native-audio-preview-12-2025',
-        callbacks: {
-          onopen: () => {
-             console.log("Live Session Connected");
-             this.onStatusChange(true, false);
-             this.setupAudioInput();
-          },
-          onmessage: async (message: LiveServerMessage) => {
-             const base64Audio = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
-             if (base64Audio) {
-                 this.onStatusChange(true, true);
-                 await this.playAudio(base64Audio);
-             }
-             
-             const turnComplete = message.serverContent?.turnComplete;
-             if (turnComplete) {
-                 // Model finished generating turn
-                 // Visualizer might use source queue length instead
-             }
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        this.mediaRecorder = new MediaRecorder(stream);
+        
+        this.mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) this.audioChunks.push(event.data);
+        };
 
-             if (message.serverContent?.interrupted) {
-                 this.stopAudioPlayback();
-                 this.onStatusChange(true, false);
-             }
-          },
-          onerror: (e: any) => {
-             console.error("Live API Error", e);
-             this.onError(e.message || "Connection error");
-             this.stop();
-          },
-          onclose: () => {
-             console.log("Live Session Closed");
-             this.onStatusChange(false, false);
-          }
-        },
-        config: {
-           responseModalities: [Modality.AUDIO],
-           speechConfig: {
-               voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } }
-           },
-           systemInstruction: `You are a helpful legal assistant for Uzbekistan laws. Speak in ${language}. Keep answers concise and helpful.`
-        }
-      };
-
-      this.sessionPromise = ai.live.connect(config);
-
-    } catch (e: any) {
-      console.error(e);
-      this.onError(e.message || "Failed to start live session");
+        // When recording stops, process the audio
+        this.mediaRecorder.onstop = () => this.handleRecordingStop();
+        
+        // Start first turn
+        this.startRecording();
+    } catch (err) {
+        this.onError("Microphone access denied.");
+        this.stop();
     }
   }
 
-  private setupAudioInput() {
-      if (!this.inputAudioContext || !this.stream) return;
-
-      this.inputSource = this.inputAudioContext.createMediaStreamSource(this.stream);
-      this.scriptProcessor = this.inputAudioContext.createScriptProcessor(4096, 1, 1);
-      
-      this.scriptProcessor.onaudioprocess = (e) => {
-          const inputData = e.inputBuffer.getChannelData(0);
-          const pcmBlob = createBlob(inputData);
-          
-          this.sessionPromise?.then(session => {
-              session.sendRealtimeInput({ media: pcmBlob });
-          });
-      };
-
-      this.inputSource.connect(this.scriptProcessor);
-      this.scriptProcessor.connect(this.inputAudioContext.destination);
+  startRecording() {
+      if (!this.mediaRecorder || !this.active) return;
+      this.audioChunks = [];
+      this.mediaRecorder.start();
+      this.onStatusChange('listening');
   }
 
-  private async playAudio(base64: string) {
-      if (!this.outputAudioContext) return;
-      
-      try {
-        const audioBuffer = await decodeAudioData(
-            decode(base64), 
-            this.outputAudioContext, 
-            24000, 
-            1
-        );
-
-        this.nextStartTime = Math.max(this.nextStartTime, this.outputAudioContext.currentTime);
-        
-        const source = this.outputAudioContext.createBufferSource();
-        source.buffer = audioBuffer;
-        source.connect(this.outputAudioContext.destination);
-        
-        source.onended = () => {
-            this.sources.delete(source);
-            if (this.sources.size === 0) {
-                 this.onStatusChange(true, false);
-            }
-        };
-
-        source.start(this.nextStartTime);
-        this.nextStartTime += audioBuffer.duration;
-        this.sources.add(source);
-        this.onStatusChange(true, true);
-
-      } catch (e) {
-          console.error("Audio playback error", e);
+  // Called by UI button or silence detection (manual button for now for safety)
+  stopRecordingAndProcess() {
+      if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+          this.mediaRecorder.stop();
+          this.onStatusChange('processing');
       }
   }
 
-  private stopAudioPlayback() {
-      this.sources.forEach(s => s.stop());
-      this.sources.clear();
-      this.nextStartTime = 0;
+  private async handleRecordingStop() {
+      if (!this.active) return;
+
+      const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
+      const reader = new FileReader();
+      
+      reader.onloadend = async () => {
+          const base64String = (reader.result as string).split(',')[1];
+          await this.processUserAudio(base64String);
+      };
+      
+      reader.readAsDataURL(audioBlob);
+  }
+
+  private async processUserAudio(base64Audio: string) {
+      try {
+          // 1. Send Audio to Secure Legal API
+          // We pass a simplified settings object for voice speed
+          const { text } = await generateLegalResponse(
+              "", 
+              { name: 'voice.webm', mimeType: 'audio/webm', data: base64Audio },
+              this.language,
+              { answerLength: 'Short', tone: 'Simple', outputStyle: 'Paragraphs', clarifyingQuestions: false, documentType: 'General', perspective: 'Neutral' },
+              "", 
+              "This is a spoken conversation. Keep answers brief (max 3 sentences).",
+              true 
+          );
+
+          // 2. Get Audio back via Secure TTS
+          const audioBuffer = await textToSpeech(text);
+
+          // 3. Play Audio
+          if (audioBuffer && this.audioContext && this.active) {
+              this.onStatusChange('speaking');
+              this.currentSource = this.audioContext.createBufferSource();
+              this.currentSource.buffer = audioBuffer;
+              this.currentSource.connect(this.audioContext.destination);
+              
+              this.currentSource.onended = () => {
+                  // 4. Loop back to listening after speaking finishes
+                  if (this.active) {
+                      // Slight delay so user doesn't feel rushed
+                      setTimeout(() => this.startRecording(), 500);
+                  }
+              };
+              
+              this.currentSource.start();
+          } else {
+               // Fallback if TTS fails, just listen again
+               if (this.active) this.startRecording();
+          }
+
+      } catch (err) {
+          console.error(err);
+          this.onError("Connection error");
+          if (this.active) setTimeout(() => this.startRecording(), 2000);
+      }
   }
 
   stop() {
-      this.stopAudioPlayback();
-      this.sessionPromise?.then(session => session.close());
-      
-      if (this.stream) {
-          this.stream.getTracks().forEach(t => t.stop());
-          this.stream = null;
-      }
-      if (this.scriptProcessor) {
-          this.scriptProcessor.disconnect();
-          this.scriptProcessor = null;
-      }
-      if (this.inputSource) {
-          this.inputSource.disconnect();
-          this.inputSource = null;
-      }
-      if (this.inputAudioContext) {
-          this.inputAudioContext.close();
-          this.inputAudioContext = null;
-      }
-      if (this.outputAudioContext) {
-          this.outputAudioContext.close();
-          this.outputAudioContext = null;
-      }
-      
-      this.onStatusChange(false, false);
+    this.active = false;
+    if (this.mediaRecorder) {
+        // Stop all tracks to release mic
+        this.mediaRecorder.stream.getTracks().forEach(track => track.stop());
+    }
+    if (this.currentSource) {
+        this.currentSource.stop();
+    }
+    this.onStatusChange('idle');
   }
 }
