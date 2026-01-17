@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { View, Language, UserSettings, UserProfile } from '../types';
 import { TRANSLATIONS } from '../constants';
@@ -94,12 +95,12 @@ const Profile: React.FC<ProfileProps> = ({ onNavigate, language, settings, setSe
       return (
           <div className="h-full flex flex-col items-center justify-center p-6 bg-slate-50">
                <h2 className="text-3xl font-serif font-bold text-slate-900 mb-4">{t.profileTitle}</h2>
-               <p className="text-slate-500 mb-8">Please login to manage your profile and subscription.</p>
+               <p className="text-slate-500 mb-8">{t.profileLoginPrompt}</p>
                <button 
                   onClick={onLogin}
                   className="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-700 shadow-lg"
                >
-                   Login / Register
+                   {t.profileLoginBtn}
                </button>
           </div>
       )

@@ -6,8 +6,9 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
   return {
     plugins: [react()],
-    // SECURITY UPDATE: The 'define' block has been removed. 
-    // We no longer inject process.env.API_KEY into the client.
+    define: {
+      'process.env.API_KEY': JSON.stringify(env.API_KEY),
+    },
     server: {
       port: 3000,
       host: true 

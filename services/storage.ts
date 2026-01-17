@@ -3,7 +3,12 @@ import { ChatSession, Message } from "../types";
 
 const STORAGE_KEY = 'lawify_history';
 
-export const saveSession = (messages: Message[], type: 'lawyer' | 'odilbek' = 'lawyer', customTitle?: string) => {
+export const saveSession = (
+    messages: Message[], 
+    type: 'lawyer' | 'odilbek' | 'drafter' = 'lawyer', 
+    customTitle?: string,
+    customData?: any
+) => {
   if (messages.length === 0) return;
 
   const history = getHistory();
@@ -13,8 +18,12 @@ export const saveSession = (messages: Message[], type: 'lawyer' | 'odilbek' = 'l
   // Create a title from the first user message if not provided
   let title = customTitle;
   if (!title) {
-    const firstUserMsg = messages.find(m => m.role === 'user');
-    title = firstUserMsg ? firstUserMsg.text.slice(0, 40) + (firstUserMsg.text.length > 40 ? '...' : '') : 'New Consultation';
+    if (type === 'drafter' && customData?.title) {
+        title = customData.title;
+    } else {
+        const firstUserMsg = messages.find(m => m.role === 'user');
+        title = firstUserMsg ? firstUserMsg.text.slice(0, 40) + (firstUserMsg.text.length > 40 ? '...' : '') : 'New Consultation';
+    }
   }
 
   const lastMsg = messages[messages.length - 1];
@@ -22,11 +31,12 @@ export const saveSession = (messages: Message[], type: 'lawyer' | 'odilbek' = 'l
 
   const newSession: ChatSession = {
     id: sessionId,
-    title: title,
+    title: title || 'Draft Document',
     date: Date.now(),
     preview: preview,
     messages: messages,
-    type: type
+    type: type,
+    customData: customData
   };
 
   // Check if session exists, update it, otherwise add to top
@@ -37,7 +47,7 @@ export const saveSession = (messages: Message[], type: 'lawyer' | 'odilbek' = 'l
     history.unshift(newSession);
   }
 
-  // Limit to 50 saved sessions to prevent overflow, but keep more than before since we have 2 types now
+  // Limit to 50 saved sessions to prevent overflow
   if (history.length > 50) history.pop();
 
   localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
@@ -52,7 +62,8 @@ export const getHistory = (): ChatSession[] => {
     // Migration for old data that didn't have 'type'
     return parsed.map((s: any) => ({
         ...s,
-        type: s.type || 'lawyer'
+        type: s.type || 'lawyer',
+        customData: s.customData || undefined
     }));
   } catch (e) {
     console.error("Failed to load history", e);

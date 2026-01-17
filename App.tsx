@@ -1,12 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
-import { Language, UserSettings, View, Message, UserProfile } from './types';
+import { Language, UserSettings, View, Message, UserProfile, ChatSession, GeneratedDocument } from './types';
 import { INITIAL_SETTINGS } from './constants';
 import Layout from './components/Layout';
 import LiveSessionModal from './components/LiveSessionModal';
 import AuthModal from './components/AuthModal';
 import { supabase } from './services/supabaseClient';
-import { saveSession } from './services/storage'; // Import saveSession
+import { saveSession } from './services/storage'; 
 
 // Pages
 import Dashboard from './pages/Dashboard';
@@ -17,6 +17,7 @@ import Topics from './pages/Topics';
 import Profile from './pages/Profile';
 import Plans from './pages/Plans';
 import OdilbekPage from './pages/OdilbekPage';
+import DocumentStudio from './pages/DocumentStudio'; // Import new page
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>(View.DASHBOARD);
@@ -25,7 +26,12 @@ const App: React.FC = () => {
   const [isLiveOpen, setIsLiveOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [initialPrompt, setInitialPrompt] = useState<string>('');
+  
+  // Specific state for Document Studio
+  const [docTemplate, setDocTemplate] = useState<string>('');
+  
   const [restoredMessages, setRestoredMessages] = useState<Message[] | undefined>(undefined);
+  const [restoredDocData, setRestoredDocData] = useState<GeneratedDocument | undefined>(undefined);
   
   // Auth State
   const [user, setUser] = useState<any>(null);
@@ -34,14 +40,12 @@ const App: React.FC = () => {
 
   // Initialize Auth
   useEffect(() => {
-    // Check active session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) fetchProfile(session.user);
       else setAuthLoading(false);
     });
 
-    // Listen for changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
@@ -103,10 +107,12 @@ const App: React.FC = () => {
       setCurrentView(View.DASHBOARD);
   };
 
+  // UPDATED: Now routes to Document Studio for templates
   const handleTemplateSelect = (prompt: string) => {
-      setInitialPrompt(prompt);
+      setDocTemplate(prompt);
+      setRestoredDocData(undefined); // Clear any restored doc data
       setRestoredMessages(undefined);
-      setCurrentView(View.CHAT);
+      setCurrentView(View.DOCUMENT_STUDIO);
   };
 
   const handleTopicSelect = (prompt: string) => {
@@ -115,11 +121,17 @@ const App: React.FC = () => {
     setCurrentView(View.CHAT);
   };
 
-  const handleRestoreSession = (messages: Message[], type: 'lawyer' | 'odilbek') => {
+  const handleRestoreSession = (messages: Message[], type: 'lawyer' | 'odilbek' | 'drafter', customData?: any) => {
       setRestoredMessages(messages);
       setInitialPrompt('');
+      
       if (type === 'odilbek') {
           setCurrentView(View.ODILBEK);
+      } else if (type === 'drafter') {
+          if (customData) {
+              setRestoredDocData(customData);
+          }
+          setCurrentView(View.DOCUMENT_STUDIO);
       } else {
           setCurrentView(View.CHAT);
       }
@@ -137,32 +149,32 @@ const App: React.FC = () => {
   };
 
   const handleOpenOdilbek = (context: string) => {
-      // Create a new session for Odilbek with the context pre-loaded
       const sessionId = Date.now().toString();
+      // Increase context length limit significantly
+      const contextPreview = context.length > 2000 ? context.slice(0, 2000) + "..." : context;
+      
       const initialMsgs: Message[] = [
           {
               id: sessionId,
               role: 'user',
-              text: `Please explain this context: "${context.slice(0, 100)}..."`, // Hidden prompt basically
+              text: `Please explain this context: "${contextPreview}"`,
               timestamp: Date.now() - 1000
           },
           {
               id: (Date.now() + 1).toString(),
               role: 'model',
               text: language === Language.UZ 
-                ? `Assalomu alaykum! Men Odilbekman. Advokatimizning maslahatini tushunishga qiynalyapsizmi? Menga yuboring, oddiy qilib tushuntirib beraman.\n\n**Advice Context:**\n> *${context.slice(0, 300)}...*`
-                : `Hello! I'm Odilbek. Is the lawyer's advice a bit complex? Let me break it down for you.\n\n**Advice Context:**\n> *${context.slice(0, 300)}...*`,
+                ? `Assalomu alaykum! Men Odilbekman (Oksford Magistri). Advokatimizning maslahatini tushunishga qiynalyapsizmi? Menga yuboring, oddiy qilib tushuntirib beraman.\n\n**Advice Context:**\n> *${contextPreview}*`
+                : `Hello! I'm Odilbek (Oxford Master Graduate). Is the lawyer's advice a bit complex? Let me break it down for you.\n\n**Advice Context:**\n> *${contextPreview}*`,
               timestamp: Date.now()
           }
       ];
-      
-      // Save immediately to history so it persists
+      // Save initial session immediately
       saveSession(initialMsgs, 'odilbek', `Explanation: ${context.slice(0, 30)}...`);
       setRestoredMessages(initialMsgs);
       setCurrentView(View.ODILBEK);
   };
 
-  // Render current view
   const renderView = () => {
       if (authLoading) {
           return <div className="h-full flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>;
@@ -196,11 +208,23 @@ const App: React.FC = () => {
                   <OdilbekPage
                       language={language}
                       onBack={() => setCurrentView(View.CHAT)}
-                      initialMessages={restoredMessages} // Pass restored/new session
+                      initialMessages={restoredMessages} 
                   />
               );
           case View.LIBRARY:
               return <Library onNavigate={setCurrentView} onSelectTemplate={handleTemplateSelect} language={language} />;
+          case View.DOCUMENT_STUDIO:
+              return (
+                <DocumentStudio
+                    onNavigate={setCurrentView}
+                    language={language}
+                    initialTemplate={docTemplate}
+                    initialDocType="CONTRACT"
+                    isPro={userProfile?.is_pro || false}
+                    initialDocData={restoredDocData}
+                    initialMessages={restoredMessages}
+                />
+              );
           case View.TOPICS:
               return <Topics onNavigate={setCurrentView} onSelectTopic={handleTopicSelect} language={language} />;
           case View.HISTORY:

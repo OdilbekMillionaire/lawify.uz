@@ -1,5 +1,7 @@
 
-import { Language, UserSettings, Attachment, Source } from "../types";
+import { GoogleGenAI, Type, Modality } from "@google/genai";
+import { Language, UserSettings, Attachment, Source, GeneratedDocument, DrafterResponse } from "../types";
+import { LEGAL_TEMPLATES } from "../data/legal_templates";
 
 // --- AUDIO HELPERS ---
 function decode(base64: string) {
@@ -31,31 +33,68 @@ async function decodeAudioData(
   return buffer;
 }
 
-// --- SECURE API CALLS ---
-// These functions now call your Vercel Backend (/api/...) instead of Google directly.
+// --- INITIALIZE AI CLIENT ---
+const getAIClient = () => {
+  const apiKey = process.env.API_KEY;
+  if (!apiKey) {
+    console.error("API_KEY is missing. Please check your .env file.");
+    throw new Error("API Key Missing");
+  }
+  return new GoogleGenAI({ apiKey });
+};
+
+// --- CLIENT-SIDE LOGIC IMPLEMENTATIONS ---
 
 export const verifyPaymentScreenshot = async (base64Image: string, expectedAmount: string) => {
   try {
-    const res = await fetch('/api/verify-payment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ base64Image, expectedAmount })
+    const ai = getAIClient();
+    const cleanAmount = parseInt(expectedAmount.replace(/\D/g, ''), 10);
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash-image',
+      contents: {
+        parts: [
+          { inlineData: { mimeType: 'image/jpeg', data: base64Image } },
+          { text: `Check if this is a valid Uzbekistan banking receipt (Click/Payme) for amount >= ${cleanAmount}. Return JSON: { "verified": boolean, "reason": "string" }` }
+        ]
+      }
     });
-    return await res.json();
+
+    let resultText = response.text || "{}";
+    resultText = resultText.replace(/```json/g, "").replace(/```/g, "").trim();
+    return JSON.parse(resultText);
   } catch (e) {
+    console.error("Payment Verification Error", e);
     return { verified: false, reason: "Connection failed" };
   }
 };
 
 export const generateOdilbekResponse = async (prompt: string, language: Language, chatHistory: string, legalContext: string) => {
     try {
-        const res = await fetch('/api/odilbek', {
-            method: 'POST',
-            body: JSON.stringify({ prompt, language, chatHistory })
+        const ai = getAIClient();
+        const systemInstruction = `
+            You are Odilbek, a friendly legal translator for common people in Uzbekistan.
+            Language: ${language}.
+            Role: Explain the provided legal advice in simple terms using analogies. 
+            Tone: Friendly, "aka" (big brother) style.
+            Legal Context Provided: ${legalContext}
+        `;
+
+        const response = await ai.models.generateContent({
+            model: 'gemini-3-flash-preview', 
+            contents: {
+                role: 'user',
+                parts: [
+                    { text: `[Chat History]\n${chatHistory}` },
+                    { text: `[User Question]: ${prompt}` }
+                ]
+            },
+            config: { systemInstruction }
         });
-        const data = await res.json();
-        return data.text;
+
+        return response.text || "Uzr, tushuna olmadim.";
     } catch (e) {
+        console.error("Odilbek Error", e);
         return "Connection Error";
     }
 };
@@ -70,37 +109,219 @@ export const generateLegalResponse = async (
   isPro: boolean = false
 ): Promise<{ text: string, sources: Source[] }> => {
   try {
-    const res = await fetch('/api/legal-advice', {
-        method: 'POST',
-        body: JSON.stringify({ prompt, attachment, language, settings, chatHistory, additionalContext, isPro })
+    const ai = getAIClient();
+
+    // 1. Language & Structure Config
+    let structureLabels = "";
+    let languageDirective = "";
+
+    if (language === 'uz') {
+        languageDirective = "CRITICAL: You MUST answer in O'zbek language (Uzbek). DO NOT write introductory sentences in English.";
+        structureLabels = `Use ONLY these Uzbek headers: ### **Xulosa**, ### **Qonuniy Asoslar**, ### **Tushuntirish**, ### **Harakatlar rejasi**`;
+    } else if (language === 'ru') {
+        languageDirective = "CRITICAL: You MUST answer in Russian language.";
+        structureLabels = `Use ONLY these Russian headers: ### **Резюме**, ### **Законодательная база**, ### **Разъяснение**, ### **План действий**`;
+    } else {
+        languageDirective = "Answer in English.";
+        structureLabels = `Use these headers: ### **Summary**, ### **According to Law**, ### **Explanation**, ### **Action Plan**`;
+    }
+
+    const systemInstruction = `
+      You are LAWIFY, the official AI legal consultant for Uzbekistan.
+      Current Language Mode: ${language.toUpperCase()}.
+      ${languageDirective}
+      
+      YOUR MISSION: Provide legal advice ONLY based on facts found on 'lex.uz' and 'norma.uz'.
+      
+      USER SETTINGS:
+      - Tone: ${settings.tone}
+      - Length: ${settings.answerLength}
+      
+      STRICT RULES:
+      1. **SEARCH IS MANDATORY:** You MUST perform a Google Search using 'site:lex.uz'.
+      2. **OFFICIAL SOURCES ONLY:** Do not invent laws.
+      3. **CITATION:** Always cite Code Name and Article Number.
+
+      RESPONSE STRUCTURE:
+      ${structureLabels}
+    `;
+
+    // 2. Construct Input Parts
+    let searchContext = "";
+    if (attachment?.mimeType?.startsWith('audio/')) {
+        searchContext = `Listen to the attached audio. It contains the user's legal question. Identify the core legal issue, then Search specifically using "site:lex.uz OR site:norma.uz". Explain in ${language}.`;
+    } else {
+        searchContext = `Search specifically using "site:lex.uz OR site:norma.uz" for legislation regarding: "${prompt}". Explain in ${language}.`;
+    }
+
+    const parts: any[] = [{ text: searchContext }];
+    if (chatHistory) parts.push({ text: `[Chat History]\n${chatHistory}` });
+    if (additionalContext) parts.push({ text: `[User Profile]\n${additionalContext}` });
+    
+    if (attachment) {
+        parts.push({
+          inlineData: {
+            mimeType: attachment.mimeType,
+            data: attachment.data 
+          }
+        });
+    }
+
+    // 3. Configure Model
+    const modelName = isPro ? 'gemini-3-pro-preview' : 'gemini-3-flash-preview';
+    const genConfig: any = {
+      systemInstruction: systemInstruction,
+      tools: [{ googleSearch: {} }], 
+    };
+    if (isPro) genConfig.thinkingConfig = { thinkingBudget: 1024 };
+
+    // 4. Call API
+    const response = await ai.models.generateContent({
+      model: modelName,
+      contents: { role: 'user', parts: parts },
+      config: genConfig
     });
-    if (!res.ok) throw new Error("API Error");
-    return await res.json();
-  } catch (e) {
-    console.error(e);
-    return { text: "Error connecting to Lawify Server.", sources: [] };
+
+    // 5. Process Output
+    const text = response.text || "No response generated.";
+    const sources: Source[] = [];
+    
+    if (response.candidates?.[0]?.groundingMetadata?.groundingChunks) {
+      response.candidates[0].groundingMetadata.groundingChunks.forEach((chunk: any) => {
+        if (chunk.web?.uri && chunk.web?.title) {
+          sources.push({ title: chunk.web.title, uri: chunk.web.uri });
+        }
+      });
+    }
+
+    return { text, sources };
+
+  } catch (e: any) {
+    console.error("Legal Advice API Error:", e);
+    return { text: "Error connecting to Lawify AI. Please ensure you are connected to the internet.", sources: [] };
   }
+};
+
+export const draftDocument = async (
+    prompt: string,
+    currentDocument: GeneratedDocument,
+    language: Language,
+    docType: string
+): Promise<DrafterResponse | null> => {
+    try {
+        // 1. INSTANT TEMPLATE CHECK
+        if (LEGAL_TEMPLATES[prompt]) {
+            const template = LEGAL_TEMPLATES[prompt];
+            
+            let introMsg = "Official template loaded. I need some details to fill it out.";
+            if (language === 'uz') introMsg = "Rasmiy sud hujjati andozasi yuklandi. Uni to'ldirish uchun sizdan ba'zi ma'lumotlarni so'rashim kerak. Masalan: Da'vogarning to'liq ismi kim?";
+            if (language === 'ru') introMsg = "Официальный шаблон загружен. Мне нужны детали. Например: Как зовут Истца?";
+
+            return {
+                chatResponse: introMsg,
+                documentUpdate: template
+            };
+        }
+
+        // 2. AI Generation
+        const ai = getAIClient();
+
+        const responseSchema = {
+          type: Type.OBJECT,
+          properties: {
+            chatResponse: {
+              type: Type.STRING,
+              description: "The AI asking specific questions to fill placeholders (e.g., 'Please provide the Plaintiff's Passport Number').",
+            },
+            documentUpdate: {
+              type: Type.OBJECT,
+              description: "The updated document JSON.",
+              properties: {
+                title: { type: Type.STRING },
+                sections: {
+                  type: Type.ARRAY,
+                  items: {
+                    type: Type.OBJECT,
+                    properties: {
+                      heading: { type: Type.STRING, description: "Clause title" },
+                      content: { type: Type.STRING, description: "Legal text content with placeholders filled." }
+                    }
+                  }
+                },
+                isComplete: { type: Type.BOOLEAN, description: "True if all placeholders like [Name], [Date] are filled." }
+              }
+            }
+          }
+        };
+
+        const systemInstruction = `
+          You are 'AI Kotib' (AI Legal Drafter) for Uzbekistan.
+          Current Language: ${language}.
+          
+          TASK: Conduct a step-by-step interview to fill an Official Legal Document.
+          
+          PROCESS:
+          1. Look at 'Current Document State'. Identify placeholders like [Da'vogar F.I.O], [Pasport], [Sana], [Summa].
+          2. Ask the user ONE or TWO simple questions at a time to get this info.
+          3. When the user answers (e.g., "My name is Alisher"), REPLACE the placeholder [Da'vogar F.I.O] with "Alisher" in the JSON.
+          4. Do NOT rewrite the whole legal text unless necessary. Just fill the gaps.
+          5. Keep the legal tone formal (Rasmiy uslub).
+        `;
+
+        const response = await ai.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: {
+            role: 'user',
+            parts: [
+              { text: `Current Document State (JSON): ${JSON.stringify(currentDocument)}` },
+              { text: `User Input: ${prompt}` }
+            ]
+          },
+          config: {
+            systemInstruction: systemInstruction,
+            responseMimeType: "application/json",
+            responseSchema: responseSchema,
+          }
+        });
+
+        let jsonStr = response.text || "{}";
+        jsonStr = jsonStr.replace(/^```json/, '').replace(/```$/, '');
+        return JSON.parse(jsonStr);
+
+    } catch (e) {
+        console.error("Drafting Error", e);
+        return null;
+    }
 };
 
 export const textToSpeech = async (text: string): Promise<AudioBuffer | null> => {
     try {
-        const res = await fetch('/api/tts', {
-            method: 'POST',
-            body: JSON.stringify({ text })
+        const ai = getAIClient();
+        const cleanText = text.replace(/[*#]/g, '').slice(0, 500); 
+
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash-preview-tts",
+            contents: [{ parts: [{ text: cleanText }] }],
+            config: {
+                responseModalities: [Modality.AUDIO],
+                speechConfig: {
+                    voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } },
+                },
+            },
         });
-        const data = await res.json();
-        if (!data.audioData) return null;
+
+        const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+        if (!base64Audio) return null;
 
         const ctx = new (window.AudioContext || (window as any).webkitAudioContext)({sampleRate: 24000});
-        return await decodeAudioData(decode(data.audioData), ctx, 24000, 1);
+        return await decodeAudioData(decode(base64Audio), ctx, 24000, 1);
     } catch (e) {
+        console.error("TTS Error", e);
         return null;
     }
 }
 
 // --- SECURE TURN-BASED LIVE SESSION MANAGER ---
-// Replaces the WebSocket implementation.
-// Logic: Record -> Stop -> Upload -> Get Answer -> TTS -> Play -> Repeat
 export class LiveSessionManager {
   private mediaRecorder: MediaRecorder | null = null;
   private audioChunks: Blob[] = [];
@@ -131,10 +352,8 @@ export class LiveSessionManager {
             if (event.data.size > 0) this.audioChunks.push(event.data);
         };
 
-        // When recording stops, process the audio
         this.mediaRecorder.onstop = () => this.handleRecordingStop();
         
-        // Start first turn
         this.startRecording();
     } catch (err) {
         this.onError("Microphone access denied.");
@@ -149,7 +368,6 @@ export class LiveSessionManager {
       this.onStatusChange('listening');
   }
 
-  // Called by UI button or silence detection (manual button for now for safety)
   stopRecordingAndProcess() {
       if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
           this.mediaRecorder.stop();
@@ -173,22 +391,18 @@ export class LiveSessionManager {
 
   private async processUserAudio(base64Audio: string) {
       try {
-          // 1. Send Audio to Secure Legal API
-          // We pass a simplified settings object for voice speed
           const { text } = await generateLegalResponse(
               "", 
               { name: 'voice.webm', mimeType: 'audio/webm', data: base64Audio },
               this.language,
               { answerLength: 'Short', tone: 'Simple', outputStyle: 'Paragraphs', clarifyingQuestions: false, documentType: 'General', perspective: 'Neutral' },
               "", 
-              "This is a spoken conversation. Keep answers brief (max 3 sentences).",
+              "This is a spoken conversation. Keep answers brief.",
               true 
           );
 
-          // 2. Get Audio back via Secure TTS
           const audioBuffer = await textToSpeech(text);
 
-          // 3. Play Audio
           if (audioBuffer && this.audioContext && this.active) {
               this.onStatusChange('speaking');
               this.currentSource = this.audioContext.createBufferSource();
@@ -196,16 +410,13 @@ export class LiveSessionManager {
               this.currentSource.connect(this.audioContext.destination);
               
               this.currentSource.onended = () => {
-                  // 4. Loop back to listening after speaking finishes
                   if (this.active) {
-                      // Slight delay so user doesn't feel rushed
                       setTimeout(() => this.startRecording(), 500);
                   }
               };
               
               this.currentSource.start();
           } else {
-               // Fallback if TTS fails, just listen again
                if (this.active) this.startRecording();
           }
 
@@ -219,7 +430,6 @@ export class LiveSessionManager {
   stop() {
     this.active = false;
     if (this.mediaRecorder) {
-        // Stop all tracks to release mic
         this.mediaRecorder.stream.getTracks().forEach(track => track.stop());
     }
     if (this.currentSource) {

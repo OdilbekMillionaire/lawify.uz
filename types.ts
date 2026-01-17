@@ -9,6 +9,7 @@ export enum View {
   DASHBOARD = 'dashboard',
   CHAT = 'chat',
   ODILBEK = 'odilbek',
+  DOCUMENT_STUDIO = 'document_studio', 
   LIBRARY = 'library',
   HISTORY = 'history',
   TOPICS = 'topics',
@@ -74,10 +75,48 @@ export interface ChatSession {
   date: number;
   preview: string;
   messages: Message[];
-  type: 'lawyer' | 'odilbek'; // Added distinction
+  type: 'lawyer' | 'odilbek' | 'drafter';
+  customData?: any; // Stores document state for drafter
 }
 
-export interface LiveConnectionState {
-  isConnected: boolean;
-  isSpeaking: boolean;
+// --- DOCUMENT STUDIO TYPES ---
+
+export interface DocSection {
+  heading: string;
+  content: string;
+}
+
+export interface GeneratedDocument {
+  title: string;
+  sections: DocSection[];
+  isComplete: boolean;
+}
+
+export interface DrafterResponse {
+  chatResponse: string; 
+  documentUpdate: GeneratedDocument | null; 
+}
+
+// --- NEW TEMPLATE HIERARCHY ---
+
+export interface LegalTemplate {
+  id: string;
+  title: string;
+  description: string;
+  templateId: string; // The key to look up in LEGAL_TEMPLATES
+  difficulty: 'Easy' | 'Medium' | 'Hard';
+  isPro?: boolean;
+}
+
+export interface TemplateSubcategory {
+  id: string;
+  title: { [key in Language]: string };
+  templates: LegalTemplate[];
+}
+
+export interface TemplateCategory {
+  id: string;
+  title: { [key in Language]: string };
+  icon: string; // Emoji or SVG path
+  subcategories: TemplateSubcategory[];
 }
