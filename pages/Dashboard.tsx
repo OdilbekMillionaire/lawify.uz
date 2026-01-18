@@ -152,8 +152,8 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
                                     {t.didYouKnowTag}
                                 </span>
                             </div>
-                            <h3 className="text-3xl md:text-4xl font-serif font-bold mb-4 leading-tight">{fact.title}</h3>
-                            <p className="text-slate-300 text-lg leading-relaxed mb-8 border-l-2 border-slate-600 pl-4">
+                            <h3 className="text-2xl md:text-4xl font-serif font-bold mb-4 leading-tight">{fact.title}</h3>
+                            <p className="text-slate-300 text-base md:text-lg leading-relaxed mb-6 md:mb-8 border-l-2 border-slate-600 pl-4 line-clamp-3">
                                 {fact.content}
                             </p>
                             <button 
@@ -167,12 +167,14 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
                     </div>
                 ))}
                 
-                <div className="absolute bottom-8 right-10 flex space-x-2 z-20 max-w-[200px] overflow-hidden">
+                {/* Dots Container - Optimized for 20+ dots */}
+                <div className="absolute bottom-6 right-6 left-6 md:left-auto md:right-10 flex flex-wrap justify-center md:justify-end gap-1.5 z-20 max-w-full md:max-w-[300px]">
                     {facts.map((_, idx) => (
                         <button
                             key={idx}
                             onClick={() => setCurrentFactIndex(idx)}
-                            className={`h-1.5 rounded-full transition-all duration-300 flex-shrink-0 ${idx === currentFactIndex ? 'bg-white w-6' : 'bg-white/20 w-2 hover:bg-white/40'}`}
+                            className={`h-1.5 rounded-full transition-all duration-300 flex-shrink-0 ${idx === currentFactIndex ? 'bg-white w-5' : 'bg-white/20 w-1.5 hover:bg-white/40'}`}
+                            aria-label={`Go to slide ${idx + 1}`}
                         />
                     ))}
                 </div>
@@ -181,7 +183,7 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-fade-in-up delay-300">
                 <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-center">
                     <h3 className="text-xl font-bold text-slate-900 mb-6 flex items-center">
-                        <span className="w-2 h-8 bg-blue-500 rounded-full mr-3"></span>
+                        <span className="w-2 h-8 bg-blue-50 rounded-full mr-3 border-l-4 border-blue-500"></span>
                         {t.techTitle}
                     </h3>
                     <div className="space-y-4">
