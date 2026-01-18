@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Language } from '../types';
@@ -18,7 +17,7 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
   useEffect(() => {
       const interval = setInterval(() => {
           setCurrentFactIndex((prev) => (prev + 1) % facts.length);
-      }, 8000);
+      }, 10000); // 10s duration for comfortable reading
       return () => clearInterval(interval);
   }, [facts.length]);
 
@@ -52,6 +51,9 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
       }
       navigate('/chat', { state: { initialPrompt: prompt } });
   };
+
+  const nextFact = () => setCurrentFactIndex((prev) => (prev + 1) % facts.length);
+  const prevFact = () => setCurrentFactIndex((prev) => (prev - 1 + facts.length) % facts.length);
 
   const AppCard = ({ title, desc, icon, path, color, gradient, delayClass }: any) => (
       <button 
@@ -136,44 +138,57 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
                 </div>
             </div>
 
-            <div className="relative h-72 overflow-hidden rounded-3xl shadow-2xl animate-fade-in-up delay-300 group">
+            {/* Facts Carousel with 80 Tiny Moving Dots */}
+            <div className="relative h-80 md:h-72 overflow-hidden rounded-3xl shadow-2xl animate-fade-in-up delay-300 group">
                 {facts.map((fact, index) => (
                     <div 
                         key={index}
-                        className={`absolute inset-0 transition-all duration-1000 ease-in-out bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-900 p-10 text-white flex flex-col justify-center ${index === currentFactIndex ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full'}`}
+                        className={`absolute inset-0 transition-all duration-1000 ease-in-out bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-900 p-8 md:p-10 text-white flex flex-col justify-center ${index === currentFactIndex ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full pointer-events-none'}`}
                     >
                         <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
                         <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl -ml-10 -mb-10"></div>
                         
-                        <div className="relative z-10 max-w-3xl">
-                            <div className="flex items-center space-x-3 mb-6">
+                        <div className="relative z-10 max-w-4xl">
+                            <div className="flex items-center justify-between mb-6">
                                 <span className="px-3 py-1 bg-blue-500/20 text-blue-300 text-xs font-bold uppercase tracking-widest rounded-full border border-blue-500/30 backdrop-blur-sm flex items-center">
                                     <span className="mr-2 text-lg">💡</span>
                                     {t.didYouKnowTag}
                                 </span>
                             </div>
-                            <h3 className="text-2xl md:text-4xl font-serif font-bold mb-4 leading-tight">{fact.title}</h3>
-                            <p className="text-slate-300 text-base md:text-lg leading-relaxed mb-6 md:mb-8 border-l-2 border-slate-600 pl-4 line-clamp-3">
+                            <h3 className="text-2xl md:text-3xl font-serif font-bold mb-4 leading-tight">{fact.title}</h3>
+                            <p className="text-slate-300 text-base md:text-lg leading-relaxed mb-6 md:mb-8 border-l-2 border-slate-600 pl-4 line-clamp-3 md:line-clamp-2">
                                 {fact.content}
                             </p>
-                            <button 
-                                onClick={() => handleFactClick(fact)}
-                                className="inline-flex items-center space-x-2 text-white font-bold hover:text-blue-300 transition-colors group-hover:translate-x-2 duration-300"
-                            >
-                                <span>{fact.button}</span>
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
-                            </button>
+                            <div className="flex items-center space-x-6">
+                                <button 
+                                    onClick={() => handleFactClick(fact)}
+                                    className="inline-flex items-center space-x-2 text-white font-bold hover:text-blue-300 transition-colors group-hover:translate-x-2 duration-300"
+                                >
+                                    <span>{fact.button}</span>
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                                </button>
+                                
+                                {/* Quick Manual Nav */}
+                                <div className="hidden md:flex items-center space-x-2 ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button onClick={prevFact} className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg></button>
+                                    <button onClick={nextFact} className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg></button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 ))}
-                
-                {/* Dots Container - Optimized for 20+ dots */}
-                <div className="absolute bottom-6 right-6 left-6 md:left-auto md:right-10 flex flex-wrap justify-center md:justify-end gap-1.5 z-20 max-w-full md:max-w-[300px]">
+
+                {/* High-Density Dot Indicator Container */}
+                <div className="absolute bottom-4 left-6 right-6 flex flex-wrap justify-center gap-1 z-20 pointer-events-auto">
                     {facts.map((_, idx) => (
                         <button
                             key={idx}
                             onClick={() => setCurrentFactIndex(idx)}
-                            className={`h-1.5 rounded-full transition-all duration-300 flex-shrink-0 ${idx === currentFactIndex ? 'bg-white w-5' : 'bg-white/20 w-1.5 hover:bg-white/40'}`}
+                            className={`h-1 rounded-full transition-all duration-300 flex-shrink-0 shadow-sm ${
+                                idx === currentFactIndex 
+                                    ? 'bg-white w-4 shadow-white/50' 
+                                    : 'bg-white/20 w-1 hover:bg-white/40'
+                            }`}
                             aria-label={`Go to slide ${idx + 1}`}
                         />
                     ))}
