@@ -15,66 +15,21 @@ export const DID_YOU_KNOW_FACTS = {
     { title: "O'zini o'zi band qilish", content: "O'zini o'zi band qilgan shaxslar daromad solig'idan ozod etiladi va staj hisoblash uchun ixtiyoriy ijtimoiy soliq to'lashi mumkin.", button: "Soliq imtiyozlari" },
     { title: "Aliment To'lovlari", content: "Agar ota-ona ishsiz bo'lsa, aliment miqdori o'rtacha oylik ish haqidan kelib chiqib hisoblanadi.", button: "Aliment hisoblash" },
     { title: "Tadbirkorlik", content: "Yangi ro'yxatdan o'tgan yakka tartibdagi tadbirkorlar faoliyatining dastlabki davrida soliq imtiyozlariga ega bo'lishlari mumkin.", button: "Biznes boshlash" },
-    { title: "Elektron Hukumat", content: "My.gov.uz orqali sudlanmaganlik haqida ma'lumotnoma va boshqa 300+ davlat xizmatlaridan uydan chiqmasdan foydalanishingiz mumkin.", button: "E-xizmatlar" },
-    { title: "Nikoh Shartnomasi", content: "Nikoh shartnomasi er va xotinning mulkiy huquqlarini belgilaydi va nikohdan oldin yoki nikoh davrida istalgan vaqtda tuzilishi mumkin.", button: "Nikoh shartnomasi" },
-    { title: "Meros Huquqi", content: "Vasiyatnoma bo'lmaganda, meros qonun bo'yicha vorislarga (farzandlar, er-xotin va ota-onalar birinchi navbatda) teng miqdorda o'tadi.", button: "Meros tartibi" },
-    { title: "Iste'molchi Huquqlari", content: "Sifatsiz mahsulotni 10 kun ichida qaytarib berish yoki almashtirish huquqiga egasiz (oziq-ovqat bo'lmagan tovarlar uchun).", button: "Qaytarish qoidalari" },
-    { title: "Propiska Tizimi", content: "Toshkent shahrida uy sotib olish uchun propiska talabi bekor qilingan. Endi istalgan fuqaro ko'chmas mulk xarid qilishi mumkin.", button: "Propiska savollari" },
-    { title: "Soliq Keshbek", content: "Soliq hamkor ilovasi orqali xarid chekini ro'yxatdan o'tkazib, 1% keshbek olishingiz mumkin.", button: "Soliq ilovasi" },
-    { title: "Yer Uchastkalari", content: "Yer uchastkalarini faqat E-auksion orqali qonuniy sotib olish yoki ijaraga olish mumkin. Hokim qarori bilan yer ajratish taqiqlangan.", button: "Yer olish" },
-    { title: "Kripto-aktivlar", content: "O'zbekistonda kriptovalyuta savdosi faqat litsenziyaga ega milliy provayderlar orqali amalga oshirilishi qonuniy hisoblanadi.", button: "Kripto qonunlari" },
-    { title: "Dronlardan Foydalanish", content: "Ruxsatsiz dron uchirish O'zbekistonda ma'muriy va jinoiy javobgarlikka sabab bo'lishi mumkin.", button: "Dron qoidalari" },
-    { title: "Nikoh Yoshi", content: "O'zbekistonda erkaklar va ayollar uchun nikoh yoshi 18 yosh etib belgilangan.", button: "Oila qonunchiligi" },
-    { title: "Haftalik Ish Soati", content: "Oddiy ish haftasi 40 soatdan oshmasligi kerak. Ortiqcha ishlagan vaqt uchun ikki hissa haq to'lanadi.", button: "Ish vaqti" },
-    { title: "Talabalar Kontrakti", content: "Kontrakt to'lovini to'laganlik uchun daromad solig'idan imtiyoz (12% qaytarib olish) mavjud.", button: "Kontrakt imtiyozi" },
-    { title: "Advokat So'rovi", content: "Davlat organlari va tashkilotlari advokat so'roviga 15 kun ichida javob berishi shart.", button: "Advokat huquqi" },
-    { title: "Tungi Vaqt", content: "Tungi soat 23:00 dan 06:00 gacha turar joylarda shovqin solish ma'muriy javobgarlikka sabab bo'ladi.", button: "Tinchlik saqlash" },
-    { title: "Avto Tonirovka", content: "Avtomobil oynalarini qoraytirish uchun ruxsatnoma my.gov.uz orqali online olinganda arzonroq tushadi.", button: "Tonirovka narxi" },
-    { title: "Pensiya Yoshi", content: "Hozirgi kunda pensiya yoshi erkaklar uchun 60 yosh, ayollar uchun 55 yosh etib belgilangan.", button: "Pensiya hisoblash" }
+    { title: "Elektron Hukumat", content: "My.gov.uz orqali sudlanmaganlik haqida ma'lumotnoma va boshqa 300+ davlat xizmatlaridan uydan chiqmasdan foydalanishingiz mumkin.", button: "E-xizmatlar" }
   ],
   [Language.RU]: [
     { title: "Новый Трудовой Кодекс", content: "Новый Трудовой кодекс 2023 года установил минимальный ежегодный отпуск в размере 21 календарного дня.", button: "Спросить об отпуске" },
     { title: "Самозанятость", content: "Самозанятые лица освобождаются от подоходного налога и могут платить социальный налог для стажа добровольно.", button: "Налоговые льготы" },
     { title: "Алименты", content: "Если родитель безработный, алименты рассчитываются исходя из средней заработной платы по стране.", button: "Расчет алиментов" },
     { title: "Предпринимательство", content: "Новые индивидуальные предприниматели могут иметь налоговые каникулы в начальный период деятельности.", button: "Начать бизнес" },
-    { title: "Электронное правительство", content: "Через My.gov.uz можно получить справку о несудимости и еще более 300 госуслуг, не выходя из дома.", button: "Э-услуги" },
-    { title: "Брачный контракт", content: "Брачный договор регулирует имущественные права супругов и может быть заключен как до брака, так и в любой момент в браке.", button: "Брачный контракт" },
-    { title: "Наследство", content: "При отсутствии завещания наследство переходит наследникам по закону (дети, супруг и родители в первую очередь) в равных долях.", button: "Порядок наследования" },
-    { title: "Права потребителей", content: "Вы имеете право вернуть или обменять некачественный товар в течение 10 дней (для непродовольственных товаров).", button: "Правила возврата" },
-    { title: "Прописка", content: "Требование прописки для покупки жилья в Ташкенте отменено. Теперь любой гражданин может купить недвижимость.", button: "Вопросы прописки" },
-    { title: "Налоговый Кешбэк", content: "Регистрируйте чеки покупок через приложение Soliq и получайте 1% кешбэка.", button: "Приложение Soliq" },
-    { title: "Земельные участки", content: "Землю можно купить или арендовать законно только через E-auksion. Выделение земли решением хокима запрещено.", button: "Получение земли" },
-    { title: "Крипто-активы", content: "Торговля криптовалютой в Узбекистане легальна только через лицензированных национальных провайдеров.", button: "Законы о крипто" },
-    { title: "Использование дронов", content: "Несанкционированный запуск дронов в Узбекистане может повлечь административную и уголовную ответственность.", button: "Правила дронов" },
-    { title: "Брачный возраст", content: "Брачный возраст для мужчин и женщин в Узбекистане установлен на уровне 18 лет.", button: "Семейное право" },
-    { title: "Рабочая неделя", content: "Нормальная рабочая неделя не должна превышать 40 часов. Сверхурочные оплачиваются в двойном размере.", button: "Рабочее время" },
-    { title: "Контракт студентов", content: "Существует налоговая льгота (возврат 12% подоходного налога) при оплате контракта за обучение.", button: "Льготы студентам" },
-    { title: "Адвокатский запрос", content: "Государственные органы обязаны ответить на запрос адвоката в течение 15 дней.", button: "Права адвоката" },
-    { title: "Ночное время", content: "Шум в жилых помещениях с 23:00 до 06:00 влечет административную ответственность.", button: "Соблюдение тишины" },
-    { title: "Тонировка авто", content: "Разрешение на тонировку стекол автомобиля дешевле при оформлении онлайн через my.gov.uz.", button: "Цена тонировки" },
-    { title: "Пенсионный возраст", content: "В настоящее время пенсионный возраст составляет 60 лет для мужчин и 55 лет для женщин.", button: "Расчет пенсии" }
+    { title: "Электронное правительство", content: "Через My.gov.uz можно получить справку о несудимости и еще более 300 госуслуг, не выходя из дома.", button: "Э-услуги" }
   ],
   [Language.EN]: [
     { title: "New Labor Code", content: "The 2023 Labor Code set the minimum annual leave for employees to at least 21 calendar days.", button: "Ask about Leave" },
     { title: "Self-Employment", content: "Self-employed individuals are exempt from income tax and can pay voluntary social tax to accrue pension tenure.", button: "Tax Benefits" },
     { title: "Alimony Payments", content: "If a parent is unemployed, alimony is calculated based on the average national monthly salary.", button: "Calculate Alimony" },
     { title: "Entrepreneurship", content: "Newly registered individual entrepreneurs may qualify for tax holidays during their initial period.", button: "Start Business" },
-    { title: "E-Government", content: "Via My.gov.uz, you can obtain a criminal record certificate and access over 300+ government services from home.", button: "E-Services" },
-    { title: "Prenuptial Agreement", content: "A marriage contract defines property rights and can be signed before marriage or at any time during the marriage.", button: "Prenup Info" },
-    { title: "Inheritance Law", content: "In the absence of a will, inheritance passes to heirs by law (children, spouse, and parents first) in equal shares.", button: "Inheritance rules" },
-    { title: "Consumer Rights", content: "You have the right to return or exchange non-food items within 10 days if they are defective or unsuitable.", button: "Return Policy" },
-    { title: "Propiska System", content: "The requirement for a permanent residence permit (propiska) to buy property in Tashkent has been abolished.", button: "Propiska Info" },
-    { title: "Tax Cashback", content: "You can receive 1% cashback by registering purchase receipts via the Soliq mobile app.", button: "Soliq App" },
-    { title: "Land Plots", content: "Land can only be legally purchased or leased through E-auksion. Allocation by mayor's decree is prohibited.", button: "Land Acquisition" },
-    { title: "Crypto Assets", content: "Cryptocurrency trading in Uzbekistan is only legal through licensed national service providers.", button: "Crypto Laws" },
-    { title: "Drone Usage", content: "Unauthorized drone flying in Uzbekistan can lead to administrative and criminal liability.", button: "Drone Rules" },
-    { title: "Marriage Age", content: "The legal marriage age for both men and women in Uzbekistan is set at 18 years.", button: "Family Law" },
-    { title: "Work Week", content: "A normal work week must not exceed 40 hours. Overtime work must be compensated at double the rate.", button: "Working Hours" },
-    { title: "Student Tuition", content: "There is a tax deduction benefit (12% refund of income tax) for paying university tuition fees.", button: "Tuition Benefits" },
-    { title: "Lawyer's Request", content: "State bodies and organizations are obliged to respond to a lawyer's request within 15 days.", button: "Lawyer Rights" },
-    { title: "Quiet Hours", content: "Making noise in residential areas between 23:00 and 06:00 results in administrative liability.", button: "Public Order" },
-    { title: "Car Tinting", content: "Obtaining a permit for car window tinting is cheaper when applied for online via my.gov.uz.", button: "Tinting Cost" },
-    { title: "Retirement Age", content: "Currently, the retirement age is 60 years for men and 55 years for women.", button: "Pension Calc" }
+    { title: "E-Government", content: "Via My.gov.uz, you can obtain a criminal record certificate and access over 300+ government services from home.", button: "E-Services" }
   ]
 };
 
@@ -87,18 +42,536 @@ export const TOPICS_DATA = {
         { title: "Aliment undirish", prompt: "Aliment undirish uchun nima qilish kerak? Miqdori qancha?" },
         { title: "Nikoh shartnomasi", prompt: "Nikoh shartnomasi qanday tuziladi va u nimalarni o'z ichiga oladi?" },
         { title: "Vasiylik va homiylik", prompt: "Bolaga vasiylikni rasmiylashtirish tartibi qanday?" },
-        { title: "Ikkinchi xotin", prompt: "O'zbekistonda ko'p xotinlik uchun qanday javobgarlik bor?" },
-        { title: "Oilaviy zo'ravonlik", prompt: "Oilaviy zo'ravonlik bo'lganda himoya orderini qanday olish mumkin?" }
+        { title: "Oilaviy zo'ravonlik", prompt: "Oilaviy zo'ravonlik bo'lganda himoya orderini qanday olish mumkin?" },
+        { title: "Mulkni bo'lish", prompt: "Ajrashish paytida birgalikdagi mulk qanday taqsimlanadi?" }
       ]
     },
-    // ... (keeping other categories same as they are likely fine)
+    {
+      category: "Mehnat Huquqi",
+      items: [
+        { title: "Mehnat ta'tili", prompt: "Yillik mehnat ta'tili necha kun bo'lishi kerak va qanday hisoblanadi?" },
+        { title: "Ishdan bo'shatish", prompt: "Xodimni ishdan bo'shatishning qonuniy asoslari qanday?" },
+        { title: "Ish haqi kechikishi", prompt: "Ish haqi kechiktirilsa nima qilish kerak? Qanday javobgarlik bor?" },
+        { title: "Dekret ta'tili", prompt: "Homiladorlik va tug'ish ta'tili pullari kim tomonidan to'lanadi?" },
+        { title: "Sinov muddati", prompt: "Ishga kirishda sinov muddati qoidalari va muddati qanday?" },
+        { title: "Mehnat shartnomasi", prompt: "Yangi Mehnat kodeksi bo'yicha shartnoma tuzish qoidalari." }
+      ]
+    },
+    {
+      category: "Mulk va Uy-joy",
+      items: [
+        { title: "Uy-joy oldi-sotdisi", prompt: "Uy sotib olishda notarius qanday hujjatlarni talab qiladi?" },
+        { title: "Ijara shartnomasi", prompt: "Ijara shartnomasini soliq organida ro'yxatdan o'tkazish majburiymi?" },
+        { title: "Merosni rasmiylashtirish", prompt: "Merosga egalik qilish huquqi qachon va qanday paydo bo'ladi?" },
+        { title: "Snos (Buzilish)", prompt: "Uy buzilishga tushganda kompensatsiya qanday to'lanadi?" },
+        { title: "Propiska tartibi", prompt: "Toshkent shahrida doimiy ro'yxatga turishning yangi tartibi qanday?" },
+        { title: "Kadastr hujjati", prompt: "Kadastr hujjatini yo'qotib qo'ysa yoki yangilasa nima qilish kerak?" }
+      ]
+    },
+    {
+      category: "Avtomobil va YHQ",
+      items: [
+        { title: "Jarima to'lash", prompt: "Jarimani onlayn to'lash va chegirmadan foydalanish tartibi qanday?" },
+        { title: "Oyna tonirovkasi", prompt: "Avtomobil oynalarini qoraytirish narxlari va ruxsatnoma olish." },
+        { title: "YTH (Avariya)", prompt: "YTH sodir bo'lganda sug'urta to'lovini olish tartibi qanday?" },
+        { title: "Ishonchnoma", prompt: "Avtomobil boshqarish uchun ishonchnoma (doverennost) turlari." },
+        { title: "Gaz baloni", prompt: "Avtomobilga gaz baloni o'rnatish uchun ruxsatnoma kerakmi?" },
+        { title: "Mast holda haydash", prompt: "Mast holda mashina haydash uchun qanday jazolar bor?" }
+      ]
+    },
+    {
+      category: "Bank va Moliya",
+      items: [
+        { title: "Kredit tarixi", prompt: "Kredit tarixini qanday tekshirish va to'g'irlash mumkin?" },
+        { title: "Ipoteka krediti", prompt: "Yosh oilalar uchun ipoteka krediti shartlari qanday?" },
+        { title: "Plastik karta firibgarligi", prompt: "Plastik kartadan pul o'g'irlanganda bank javobgarmi?" },
+        { title: "Mikroqarz", prompt: "Mikroqarz olish uchun qanday hujjatlar kerak?" },
+        { title: "Omonat turlari", prompt: "Bankdagi omonatlar davlat tomonidan kafolatlanadimi?" },
+        { title: "Qarz qaytarish", prompt: "Bankdan olingan qarzni to'lay olmaslik oqibatlari qanday?" }
+      ]
+    },
+    {
+      category: "Migratsiya va Viza",
+      items: [
+        { title: "Zagran pasport", prompt: "Xorijga chiqish pasportini olish tartibi va muddati qanday?" },
+        { title: "Chet elda ishlash", prompt: "Tashqi mehnat migratsiyasi agentligi orqali ketish tartibi." },
+        { title: "Fuqarolik olish", prompt: "O'zbekiston fuqaroligini olishning osonlashtirilgan tartibi." },
+        { title: "Deportatsiya", prompt: "Deportatsiya qilinganligini va muddatini qanday tekshirish mumkin?" },
+        { title: "Vaqtincha ro'yxatdan o'tish", prompt: "Chet ellik fuqarolarni ro'yxatga qo'yish qoidalari." },
+        { title: "Ishchi viza", prompt: "Chet elliklarga O'zbekistonda ishlash uchun ruxsatnoma olish." }
+      ]
+    },
+    {
+      category: "Tadbirkorlik",
+      items: [
+        { title: "YATT ochish", prompt: "Yakka tartibdagi tadbirkor sifatida ro'yxatdan o'tish va soliqlar." },
+        { title: "MCHJ tashkil etish", prompt: "MCHJ ochish uchun ustav fondi va hujjatlar ro'yxati." },
+        { title: "Litsenziya olish", prompt: "Qaysi faoliyat turlari uchun litsenziya talab qilinadi?" },
+        { title: "Davlat subsidiyalari", prompt: "Tadbirkorlar uchun davlat tomonidan qanday subsidiyalar bor?" },
+        { title: "Eksport va Import", prompt: "Mahsulotni eksport qilish uchun qanday bojxona hujjatlari kerak?" },
+        { title: "Franshiza", prompt: "Franshiza shartnomasi tuzishning huquqiy asoslari." }
+      ]
+    },
+    {
+      category: "Sog'liqni Saqlash",
+      items: [
+        { title: "Nogironlik guruhi", prompt: "Nogironlik guruhini belgilash tartibi va imtiyozlar." },
+        { title: "Bepul dori-darmon", prompt: "Qaysi kasalliklar uchun bepul dori berilishi shart?" },
+        { title: "Order olish", prompt: "Ixtisoslashtirilgan shifoxonalarga bepul davolanish uchun order olish." },
+        { title: "Xususiy klinika", prompt: "Xususiy klinikada noto'g'ri davolansa kimga shikoyat qilish kerak?" },
+        { title: "Majburiy sug'urta", prompt: "Tibbiy sug'urta tizimi qachondan ishga tushadi?" },
+        { title: "Bemor huquqlari", prompt: "Bemorni shoshilinch yordam ko'rsatmasdan qaytarish mumkinmi?" }
+      ]
+    },
+    {
+      category: "Ta'lim",
+      items: [
+        { title: "O'qishni ko'chirish", prompt: "Xorijdan yoki boshqa OTMdan o'qishni ko'chirish (perevod) tartibi." },
+        { title: "Magistratura", prompt: "Magistraturaga kirishda til sertifikati talab qilinadimi?" },
+        { title: "Bog'cha navbati", prompt: "Bolani bog'chaga joylashtirish uchun onlayn navbatga turish." },
+        { title: "Kontrakt to'lovi", prompt: "O'qish kontraktini bo'lib to'lash imkoniyatlari bormi?" },
+        { title: "Akademik ta'til", prompt: "Talabaga qanday hollarda akademik ta'til beriladi?" },
+        { title: "Maktab imtiyozlari", prompt: "Ko'p bolali oilalar uchun maktabda qanday imtiyozlar bor?" }
+      ]
+    },
+    {
+      category: "Bojxona",
+      items: [
+        { title: "Bojxona to'lovlari", prompt: "Chet eldan tovar olib kirishda bojsiz limit miqdori qancha?" },
+        { title: "Yashil yo'lak", prompt: "Aeroportda yashil va qizil yo'lakdan o'tish qoidalari." },
+        { title: "Avtomobil rastamojka", prompt: "Chet eldan elektromobil olib kirishdagi bojxona imtiyozlari." },
+        { title: "Valyuta olib chiqish", prompt: "O'zbekistondan qancha miqdorgacha naqd valyuta olib chiqish mumkin?" },
+        { title: "Pochta jo'natmalari", prompt: "Chet eldan pochta orqali keladigan tovarlar uchun soliq bormi?" },
+        { title: "Taqiqlangan mahsulotlar", prompt: "O'zbekistonga olib kirish taqiqlangan tovarlar ro'yxati." }
+      ]
+    },
+    {
+      category: "Ijtimoiy Himoya",
+      items: [
+        { title: "Bolalar puli", prompt: "Kam ta'minlangan oilalarga bolalar puli olish tartibi va miqdori." },
+        { title: "Uy-joy subsidiyasi", prompt: "Uy-joy olish uchun davlat subsidiyasini kimlar olishi mumkin?" },
+        { title: "Yolg'iz keksalar", prompt: "Yolg'iz yashaydigan qariyalarga qanday yordamlar beriladi?" },
+        { title: "Moddiy yordam", prompt: "Mahalla orqali moddiy yordam olish shartlari qanday?" },
+        { title: "Mehribonlik uyi", prompt: "Farzand asrab olish tartibi va talablari qanday?" },
+        { title: "Ishsizlik nafaqasi", prompt: "Ishsiz deb ro'yxatga turish va nafaqa olish qoidalari." }
+      ]
+    },
+    {
+      category: "Sud va Protsess",
+      items: [
+        { title: "Sudga murojaat", prompt: "Sudga da'vo arizasi qanday yoziladi va topshiriladi?" },
+        { title: "Elektron sud", prompt: "E-sud tizimi orqali masofadan turib sudga qatnashish tartibi." },
+        { title: "Bepul advokat", prompt: "Davlat hisobidan bepul advokat olish uchun kimlar haqlimi?" },
+        { title: "Sud qarori ijrosi", prompt: "Sud qarori ijro etilmasa MIBga qanday murojaat qilinadi?" },
+        { title: "Apellyatsiya", prompt: "Sud qarori ustidan apellyatsiya shikoyati berish muddati." },
+        { title: "Guvohlik berish", prompt: "Sudda guvoh sifatida qatnashish majburiyatlari va huquqlari." }
+      ]
+    },
+    {
+      category: "Soliqlar",
+      items: [
+        { title: "Daromad solig'i", prompt: "Jismoniy shaxslarning daromad solig'i stavkalari qancha?" },
+        { title: "Mol-mulk solig'i", prompt: "Uy-joy va yer uchun soliq qachon va qayerga to'lanadi?" },
+        { title: "Soliq keshbek", prompt: "Soliq hamkor ilovasida keshbekni qanday qaytarib olish mumkin?" },
+        { title: "QQS (NDS)", prompt: "Tadbirkorlar uchun QQS to'lovchisi bo'lish qoidalari." },
+        { title: "Soliq imtiyozlari", prompt: "Yosh oilalar va nogironligi bor shaxslar uchun soliq imtiyozlari." },
+        { title: "Aylanma soliq", prompt: "Aylanmadan olinadigan soliqni hisoblash tartibi." }
+      ]
+    },
+    {
+      category: "Pensiya",
+      items: [
+        { title: "Pensiya yoshi", prompt: "O'zbekistonda erkaklar va ayollar uchun pensiya yoshi qancha?" },
+        { title: "Pensiya hisoblash", prompt: "Pensiya miqdori ish staji va ish haqiga qanday bog'liq?" },
+        { title: "Ish staji", prompt: "Staj yetmagan taqdirda pensiya olish imkoniyati bormi?" },
+        { title: "Boquvchisini yo'qotgan", prompt: "Boquvchisini yo'qotganlik nafaqasini tayinlash tartibi." },
+        { title: "Pensiya jamg'armasi", prompt: "Jamg'arib boriladigan pensiya tizimi qanday ishlaydi?" },
+        { title: "Xorijda ishlash staji", prompt: "Chet elda ishlagan yillar pensiya hisoblashda inobatga olinadimi?" }
+      ]
+    },
+    {
+      category: "Iste'molchi Huquqlari",
+      items: [
+        { title: "Tovar qaytarish", prompt: "Sifatsiz mahsulotni qaytarish yoki almashtirish tartibi." },
+        { title: "Kafolat muddati", prompt: "Kafolat muddati davrida bepul ta'mirlash huquqi." },
+        { title: "Muddati o'tgan tovar", prompt: "Do'konda muddati o'tgan tovar sotilsa qayerga murojaat qilish kerak?" },
+        { title: "Chek berilmasa", prompt: "Sotuvchi chek bermasa nima qilish kerak?" },
+        { title: "Onlayn xaridlar", prompt: "Internet orqali olingan tovarlarni qaytarish qoidalari." },
+        { title: "Narxlar farqi", prompt: "Vitrinadagi narx kassa narxidan farq qilsa qaysi biri to'lanadi?" }
+      ]
+    },
+    {
+      category: "Jinoyat Huquqi",
+      items: [
+        { title: "Advokat huquqi", prompt: "Ushlangan shaxsning birinchi navbatdagi huquqlari qanday?" },
+        { title: "Tuhmat va haqorat", prompt: "Ijtimoiy tarmoqlarda haqorat qilganlik uchun qanday jazo bor?" },
+        { title: "Firibgarlik", prompt: "Pulini firibgarga berib qo'ygan odam ariza bilan qayerga boradi?" },
+        { title: "Amnistiya", prompt: "O'zbekistonda amnistiya va afv etish tartibi qanday?" },
+        { title: "O'zini himoya qilish", prompt: "Zaruriy mudofaa chegarasidan chiqib ketish nima degani?" },
+        { title: "Jarima jazosi", prompt: "Jinoyat uchun tayinlangan jarimani to'lash muddati va tartibi." }
+      ]
+    }
   ],
-  // ... (keeping other languages same)
+  [Language.RU]: [
+    {
+      category: "Семейное право",
+      items: [
+        { title: "Порядок развода", prompt: "Как подать на развод? Какие документы нужны для суда?" },
+        { title: "Взыскание алиментов", prompt: "Как взыскать алименты? Каков их минимальный размер?" },
+        { title: "Брачный договор", prompt: "Как оформить брачный контракт и что в нем прописать?" },
+        { title: "Опека и попечительство", prompt: "Как оформить опекунство над ребенком?" },
+        { title: "Насилие в семье", prompt: "Как получить охранный ордер при домашнем насилии?" },
+        { title: "Раздел имущества", prompt: "Как делится совместно нажитое имущество при разводе?" }
+      ]
+    },
+    {
+      category: "Трудовое право",
+      items: [
+        { title: "Трудовой отпуск", prompt: "Сколько дней длится ежегодный отпуск по новому ТК?" },
+        { title: "Увольнение", prompt: "Законные основания для увольнения работника по инициативе работодателя." },
+        { title: "Задержка зарплаты", prompt: "Что делать, если задерживают зарплату? Куда жаловаться?" },
+        { title: "Декретный отпуск", prompt: "Кто и как выплачивает пособие по беременности и родам?" },
+        { title: "Испытательный срок", prompt: "Правила и максимальный срок испытательного срока при приеме на работу." },
+        { title: "Трудовой договор", prompt: "Правила заключения трудового договора согласно кодексу 2023 года." }
+      ]
+    },
+    {
+      category: "Имущество и Жилье",
+      items: [
+        { title: "Купля-продажа жилья", prompt: "Какие документы требует нотариус при покупке квартиры?" },
+        { title: "Договор аренды", prompt: "Обязательно ли регистрировать договор аренды в налоговой?" },
+        { title: "Оформление наследства", prompt: "Когда и как вступать в наследство после смерти родственника?" },
+        { title: "Снос (Снос)", prompt: "Как рассчитывается компенсация при сносе жилого дома?" },
+        { title: "Прописка", prompt: "Новые правила постоянной регистрации в Ташкенте." },
+        { title: "Кадастр", prompt: "Что делать при утере кадастрового паспорта на недвижимость?" }
+      ]
+    },
+    {
+      category: "Авто и ПДД",
+      items: [
+        { title: "Оплата штрафов", prompt: "Как оплатить штраф онлайн и получить скидку 50%?" },
+        { title: "Тонировка стекол", prompt: "Цены на разрешение на тонировку и процесс оформления." },
+        { title: "ДТП (Авария)", prompt: "Порядок получения страховых выплат при совершении ДТП." },
+        { title: "Доверенность", prompt: "Виды доверенностей на управление транспортным средством." },
+        { title: "Газовый баллон", prompt: "Нужно ли разрешение на установку ГБО на автомобиль?" },
+        { title: "Штрафстоянка", prompt: "В каких случаях автомобиль могут забрать на штрафстоянку?" }
+      ]
+    },
+    {
+      category: "Банк и Финансы",
+      items: [
+        { title: "Кредитная история", prompt: "Как проверить и исправить свою кредитную историю?" },
+        { title: "Ипотечный кредит", prompt: "Условия ипотеки для молодых семей в Узбекистане." },
+        { title: "Мошенничество с картами", prompt: "Несет ли банк ответственность при краже денег с карты?" },
+        { title: "Микрозайм", prompt: "Какие документы нужны для получения быстрого микрозайма?" },
+        { title: "Банковские вклады", prompt: "Гарантируются ли государством вклады физических лиц?" },
+        { title: "Возврат кредита", prompt: "Последствия невозможности выплаты банковского кредита." }
+      ]
+    },
+    {
+      category: "Миграция и Виза",
+      items: [
+        { title: "Загранпаспорт", prompt: "Порядок, сроки и стоимость получения загранпаспорта." },
+        { title: "Работа за рубежом", prompt: "Как легально уехать на работу через Агентство внешней миграции?" },
+        { title: "Гражданство РУз", prompt: "Упрощенный порядок получения гражданства Узбекистана." },
+        { title: "Депортация", prompt: "Как проверить наличие запрета на въезд (депортации)?" },
+        { title: "Временная прописка", prompt: "Правила регистрации иностранных граждан в Узбекистане." },
+        { title: "Рабочая виза", prompt: "Как получить разрешение на работу иностранцу в Узбекистане?" }
+      ]
+    },
+    {
+      category: "Бизнес",
+      items: [
+        { title: "Открытие ИП", prompt: "Порядок регистрации индивидуального предпринимателя и налоги." },
+        { title: "Создание ООО", prompt: "Список документов и минимальный уставной фонд для открытия ООО." },
+        { title: "Лицензирование", prompt: "Для каких видов деятельности требуется лицензия?" },
+        { title: "Субсидии бизнесу", prompt: "Какие виды государственной поддержки есть для предпринимателей?" },
+        { title: "Экспорт и Импорт", prompt: "Таможенное оформление при экспорте товаров из Узбекистана." },
+        { title: "Франчайзинг", prompt: "Правовые основы заключения договора франшизы." }
+      ]
+    },
+    {
+      category: "Здравоохранение",
+      items: [
+        { title: "Группа инвалидности", prompt: "Порядок установления группы инвалидности и льготы." },
+        { title: "Бесплатные лекарства", prompt: "При каких заболеваниях полагаются бесплатные медикаменты?" },
+        { title: "Получение ордера", prompt: "Как получить ордер на бесплатное лечение в госклиниках?" },
+        { title: "Частная клиника", prompt: "Куда жаловаться на врачебную ошибку в частной клинике?" },
+        { title: "Страхование", prompt: "Как работает система обязательного медицинского страхования?" },
+        { title: "Права пациента", prompt: "Могут ли отказать в госпитализации при экстренном случае?" }
+      ]
+    },
+    {
+      category: "Образование",
+      items: [
+        { title: "Перевод учебы", prompt: "Порядок перевода (перевода) из зарубежного или другого ВУЗа." },
+        { title: "Магистратура", prompt: "Нужен ли языковой сертификат для поступления в магистратуру?" },
+        { title: "Очередь в сад", prompt: "Как встать в онлайн-чередь в детский сад через my.gov.uz?" },
+        { title: "Оплата контракта", prompt: "Есть ли льготы или рассрочка при оплате контракта на обучение?" },
+        { title: "Академ. отпуск", prompt: "В каких случаях студенту предоставляется академический отпуск?" },
+        { title: "Школьные льготы", prompt: "Какие льготы в школах есть для многодетных семей?" }
+      ]
+    },
+    {
+      category: "Таможня",
+      items: [
+        { title: "Таможенные пошлины", prompt: "Каков лимит беспошлинного ввоза товаров для личного пользования?" },
+        { title: "Зеленый коридор", prompt: "Правила прохождения зеленого и красного коридора в аэропорту." },
+        { title: "Растаможка авто", prompt: "Льготы при ввозе электромобилей в Узбекистан." },
+        { title: "Вывоз валюты", prompt: "Какую сумму наличной валюты можно вывозить без декларации?" },
+        { title: "Почтовые посылки", prompt: "Налоги на товары, заказанные через интернет-магазины из-за рубежа." },
+        { title: "Запрещенные товары", prompt: "Список товаров, запрещенных к ввозу в Республику Узбекистан." }
+      ]
+    },
+    {
+      category: "Соцзащита",
+      items: [
+        { title: "Детские пособия", prompt: "Порядок получения и размер пособия на детей для малообеспеченных семей." },
+        { title: "Субсидия на жилье", prompt: "Кто имеет право на получение государственной субсидии на покупку жилья?" },
+        { title: "Одинокие пожилые", prompt: "Какая социальная помощь оказывается одиноким пенсионерам?" },
+        { title: "Материальная помощь", prompt: "Условия получения материальной помощи через махаллю." },
+        { title: "Усыновление", prompt: "Порядок и требования к кандидатам на усыновление ребенка." },
+        { title: "Пособие по безработице", prompt: "Как встать на учет по безработице и получать выплаты?" }
+      ]
+    },
+    {
+      category: "Суд и Процесс",
+      items: [
+        { title: "Обращение в суд", prompt: "Как правильно составить и подать исковое заявление в суд?" },
+        { title: "Электронный суд", prompt: "Участие в судебном процессе дистанционно через систему E-sud." },
+        { title: "Бесплатный адвокат", prompt: "Кто имеет право на адвоката за счет государства?" },
+        { title: "Исполнение решений", prompt: "Куда обращаться в БПИ, если судебное решение не выполняется?" },
+        { title: "Апелляция", prompt: "Сроки и порядок подачи апелляционной жалобы на решение суда." },
+        { title: "Свидетель в суде", prompt: "Права и обязанности свидетеля в гражданском и уголовном процессе." }
+      ]
+    },
+    {
+      category: "Налоги",
+      items: [
+        { title: "Подоходный налог", prompt: "Ставки подоходного налога для физических лиц в Узбекистане." },
+        { title: "Налог на имущество", prompt: "Когда и как оплачивать налог на недвижимость и землю?" },
+        { title: "Налоговый кэшбэк", prompt: "Как вернуть 1% кэшбэка через приложение Soliq?" },
+        { title: "НДС для бизнеса", prompt: "Правила перехода на уплату НДС для предпринимателей." },
+        { title: "Налоговые льготы", prompt: "Льготы по налогам для лиц с инвалидностью и молодых семей." },
+        { title: "Налог с оборота", prompt: "Порядок расчета и уплаты налога с оборота для малого бизнеса." }
+      ]
+    },
+    {
+      category: "Пенсия",
+      items: [
+        { title: "Пенсионный возраст", prompt: "Во сколько лет выходят на пенсию мужчины и женщины в РУз?" },
+        { title: "Расчет пенсии", prompt: "Как зависит размер пенсии от стажа и среднемесячной зарплаты?" },
+        { title: "Трудовой стаж", prompt: "Можно ли получать пенсию при неполном трудовом стаже?" },
+        { title: "Потеря кормильца", prompt: "Порядок назначения пособия по случаю потери кормильца." },
+        { title: "Пенсионный фонд", prompt: "Как работает система накопительного пенсионного обеспечения?" },
+        { title: "Стаж за рубежом", prompt: "Учитываются ли годы работы за границей при расчете пенсии в РУз?" }
+      ]
+    },
+    {
+      category: "Права потребителей",
+      items: [
+        { title: "Возврат товара", prompt: "Порядок возврата или обмена товара ненадлежащего качества." },
+        { title: "Гарантийный срок", prompt: "Право на бесплатный ремонт в течение гарантийного периода." },
+        { title: "Просроченный товар", prompt: "Что делать, если в магазине продали продукт с истекшим сроком годности?" },
+        { title: "Отсутствие чека", prompt: "Можно ли вернуть товар, если чек был утерян?" },
+        { title: "Онлайн-покупки", prompt: "Правила возврата товаров, купленных через интернет-магазины." },
+        { title: "Разница в цене", prompt: "Какую цену обязан пробить кассир, если она отличается от ценника?" }
+      ]
+    },
+    {
+      category: "Уголовное право",
+      items: [
+        { title: "Права при задержании", prompt: "Каковы первые действия и права гражданина при задержании?" },
+        { title: "Клевета и оскорбление", prompt: "Ответственность за оскорбление личности в социальных сетях." },
+        { title: "Мошенничество", prompt: "Куда подавать заявление, если вы стали жертвой онлайн-мошенников?" },
+        { title: "Амнистия", prompt: "Как работает система амнистии и помилования в Узбекистане?" },
+        { title: "Самооборона", prompt: "Что является превышением пределов необходимой обороны?" },
+        { title: "Штрафы за преступления", prompt: "Сроки и порядок выплаты уголовных штрафов." }
+      ]
+    }
+  ],
+  [Language.EN]: [
+    {
+      category: "Family Law",
+      items: [
+        { title: "Divorce Procedure", prompt: "What is the procedure for divorce? What documents are needed for court?" },
+        { title: "Alimony Collection", prompt: "How to claim alimony? What is the minimum amount in Uzbekistan?" },
+        { title: "Prenuptial Agreement", prompt: "How to draft a marriage contract and what should it include?" },
+        { title: "Custody", prompt: "What is the legal process for obtaining child custody?" },
+        { title: "Domestic Violence", prompt: "How to obtain a protection order in case of domestic violence?" },
+        { title: "Property Division", prompt: "How is joint property divided during a divorce?" }
+      ]
+    },
+    {
+      category: "Labor Law",
+      items: [
+        { title: "Annual Leave", prompt: "How many days is the minimum annual leave under the 2023 Labor Code?" },
+        { title: "Termination", prompt: "What are the legal grounds for terminating an employee?" },
+        { title: "Salary Delay", prompt: "What to do if salary is delayed? What are the penalties for employers?" },
+        { title: "Maternity Leave", prompt: "Who pays for pregnancy and childbirth benefits in Uzbekistan?" },
+        { title: "Probation Period", prompt: "What are the rules and maximum duration for a probation period?" },
+        { title: "Labor Contract", prompt: "Rules for drafting a labor contract according to the new code." }
+      ]
+    },
+    {
+      category: "Property & Housing",
+      items: [
+        { title: "Buying Real Estate", prompt: "What documents does a notary require when buying an apartment?" },
+        { title: "Rental Agreement", prompt: "Is it mandatory to register a rental agreement with the tax authorities?" },
+        { title: "Inheritance", prompt: "How and when to claim inheritance after the death of a relative?" },
+        { title: "Demolition (Snos)", prompt: "How is compensation calculated when a house is scheduled for demolition?" },
+        { title: "Residency (Propiska)", prompt: "What are the new rules for permanent residency in Tashkent?" },
+        { title: "Cadastral Document", prompt: "What to do if the property's cadastral passport is lost?" }
+      ]
+    },
+    {
+      category: "Auto & Traffic",
+      items: [
+        { title: "Paying Fines", prompt: "How to pay a traffic fine online and get a 50% discount?" },
+        { title: "Window Tinting", prompt: "Costs for window tinting permits and the application process." },
+        { title: "Car Accident", prompt: "What is the procedure for claiming insurance after a car accident?" },
+        { title: "Power of Attorney", prompt: "Types of power of attorney for driving a vehicle in Uzbekistan." },
+        { title: "Gas Cylinder (GBO)", prompt: "Do I need a permit to install a gas cylinder on my car?" },
+        { title: "Drunk Driving", prompt: "What are the penalties for driving under the influence?" }
+      ]
+    },
+    {
+      category: "Bank & Finance",
+      items: [
+        { title: "Credit History", prompt: "How can I check and improve my credit history in Uzbekistan?" },
+        { title: "Mortgage Loans", prompt: "What are the mortgage conditions for young families?" },
+        { title: "Card Fraud", prompt: "Is the bank liable if money is stolen from my plastic card?" },
+        { title: "Microloans", prompt: "What documents are required to get a quick microloan?" },
+        { title: "Bank Deposits", prompt: "Are personal bank deposits guaranteed by the state?" },
+        { title: "Loan Repayment", prompt: "What are the consequences of failing to repay a bank loan?" }
+      ]
+    },
+    {
+      category: "Migration & Visa",
+      items: [
+        { title: "Foreign Passport", prompt: "Procedure, timeline, and cost for obtaining a passport for international travel." },
+        { title: "Working Abroad", prompt: "How to legally work abroad through the External Migration Agency?" },
+        { title: "Citizenship", prompt: "What is the simplified procedure for obtaining Uzbek citizenship?" },
+        { title: "Deportation", prompt: "How to check if there is an entry ban or deportation record?" },
+        { title: "Temporary Registration", prompt: "Rules for registering foreign citizens visiting Uzbekistan." },
+        { title: "Work Visa", prompt: "How to obtain a work permit for a foreign citizen in Uzbekistan?" }
+      ]
+    },
+    {
+      category: "Business",
+      items: [
+        { title: "Starting an IE", prompt: "Registration process for an Individual Entrepreneur and tax obligations." },
+        { title: "Forming an LLC", prompt: "List of documents and minimum capital required to open an LLC." },
+        { title: "Licensing", prompt: "Which business activities require a special license?" },
+        { title: "State Subsidies", prompt: "What kind of government support is available for entrepreneurs?" },
+        { title: "Export & Import", prompt: "Customs clearance procedures for exporting goods from Uzbekistan." },
+        { title: "Franchising", prompt: "Legal basis for signing a franchise agreement." }
+      ]
+    },
+    {
+      category: "Healthcare",
+      items: [
+        { title: "Disability Group", prompt: "Procedure for determining a disability group and associated benefits." },
+        { title: "Free Medications", prompt: "For which diseases are free medicines provided by law?" },
+        { title: "Medical Orders", prompt: "How to get a state order for free treatment in specialized clinics?" },
+        { title: "Private Clinics", prompt: "Where to file a complaint regarding medical errors in private clinics?" },
+        { title: "Health Insurance", prompt: "How does the mandatory medical insurance system work?" },
+        { title: "Patient Rights", prompt: "Can a hospital refuse admission in an emergency case?" }
+      ]
+    },
+    {
+      category: "Education",
+      items: [
+        { title: "Student Transfer", prompt: "Procedure for transferring from a foreign or domestic university." },
+        { title: "Master's Degree", prompt: "Is a language certificate required for Master's degree admission?" },
+        { title: "Kindergarten Queue", prompt: "How to join the online queue for a state kindergarten?" },
+        { title: "Tuition Fees", prompt: "Are there installment plans or tax benefits for tuition payments?" },
+        { title: "Academic Leave", prompt: "Under what circumstances can a student take an academic leave?" },
+        { title: "School Benefits", prompt: "What benefits are available in schools for large families?" }
+      ]
+    },
+    {
+      category: "Customs",
+      items: [
+        { title: "Customs Duties", prompt: "What is the duty-free limit for importing goods for personal use?" },
+        { title: "Green Channel", prompt: "Rules for green and red channels at the airport." },
+        { title: "Car Customs", prompt: "Customs benefits for importing electric vehicles into Uzbekistan." },
+        { title: "Currency Export", prompt: "How much cash currency can be exported without a declaration?" },
+        { title: "Postal Packages", prompt: "Taxes on goods ordered from international online shops." },
+        { title: "Prohibited Goods", prompt: "List of items prohibited for import into the Republic of Uzbekistan." }
+      ]
+    },
+    {
+      category: "Social Protection",
+      items: [
+        { title: "Child Benefits", prompt: "Procedure and amount of child benefits for low-income families." },
+        { title: "Housing Subsidy", prompt: "Who is eligible for a state subsidy to purchase a home?" },
+        { title: "Elderly Care", prompt: "What social assistance is provided to elderly people living alone?" },
+        { title: "Financial Aid", prompt: "Conditions for receiving financial aid through the local Mahalla." },
+        { title: "Adoption", prompt: "Procedure and requirements for adopting a child in Uzbekistan." },
+        { title: "Unemployment", prompt: "How to register as unemployed and receive welfare benefits?" }
+      ]
+    },
+    {
+      category: "Court & Process",
+      items: [
+        { title: "Filing a Lawsuit", prompt: "How to correctly draft and submit a claim to the court?" },
+        { title: "Electronic Court", prompt: "Participating in court hearings remotely via the E-sud system." },
+        { title: "Free Lawyer", prompt: "Who is entitled to a state-funded defense attorney?" },
+        { title: "Enforcement", prompt: "How to contact the Bureau of Compulsory Enforcement (MIB)?" },
+        { title: "Appeals", prompt: "Timeline and procedure for appealing a court decision." },
+        { title: "Witness Rights", prompt: "Rights and obligations of a witness in a judicial proceeding." }
+      ]
+    },
+    {
+      category: "Taxes",
+      items: [
+        { title: "Income Tax", prompt: "What are the personal income tax rates in Uzbekistan?" },
+        { title: "Property Tax", prompt: "When and where to pay taxes for real estate and land?" },
+        { title: "Tax Cashback", prompt: "How to claim the 1% cashback via the Soliq mobile app?" },
+        { title: "VAT for Business", prompt: "Rules for registering as a VAT payer for entrepreneurs." },
+        { title: "Tax Exemptions", prompt: "Tax benefits for disabled individuals and young families." },
+        { title: "Turnover Tax", prompt: "How to calculate and pay turnover tax for small businesses." }
+      ]
+    },
+    {
+      category: "Pension",
+      items: [
+        { title: "Retirement Age", prompt: "What is the retirement age for men and women in Uzbekistan?" },
+        { title: "Pension Calculation", prompt: "How does the pension amount depend on years of service and salary?" },
+        { title: "Work Experience", prompt: "Is it possible to receive a pension with incomplete work experience?" },
+        { title: "Survivor Pension", prompt: "Procedure for assigning a pension in case of the loss of a breadwinner." },
+        { title: "Pension Fund", prompt: "How does the cumulative pension system work?" },
+        { title: "Work Abroad", prompt: "Are years worked abroad considered for pension calculation?" }
+      ]
+    },
+    {
+      category: "Consumer Rights",
+      items: [
+        { title: "Returning Goods", prompt: "Procedure for returning or exchanging a defective product." },
+        { title: "Warranty Period", prompt: "Right to free repair during the warranty period." },
+        { title: "Expired Goods", prompt: "What to do if a store sells an expired product?" },
+        { title: "Lost Receipt", prompt: "Can I return a product if the receipt was lost?" },
+        { title: "Online Shopping", prompt: "Rules for returning items bought through online stores." },
+        { title: "Price Difference", prompt: "Which price should be charged if the shelf price differs from the POS?" }
+      ]
+    },
+    {
+      category: "Criminal Law",
+      items: [
+        { title: "Right to a Lawyer", prompt: "What are the immediate rights of a person when detained?" },
+        { title: "Slander & Insult", prompt: "Penalties for personal insults on social media platforms." },
+        { title: "Fraud", prompt: "Where to file a report if you become a victim of online fraud?" },
+        { title: "Amnesty", prompt: "How does the amnesty and pardon system work in Uzbekistan?" },
+        { title: "Self-Defense", prompt: "What constitutes exceeding the limits of necessary self-defense?" },
+        { title: "Criminal Fines", prompt: "Timelines and procedures for paying criminal fines." }
+      ]
+    }
+  ]
 };
 
 export const TRANSLATIONS = {
   [Language.UZ]: {
-    // ... existing ...
     profileLoginPrompt: "Profilingizni boshqarish uchun tizimga kiring.",
     profileLoginBtn: "Kirish / Ro'yxatdan o'tish",
     title: "LAWIFY",
@@ -108,8 +581,6 @@ export const TRANSLATIONS = {
     tone: "Ohang",
     style: "Uslub",
     clarify: "Aniqlovchi savollar",
-    
-    // Settings Options
     short: "Qisqa",
     medium: "O'rtacha",
     detailed: "Batafsil",
@@ -127,7 +598,6 @@ export const TRANSLATIONS = {
     persNeutral: "Xolis",
     persConsumer: "Mijoz himoyasi",
     persBusiness: "Biznes himoyasi",
-
     inputPlaceholder: "Huquqiy savolingizni yozing...",
     disclaimer: "Bu yuridik maslahat emas. Shoshilinch hollarda advokatga murojaat qiling.",
     startLive: "Jonli suhbat",
@@ -142,8 +612,6 @@ export const TRANSLATIONS = {
     fileSelected: "Hujjat tanlandi",
     connectedSources: "Ulangan manbalar: 19 Kodeks & Lex.uz",
     sourcesTitle: "RASMIY MANBALAR",
-    
-    // Navigation
     navDashboard: "Bosh sahifa",
     navChat: "AI Yurist",
     navOdilbek: "Odilbek (Tushuntirish)",
@@ -153,8 +621,6 @@ export const TRANSLATIONS = {
     navProfile: "Profil",
     navPlans: "Tariflar",
     upgradeBtn: "Premiumga o'tish",
-
-    // Dashboard
     dashboardWelcome: "Xush kelibsiz",
     dashboardSubtitle: "Bugun sizga qanday yuridik yordam bera olaman?",
     quickChat: "Yangi suhbat",
@@ -163,13 +629,11 @@ export const TRANSLATIONS = {
     quickContractsDesc: "Shartnomalarni tahlil qilish",
     quickTemplates: "AI Kotib",
     quickTemplatesDesc: "Hujjatlarni avtomatlashtirish",
-    openApp: "Ilovani ochish", // Localized
+    openApp: "Ilovani ochish",
     didYouKnowTitle: "O'zbekistonning Yangi Mehnat Kodeksi",
-    didYouKnowContent: "2023-yilgi yangi Mehnat kodeksi xodimlar huquqlari, ta'til hisoblash va masofaviy ishlash bo'yicha muhim o'zgarishlarni kiritdi. Lawify barcha o'zgarishlardan xabardor.",
+    didYouKnowContent: "2023-yilgi yangi Mehnat kodeksi xodimlar huquqlari, ta'til hisoblash va masofaviy ishlash bo'yicha muhim o'zgarishlarni kiritdi.",
     didYouKnowButton: "Batafsil so'rash",
     didYouKnowTag: "Bilasizmi?",
-    
-    // Quick Links
     quickLinksTitle: "Tezkor Havolalar",
     qlFamily: "Oila Huquqi",
     qlLabor: "Mehnat Kodeksi",
@@ -177,30 +641,24 @@ export const TRANSLATIONS = {
     qlBusiness: "Biznes Huquqi",
     qlHousing: "Uy-joy Huquqi",
     qlAdmin: "Ma'muriy Javobgarlik",
-    // Added new links
     qlBank: "Bank va Kredit",
     qlHealth: "Sog'liqni Saqlash",
     qlEdu: "Ta'lim Huquqi",
     qlCustoms: "Bojxona",
     qlTax: "Soliqlar",
     qlPension: "Pensiya",
-    
-    // Quick Link Prompts
     qlFamilyPrompt: "Oila huquqi bo'yicha savolim bor.",
     qlLaborPrompt: "Mehnat kodeksi bo'yicha ma'lumot kerak.",
     qlCriminalPrompt: "Jinoyat kodeksi bo'yicha savolim bor.",
     qlHousingPrompt: "Uy-joy huquqi bo'yicha savolim bor.",
     qlBusinessPrompt: "Biznes bo'yicha yuridik maslahat kerak.",
     qlAdminPrompt: "Ma'muriy javobgarlik bo'yicha savol.",
-    // Added prompts
     qlBankPrompt: "Bank krediti va omonatlar bo'yicha savolim bor.",
     qlHealthPrompt: "Tibbiy xizmatlar va bemor huquqlari bo'yicha savol.",
     qlEduPrompt: "Ta'lim olish, kontrakt va o'qishni ko'chirish bo'yicha savol.",
     qlCustomsPrompt: "Bojxona to'lovlari va qoidalari haqida ma'lumot kerak.",
     qlTaxPrompt: "Soliq turlari va imtiyozlar haqida so'ramoqchiman.",
     qlPensionPrompt: "Pensiya yoshi va hisoblash tartibi bo'yicha savol.",
-
-    // Dashboard Sections
     visTitle: "KELAJAK REJALARI",
     visAutoAgents: "Avtonom Yuridik Agentlar",
     visAutoAgentsDesc: "Hujjatlarni mustaqil tayyorlaydigan va muzokara olib boradigan AI agentlar.",
@@ -210,8 +668,6 @@ export const TRANSLATIONS = {
     visBlockchainDesc: "Milliy blokcheyn orqali shartnomalarni o'zgarmas tasdiqlash.",
     visAIJudge: "AI Sud Yordamchisi Pilot",
     visAIJudgeDesc: "Sud yuklamasini kamaytirish uchun dastlabki ish baholash tizimi.",
-    
-    // Platform Impact Section
     statPlatformImpact: "PLATFORMA NATIJALARI",
     statUsers: "Faol Foydalanuvchilar",
     statDocs: "Yaratilgan Hujjatlar",
@@ -220,29 +676,22 @@ export const TRANSLATIONS = {
     statLanguages: "Tillar",
     statSystemOp: "Tizim Ishlamoqda",
     footerCopyright: "Lawify Inc. © 2026",
-    
     techTitle: "Ishonchli Texnologiya",
     techSecure: "Xavfsiz va Shifrlangan",
     techModel: "Ixtisoslashgan AI",
     techModelSub: "Gallyutsinatsiyasiz",
     techDatabase: "Lex.uz Bazasi",
-
-    // Library
     libraryTitle: "Yuridik hujjatlar kutubxonasi",
     librarySubtitle: "AI Kotib yordamida har qanday hujjatni tezkor tayyorlang.",
     librarySelectPrompt: "Hujjatni boshlash uchun andozani tanlang.",
     libraryDifficulty: "Murakkablik",
     libraryComingSoon: "Tez orada",
     libraryFooter: "Barcha andozalar O'zbekiston Respublikasi qonunchiligiga to'liq mos keladi va yuristlar tomonidan tasdiqlangan.",
-    
-    // Library Categories
     catCivil: "Fuqarolik",
     catProperty: "Mulkiy",
     catFamily: "Oila",
     catBusiness: "Biznes",
     catAdmin: "Ma'muriy",
-
-    // Templates
     tDebtTitle: "Qarz Tilxati",
     tDebtDesc: "Qarz berish yoki olishni rasmiylashtirish uchun.",
     tRentTitle: "Ijara Shartnomasi",
@@ -255,31 +704,22 @@ export const TRANSLATIONS = {
     tPowerDesc: "Avtomobil yoki mulkni boshqarish huquqi.",
     tComplaintTitle: "Shikoyat Ariza",
     tComplaintDesc: "Davlat organlari ustidan shikoyat.",
-
-    // Localized Prompts
     tDebtPrompt: "Men qarz tilxatini yozmoqchiman. Iltimos, huquqiy jihatdan to'g'ri hujjat tayyorlash uchun mendan kerakli barcha ma'lumotlarni (tomonlar, summa, muddat) so'rang.",
     tRentPrompt: "Men turar joy ijara shartnomasini tuzmoqchiman. Iltimos, shartnoma qonuniy bo'lishi uchun mendan kerakli ma'lumotlarni so'rang va keyin shartnoma matnini tayyorlab bering.",
     tDivorcePrompt: "Men sudga ajrashish uchun ariza yozmoqchiman. Iltimos, arizani to'g'ri shakllantirish uchun mendan talab qilinadigan ma'lumotlarni so'rang.",
     tLaborPrompt: "Men yangi Mehnat kodeksi bo'yicha mehnat shartnomasini tuzmoqchiman. Iltimos, ish beruvchi va xodim haqidagi kerakli ma'lumotlarni so'rang.",
     tPowerPrompt: "Menga avtomobil yoki mulkni boshqarish uchun ishonchnoma kerak. Iltimos, ishonchnoma turini va taraflar ma'lumotlarini mendan so'rang.",
     tComplaintPrompt: "Men davlat organiga shikoyat yozmoqchiman. Iltimos, vaziyatni o'rganish uchun mendan kerakli savollarni so'rang, so'ngra shikoyat matnini yozib bering.",
-
     diffEasy: "Oson",
     diffMedium: "O'rta",
     diffHard: "Qiyin",
-
-    // Topics Page
     topicsTitle: "Umumiy huquqiy mavzular",
     topicsSubtitle: "Formani oldindan to'ldirish uchun mavzuni tanlang",
-
-    // History
     historyTitle: "Murojaatlar tarixi",
     historySubtitle: "Sizning avvalgi suhbatlaringiz ushbu qurilmada saqlanadi.",
     historyClear: "Tarixni tozalash",
     historyEmpty: "Hozircha tarix yo'q. Yangi suhbat boshlang.",
     historyMessages: "xabar",
-
-    // Profile
     profileTitle: "Foydalanuvchi Profili",
     profileSubtitle: "Shaxsiy ma'lumotlar va sozlamalarni boshqarish",
     profileName: "Ism",
@@ -288,8 +728,6 @@ export const TRANSLATIONS = {
     profileConsultations: "Konsultatsiyalar",
     profileSavedDocs: "Saqlangan Hujjatlar",
     profileSave: "Saqlash",
-    
-    // Chat Filters
     filterTitle: "Filtrlash",
     filterDate: "Sana",
     filterRole: "Kimdan",
@@ -299,14 +737,10 @@ export const TRANSLATIONS = {
     filterLast24h: "Oxirgi 24 soat",
     filterLastWeek: "Oxirgi hafta",
     filterAllTime: "Barcha vaqt",
-
-    // PLANS
     plansTitle: "Tarif rejalari",
     plansSubtitle: "Ehtiyojingizga mos tarifni tanlang. Istalgan vaqtda bekor qilish mumkin.",
     currentPlan: "Joriy Tarif",
     subscribe: "Tanlash",
-    
-    // Features
     featRequestLimit: "so'rov / kun",
     featUnlimited: "Cheksiz so'rovlar",
     featDocs: "ta hujjat tahlili",
@@ -321,8 +755,6 @@ export const TRANSLATIONS = {
     featHistory: "Tarixni saqlash",
     featAds: "Reklamasiz interfeys",
     featExport: "Hujjatlarni PDF formatda yuklash",
-    
-    // Plan Names & Prices
     pFreeName: "Bepul",
     pFreePrice: "0",
     pDayName: "Kunlik Pro",
@@ -333,18 +765,13 @@ export const TRANSLATIONS = {
     pMonthPrice: "119 000",
     pLawyerName: "Yurist Pro",
     pLawyerPrice: "299 000",
-    
     currency: "so'm",
     bestValue: "Eng Foydali",
-    
-    // Usage Limits
     limitReachedTitle: "Kunlik limit tugadi",
-    limitReachedBody: "Bugungi bepul 5 ta savol limitidan foydalandingiz. Xizmatimiz sizga ma'qul keldi degan umiddamiz! Davom ettirish uchun ertaga qaytishingiz yoki Pro tarifiga o'tib, cheklovsiz foydalanishingiz mumkin.",
+    limitReachedBody: "Bugungi bepul 5 ta savol limitidan foydalandingiz.",
     limitUpgrade: "Pro tariflarni ko'rish",
     limitReturn: "Ertaga qaytish",
     freeUsage: "Bepul so'rovlar:",
-
-    // Odilbek
     odilbekTitle: "Odilbek AI - Yuridik Tushuntiruvchi",
     odilbekSubtitle: "AI Yurist maslahatlarini oddiy tilda tushuntirib beraman. Cheklovsiz so'rang!",
     odilbekWelcome: "Assalomu alaykum! Men Odilbekman (Oksford Magistri). Advokatimiz bergan maslahat tushunarsiz bo'ldimi? Menga yuboring, oddiy qilib tushuntirib beraman.",
@@ -355,7 +782,6 @@ export const TRANSLATIONS = {
   [Language.RU]: {
     profileLoginPrompt: "Пожалуйста, войдите в систему, чтобы управлять профилем и подпиской.",
     profileLoginBtn: "Войти / Регистрация",
-    // ... rest of RU ...
     title: "LAWIFY",
     subtitle: "Юридический помощник по Узбекистану",
     settings: "Настройки",
@@ -363,7 +789,6 @@ export const TRANSLATIONS = {
     tone: "Тон",
     style: "Стиль",
     clarify: "Уточняющие вопросы",
-    
     short: "Краткий",
     medium: "Средний",
     detailed: "Подробный",
@@ -381,7 +806,6 @@ export const TRANSLATIONS = {
     persNeutral: "Нейтральная",
     persConsumer: "Защита потребителя",
     persBusiness: "Защита бизнеса",
-
     inputPlaceholder: "Задайте ваш юридический вопрос...",
     disclaimer: "Это информационная справка, а не замена юристу. В срочных случаях обратитесь к адвокату.",
     startLive: "Живой чат",
@@ -396,8 +820,6 @@ export const TRANSLATIONS = {
     fileSelected: "Документ выбран",
     connectedSources: "Источники: 19 Кодексов & Lex.uz",
     sourcesTitle: "ОФИЦИАЛЬНЫЕ ИСТОЧНИКИ",
-
-    // Navigation
     navDashboard: "Главная",
     navChat: "AI Юрист",
     navOdilbek: "Одилбек (Объяснение)",
@@ -407,8 +829,6 @@ export const TRANSLATIONS = {
     navProfile: "Профиль",
     navPlans: "Тарифы",
     upgradeBtn: "Купить Premium",
-
-    // Dashboard
     dashboardWelcome: "Добро пожаловать",
     dashboardSubtitle: "Чем я могу помочь вам сегодня в правовых вопросах?",
     quickChat: "Новый чат",
@@ -417,13 +837,11 @@ export const TRANSLATIONS = {
     quickContractsDesc: "Проверка договоров",
     quickTemplates: "AI Секретарь",
     quickTemplatesDesc: "Подготовка документов",
-    openApp: "Открыть приложение", // Localized
+    openApp: "Открыть приложение",
     didYouKnowTitle: "Новый Трудовой Кодекс Узбекистана",
     didYouKnowContent: "Новый Трудовой кодекс 2023 года внес значительные изменения в права работников, расчет отпусков и правила удаленной работы.",
     didYouKnowButton: "Узнать подробнее",
     didYouKnowTag: "Знаете ли вы?",
-
-    // Quick Links
     quickLinksTitle: "Быстрые Ссылки",
     qlFamily: "Семейное Право",
     qlLabor: "Трудовой Кодекс",
@@ -431,30 +849,24 @@ export const TRANSLATIONS = {
     qlBusiness: "Бизнес Право",
     qlHousing: "Жилищное Право",
     qlAdmin: "Админ. Право",
-    // Added
     qlBank: "Банк и Кредит",
     qlHealth: "Здравоохранение",
     qlEdu: "Образование",
     qlCustoms: "Таможня",
     qlTax: "Налоги",
     qlPension: "Пенсия",
-
-    // Quick Link Prompts
     qlFamilyPrompt: "У меня вопрос по семейному праву.",
     qlLaborPrompt: "Мне нужна информация по Трудовому кодексу.",
     qlCriminalPrompt: "У меня вопрос по Уголовному кодексу.",
     qlHousingPrompt: "У меня вопрос по жилищному праву.",
     qlBusinessPrompt: "Мне нужна юридическая консультация для бизнеса.",
     qlAdminPrompt: "Вопрос об административной ответственности.",
-    // Added
     qlBankPrompt: "Вопрос по банковским кредитам и вкладам.",
     qlHealthPrompt: "Вопрос по медицинским услугам и правам пациентов.",
     qlEduPrompt: "Вопрос по образованию, контрактам и переводу.",
     qlCustomsPrompt: "Вопрос по таможенным пошлинам и правилам.",
     qlTaxPrompt: "Вопрос по налогам и льготам.",
     qlPensionPrompt: "Вопрос по пенсионному возрасту и начислению.",
-
-    // Dashboard Sections
     visTitle: "ПЛАНЫ НА БУДУЩЕЕ",
     visAutoAgents: "Автономные Юридические Агенты",
     visAutoAgentsDesc: "AI агенты, способные автономно вести переговоры и готовить документы.",
@@ -464,8 +876,6 @@ export const TRANSLATIONS = {
     visBlockchainDesc: "Неизменная проверка контрактов через Национальный Блокчейн.",
     visAIJudge: "Пилот AI Судьи",
     visAIJudgeDesc: "Предварительная оценка дел для снижения судебной нагрузки.",
-    
-    // Platform Impact Section
     statPlatformImpact: "ПОКАЗАТЕЛИ ПЛАТФОРМЫ",
     statUsers: "Активных пользователей",
     statDocs: "Документов создано",
@@ -474,29 +884,22 @@ export const TRANSLATIONS = {
     statLanguages: "Языки",
     statSystemOp: "Система работает",
     footerCopyright: "Lawify Inc. © 2026",
-    
     techTitle: "Надежные Технологии",
     techSecure: "Безопасно и Зашифровано",
     techModel: "Специализированный ИИ",
     techModelSub: "Без галлюцинаций",
     techDatabase: "База Lex.uz",
-
-    // Library
     libraryTitle: "Библиотека Документов",
     librarySubtitle: "AI Секретарь поможет составить любой документ за минуты.",
     librarySelectPrompt: "Выберите шаблон, чтобы начать.",
     libraryDifficulty: "Сложность",
     libraryComingSoon: "Скоро",
     libraryFooter: "Все шаблоны полностью соответствуют законодательству Республики Узбекистан и одобрены юристами.",
-
-    // Library Categories
     catCivil: "Гражданское",
     catProperty: "Имущество",
     catFamily: "Семья",
     catBusiness: "Бизнес",
     catAdmin: "Административное",
-
-    // Templates
     tDebtTitle: "Долговая Расписка",
     tDebtDesc: "Оформление займа денег.",
     tRentTitle: "Договор Аренды",
@@ -509,31 +912,22 @@ export const TRANSLATIONS = {
     tPowerDesc: "На управление автомобилем или имуществом.",
     tComplaintTitle: "Жалоба",
     tComplaintDesc: "Жалоба на государственные органы.",
-
-    // Localized Prompts
     tDebtPrompt: "Я хочу составить долговую расписку. Пожалуйста, задайте мне необходимые вопросы (стороны, сумма, срок), чтобы составить документ юридически грамотно.",
     tRentPrompt: "Я хочу составить договор аренды жилья. Пожалуйста, запросите у меня необходимые данные для составления договора.",
     tDivorcePrompt: "Мне нужно подать заявление на развод. Пожалуйста, спросите меня о деталях брака и детях, чтобы сформировать заявление.",
     tLaborPrompt: "Мне нужно составить трудовой договор по новому ТК РУз. Пожалуйста, уточните условия работы и данные сторон.",
     tPowerPrompt: "Мне нужна доверенность (на авто или имущество). Пожалуйста, узнайте у меня детали, прежде чем составлять текст.",
     tComplaintPrompt: "Я хочу написать жалобу в госорган. Пожалуйста, задайте мне вопросы по ситуации, чтобы текст был обоснованным.",
-
     diffEasy: "Легко",
     diffMedium: "Средне",
     diffHard: "Сложно",
-
-    // Topics Page
     topicsTitle: "Общие Юридические Темы",
     topicsSubtitle: "Выберите тему для предварительного заполнения формы",
-
-    // History
     historyTitle: "История Дел",
     historySubtitle: "Ваши предыдущие консультации хранятся локально на этом устройстве.",
     historyClear: "Очистить историю",
     historyEmpty: "Истории пока нет. Начните новый чат.",
     historyMessages: "сообщений",
-
-    // Profile
     profileTitle: "Профиль",
     profileSubtitle: "Управление личными данными и настройками",
     profileName: "Имя",
@@ -542,8 +936,6 @@ export const TRANSLATIONS = {
     profileConsultations: "Консультаций",
     profileSavedDocs: "Сохр. документы",
     profileSave: "Сохранить",
-
-    // Chat Filters
     filterTitle: "Фильтр",
     filterDate: "Дата",
     filterRole: "От кого",
@@ -553,14 +945,10 @@ export const TRANSLATIONS = {
     filterLast24h: "За 24 часа",
     filterLastWeek: "За неделю",
     filterAllTime: "Все время",
-
-    // PLANS
     plansTitle: "Тарифные Планы",
     plansSubtitle: "Выберите подходящий тариф. Можно отменить в любое время.",
     currentPlan: "Текущий план",
     subscribe: "Выбрать",
-
-    // Features
     featRequestLimit: "запросов / день",
     featUnlimited: "Безлимитные запросы",
     featDocs: "анализ документов",
@@ -575,8 +963,6 @@ export const TRANSLATIONS = {
     featHistory: "Сохранение истории",
     featAds: "Без рекламы",
     featExport: "Экспорт в PDF",
-
-    // Plan Names & Prices
     pFreeName: "Бесплатный",
     pFreePrice: "0",
     pDayName: "Дневной Pro",
@@ -587,19 +973,14 @@ export const TRANSLATIONS = {
     pMonthPrice: "119 000",
     pLawyerName: "Юрист Pro",
     pLawyerPrice: "299 000",
-
     currency: "сум",
     bestValue: "Выгодно",
-
-    // Usage Limits
     limitReachedTitle: "Дневной лимит исчерпан",
-    limitReachedBody: "Вы использовали 5 бесплатных вопросов на сегодня. Надеемся, они были полезны! Чтобы продолжить сейчас, вы можете перейти на Pro или вернуться завтра.",
+    limitReachedBody: "Вы использовали 5 бесплатных вопросов на сегодня.",
     limitUpgrade: "Смотреть тарифы Pro",
     limitReturn: "Вернуться завтра",
     freeUsage: "Бесплатные запросы:",
-
-    // Odilbek
-    odilbekTitle: "Одилбек AI - Правовой Консультант", // Updated Name
+    odilbekTitle: "Одилбек AI - Правовой Консультант",
     odilbekSubtitle: "Я объясню советы AI Юриста простым языком. Спрашивайте безлимитно!",
     odilbekWelcome: "Здравствуйте! Я Одилбек (Оксфордский магистр). Совет нашего адвоката показался сложным? Перешлите его мне, я всё объясню простыми словами.",
     askOdilbek: "Спросить Одилбека (Безлимитно)",
@@ -609,7 +990,6 @@ export const TRANSLATIONS = {
   [Language.EN]: {
     profileLoginPrompt: "Please login to manage your profile and subscription.",
     profileLoginBtn: "Login / Register",
-    // ... rest of EN ...
     title: "LAWIFY",
     subtitle: "Uzbekistan Legal Assistant",
     settings: "Settings",
@@ -617,7 +997,6 @@ export const TRANSLATIONS = {
     tone: "Tone",
     style: "Output Style",
     clarify: "Clarifying Questions",
-
     short: "Short",
     medium: "Medium",
     detailed: "Detailed",
@@ -635,7 +1014,6 @@ export const TRANSLATIONS = {
     persNeutral: "Neutral",
     persConsumer: "Pro-Consumer",
     persBusiness: "Pro-Business",
-
     inputPlaceholder: "Ask a legal question...",
     disclaimer: "This is informational guidance, not a substitute for a licensed lawyer. For urgent cases consult a lawyer.",
     startLive: "Live Chat",
@@ -650,8 +1028,6 @@ export const TRANSLATIONS = {
     fileSelected: "File selected",
     connectedSources: "Connected: 19 Codes & Lex.uz",
     sourcesTitle: "OFFICIAL SOURCES",
-
-    // Navigation
     navDashboard: "Dashboard",
     navChat: "AI Lawyer",
     navOdilbek: "Odilbek (Explainer)",
@@ -661,8 +1037,6 @@ export const TRANSLATIONS = {
     navProfile: "Profile",
     navPlans: "Pricing",
     upgradeBtn: "Upgrade to Pro",
-
-    // Dashboard
     dashboardWelcome: "Welcome Back",
     dashboardSubtitle: "How can I assist with your legal needs today?",
     quickChat: "Start Consultation",
@@ -671,13 +1045,11 @@ export const TRANSLATIONS = {
     quickContractsDesc: "Analyze legal risks in docs",
     quickTemplates: "AI Secretary",
     quickTemplatesDesc: "Draft Documents",
-    openApp: "Open App", // Localized
+    openApp: "Open App",
     didYouKnowTitle: "Uzbekistan's New Labor Code",
     didYouKnowContent: "The new Labor Code of 2023 introduced significant changes to employee rights, vacation calculations, and remote work regulations.",
     didYouKnowButton: "Learn More",
     didYouKnowTag: "Did you know?",
-
-    // Quick Links
     quickLinksTitle: "Quick Links",
     qlFamily: "Family Law",
     qlLabor: "Labor Code",
@@ -685,30 +1057,24 @@ export const TRANSLATIONS = {
     qlBusiness: "Business Law",
     qlHousing: "Housing Law",
     qlAdmin: "Administrative Law",
-    // Added
     qlBank: "Bank & Credit",
     qlHealth: "Healthcare",
     qlEdu: "Education Law",
     qlCustoms: "Customs",
     qlTax: "Taxes",
     qlPension: "Pension",
-
-    // Quick Link Prompts
     qlFamilyPrompt: "I have a question regarding Family Law.",
     qlLaborPrompt: "I need information about the Labor Code.",
     qlCriminalPrompt: "I have a question about the Criminal Code.",
     qlHousingPrompt: "I have a question about Housing Law.",
     qlBusinessPrompt: "I need legal advice for Business.",
     qlAdminPrompt: "Question about Administrative Liability.",
-    // Added
     qlBankPrompt: "Question about bank loans and deposits.",
     qlHealthPrompt: "Question about medical services and patient rights.",
     qlEduPrompt: "Question about education, tuition, and transfers.",
     qlCustomsPrompt: "I need info on customs duties and regulations.",
     qlTaxPrompt: "Question about taxes and benefits.",
     qlPensionPrompt: "Question about retirement age and calculation.",
-
-    // Dashboard Sections
     visTitle: "FUTURE PLANS",
     visAutoAgents: "Autonomous Legal Agents",
     visAutoAgentsDesc: "AI agents that can negotiate and file documents autonomously.",
@@ -718,8 +1084,6 @@ export const TRANSLATIONS = {
     visBlockchainDesc: "Immutable contract verification via National Blockchain.",
     visAIJudge: "AI Judge Assistance Pilot",
     visAIJudgeDesc: "Preliminary case assessment to reduce judicial load.",
-    
-    // Platform Impact Section
     statPlatformImpact: "PLATFORM IMPACT",
     statUsers: "Active Users",
     statDocs: "Documents Generated",
@@ -728,29 +1092,22 @@ export const TRANSLATIONS = {
     statLanguages: "Languages",
     statSystemOp: "System Operational",
     footerCopyright: "Lawify Inc. © 2026",
-    
     techTitle: "Trusted Technology",
     techSecure: "Secure & Encrypted",
     techModel: "Specialized Legal AI",
     techModelSub: "No Hallucinations",
     techDatabase: "Lex.uz Database",
-
-    // Library
     libraryTitle: "Legal Document Library",
     librarySubtitle: "Draft any document in minutes with AI Secretary.",
     librarySelectPrompt: "Select a template to start drafting.",
     libraryDifficulty: "Difficulty",
     libraryComingSoon: "Coming Soon", 
     libraryFooter: "All templates are fully compliant with the legislation of the Republic of Uzbekistan and approved by lawyers.",
-
-    // Library Categories
     catCivil: "Civil",
     catProperty: "Property",
     catFamily: "Family",
     catBusiness: "Business",
     catAdmin: "Administrative",
-
-    // Templates
     tDebtTitle: "Debt Receipt",
     tDebtDesc: "Formalize lending or borrowing money.",
     tRentTitle: "Rental Agreement",
@@ -763,31 +1120,22 @@ export const TRANSLATIONS = {
     tPowerDesc: "For managing vehicle or property.",
     tComplaintTitle: "Complaint Letter",
     tComplaintDesc: "Complaint against government bodies.",
-
-    // Localized Prompts
     tDebtPrompt: "I want to draft a Debt Receipt. Please ask me for the specific details (lender, borrower, amount, date) needed to make it legally valid before drafting.",
     tRentPrompt: "I want to create a Rental Agreement. Please interview me about the property, rent amount, and terms before generating the document.",
     tDivorcePrompt: "I need to write a Divorce Application for the court. Please ask me for the necessary details about marriage and children first.",
     tLaborPrompt: "I need to draft a Labor Contract under the new Labor Code. Please ask me about the job conditions and parties involved.",
     tPowerPrompt: "I need a Power of Attorney (for car or property). Please ask me for the specific details required by law.",
     tComplaintPrompt: "I want to file a formal Complaint against a government body. Please ask me clarifying questions about the incident first.",
-
     diffEasy: "Easy",
     diffMedium: "Medium",
     diffHard: "Hard",
-
-    // Topics Page
     topicsTitle: "Common Legal Topics",
     topicsSubtitle: "Select a topic to pre-fill the inquiry",
-
-    // History
     historyTitle: "Case History",
     historySubtitle: "Your previous consultations are stored locally on this device.",
     historyClear: "Clear History",
     historyEmpty: "No history yet. Start a new chat.",
     historyMessages: "messages",
-
-    // Profile
     profileTitle: "User Profile",
     profileSubtitle: "Manage your personal information and preferences",
     profileName: "Name",
@@ -796,8 +1144,6 @@ export const TRANSLATIONS = {
     profileConsultations: "Consultations",
     profileSavedDocs: "Saved Docs",
     profileSave: "Save Changes",
-
-    // Chat Filters
     filterTitle: "Filter Chat",
     filterDate: "Date Range",
     filterRole: "Sender",
@@ -807,14 +1153,10 @@ export const TRANSLATIONS = {
     filterLast24h: "Last 24 Hours",
     filterLastWeek: "Last Week",
     filterAllTime: "All Time",
-
-    // PLANS
     plansTitle: "Pricing Plans",
     plansSubtitle: "Select the plan that fits your needs. Cancel anytime.",
     currentPlan: "Current Plan",
     subscribe: "Subscribe",
-
-    // Features
     featRequestLimit: "requests / day",
     featUnlimited: "Unlimited requests",
     featDocs: "document analyses",
@@ -829,8 +1171,6 @@ export const TRANSLATIONS = {
     featHistory: "History Retention",
     featAds: "Ad-free Experience",
     featExport: "PDF Export",
-
-    // Plan Names & Prices
     pFreeName: "Free",
     pFreePrice: "0",
     pDayName: "Day Pro",
@@ -841,19 +1181,14 @@ export const TRANSLATIONS = {
     pMonthPrice: "119,000",
     pLawyerName: "Lawyer Pro",
     pLawyerPrice: "299,000",
-
     currency: "UZS",
     bestValue: "Best Value",
-    
-    // Usage Limits
     limitReachedTitle: "Daily Limit Reached",
-    limitReachedBody: "You've used your 5 free questions for today. We hope they were helpful! To continue immediately with unlimited access and deeper analysis, consider upgrading to Pro.",
+    limitReachedBody: "You've used your 5 free questions for today.",
     limitUpgrade: "View Pro Plans",
     limitReturn: "Come back tomorrow",
     freeUsage: "Free usage:",
-
-    // Odilbek
-    odilbekTitle: "Odilbek AI - Legal Explainer", // Updated Name
+    odilbekTitle: "Odilbek AI - Legal Explainer",
     odilbekSubtitle: "I explain AI Lawyer's advice in simple terms. Ask me anything, unlimited!",
     odilbekWelcome: "Hello! I'm Odilbek (Oxford Master Graduate). Did the Lawyer's advice sound too complicated? Send it over, and I'll break it down for you.",
     askOdilbek: "Ask Odilbek (Unlimited)",

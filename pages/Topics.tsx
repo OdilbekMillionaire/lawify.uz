@@ -30,54 +30,79 @@ const Topics: React.FC<TopicsProps> = ({ language }) => {
 
   const getColorClasses = (color: string) => {
       switch(color) {
-          case 'blue': return 'bg-blue-50 text-blue-600 border-blue-200 hover:border-blue-300';
-          case 'rose': return 'bg-rose-50 text-rose-600 border-rose-200 hover:border-rose-300';
-          case 'indigo': return 'bg-indigo-50 text-indigo-600 border-indigo-200 hover:border-indigo-300';
-          case 'emerald': return 'bg-emerald-50 text-emerald-600 border-emerald-200 hover:border-emerald-300';
-          case 'orange': return 'bg-orange-50 text-orange-600 border-orange-200 hover:border-orange-300';
-          case 'slate': return 'bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300';
-          default: return 'bg-gray-50 text-gray-600 border-gray-200 hover:border-gray-300';
+          case 'blue': return 'bg-blue-50 text-blue-600 border-blue-200';
+          case 'rose': return 'bg-rose-50 text-rose-600 border-rose-200';
+          case 'indigo': return 'bg-indigo-50 text-indigo-600 border-indigo-200';
+          case 'emerald': return 'bg-emerald-50 text-emerald-600 border-emerald-200';
+          case 'orange': return 'bg-orange-50 text-orange-600 border-orange-200';
+          case 'slate': return 'bg-slate-50 text-slate-600 border-slate-200';
+          default: return 'bg-gray-50 text-gray-600 border-gray-200';
       }
   }
 
   return (
-    <div className="h-full overflow-y-auto p-6 md:p-10 bg-slate-50">
-        <div className="max-w-6xl mx-auto">
-            <div className="text-center space-y-4 mb-12 animate-fade-in-up">
-                <h2 className="text-4xl font-serif font-bold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-blue-900 pb-1">{t.topicsTitle}</h2>
-                <p className="text-lg text-slate-500 max-w-2xl mx-auto">{t.topicsSubtitle}</p>
+    <div className="h-full overflow-y-auto bg-slate-50 p-6 md:p-10 lg:p-12">
+        <div className="max-w-7xl mx-auto">
+            {/* Page Header */}
+            <div className="space-y-4 mb-12 animate-fade-in text-center lg:text-left">
+                <h1 className="text-4xl md:text-5xl font-serif font-bold text-slate-900 leading-tight">
+                    {t.topicsTitle}
+                </h1>
+                <p className="text-lg text-slate-500 max-w-3xl font-light leading-relaxed border-l-4 border-blue-500 pl-6 hidden lg:block">
+                    {t.topicsSubtitle}
+                </p>
+                <p className="text-lg text-slate-500 font-light lg:hidden">
+                    {t.topicsSubtitle}
+                </p>
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+            {/* Topics Grid: Two-Column Layout for Categories */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
                 {topics.map((category, idx) => {
                     const style = getCategoryStyle(category.category);
                     const colorClass = getColorClasses(style.color);
 
                     return (
-                        <div key={idx} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 animate-fade-in-up" style={{ animationDelay: `${idx * 100}ms` }}>
-                            <div className="flex items-center space-x-3 mb-6">
-                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${colorClass.split(' ')[0]} ${colorClass.split(' ')[1]}`}>
+                        <div 
+                            key={idx} 
+                            className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300 animate-fade-in-up"
+                            style={{ animationDelay: `${idx * 50}ms` }}
+                        >
+                            {/* Category Title Header */}
+                            <div className="flex items-center space-x-4 mb-8">
+                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm shrink-0 ${colorClass}`}>
                                     {style.icon}
                                 </div>
-                                <h3 className="text-xl font-bold text-slate-800">{category.category}</h3>
+                                <h3 className="text-2xl font-serif font-bold text-slate-800 truncate">{category.category}</h3>
                             </div>
                             
+                            {/* Question Suggestions List: Two-Column Grid within each category card */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 {category.items.map((item, itemIdx) => (
                                     <button
                                         key={itemIdx}
                                         onClick={() => handleTopicSelect(item.prompt)}
-                                        className="text-left px-4 py-3 rounded-xl bg-gray-50 hover:bg-white border border-transparent hover:border-gray-200 hover:shadow-md transition-all group"
+                                        className="w-full text-left px-4 py-3 rounded-xl bg-gray-50/50 hover:bg-blue-50 border border-transparent hover:border-blue-100 transition-all group flex items-center justify-between h-full"
                                     >
-                                        <span className="font-medium text-slate-600 group-hover:text-blue-700 text-sm transition-colors block">
+                                        <span className="font-semibold text-slate-600 group-hover:text-blue-800 text-xs transition-colors line-clamp-2 leading-relaxed">
                                             {item.title}
                                         </span>
+                                        <svg className="w-3 h-3 text-gray-300 group-hover:text-blue-400 transform group-hover:translate-x-1 transition-all shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                                        </svg>
                                     </button>
                                 ))}
                             </div>
                         </div>
                     );
                 })}
+            </div>
+
+            {/* Footer Notice */}
+            <div className="mt-16 py-8 border-t border-gray-200 text-center">
+                <p className="text-sm text-gray-400 font-medium tracking-wide uppercase">
+                    {language === Language.UZ ? "Barcha ma'lumotlar Lex.uz rasmiy bazasiga asoslangan" : "All data based on Official Lex.uz legal database"}
+                </p>
             </div>
         </div>
     </div>

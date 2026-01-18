@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Language } from '../types';
@@ -42,7 +43,6 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
 
   const handleFactClick = (fact: any) => {
       let prompt = "";
-      // Construct a natural language prompt based on the fact title
       if (language === Language.UZ) {
           prompt = `Men "${fact.title}" haqida batafsil ma'lumot olmoqchiman.`;
       } else if (language === Language.RU) {
@@ -76,10 +76,8 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
 
   return (
     <div className="h-full overflow-y-auto bg-slate-50 flex flex-col">
-        {/* Main Content */}
         <div className="flex-1 p-6 md:p-10 max-w-7xl mx-auto w-full space-y-16 pb-24">
             
-            {/* Professional Header */}
             <div className="space-y-4 animate-fade-in pt-4">
                 <h1 className="text-5xl md:text-6xl font-serif font-bold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 pb-2">
                     {t.dashboardWelcome}
@@ -89,7 +87,6 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
                 </p>
             </div>
 
-            {/* Core Modules Grid - Futuristic Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <AppCard 
                     title={t.navChat}
@@ -120,7 +117,6 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
                 />
             </div>
 
-            {/* Quick Access Section */}
             <div className="space-y-6 animate-fade-in-up delay-200">
                 <div className="flex items-center space-x-4">
                     <h3 className="text-xl font-bold text-slate-800 uppercase tracking-wide">{t.quickLinksTitle}</h3>
@@ -140,14 +136,12 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
                 </div>
             </div>
 
-            {/* Premium Insight Carousel */}
             <div className="relative h-72 overflow-hidden rounded-3xl shadow-2xl animate-fade-in-up delay-300 group">
                 {facts.map((fact, index) => (
                     <div 
                         key={index}
                         className={`absolute inset-0 transition-all duration-1000 ease-in-out bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-900 p-10 text-white flex flex-col justify-center ${index === currentFactIndex ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full'}`}
                     >
-                        {/* Background Shapes */}
                         <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
                         <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl -ml-10 -mb-10"></div>
                         
@@ -155,7 +149,7 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
                             <div className="flex items-center space-x-3 mb-6">
                                 <span className="px-3 py-1 bg-blue-500/20 text-blue-300 text-xs font-bold uppercase tracking-widest rounded-full border border-blue-500/30 backdrop-blur-sm flex items-center">
                                     <span className="mr-2 text-lg">💡</span>
-                                    {t.didYouKnowTag || "Bilasizmi?"}
+                                    {t.didYouKnowTag}
                                 </span>
                             </div>
                             <h3 className="text-3xl md:text-4xl font-serif font-bold mb-4 leading-tight">{fact.title}</h3>
@@ -173,7 +167,6 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
                     </div>
                 ))}
                 
-                {/* Indicators */}
                 <div className="absolute bottom-8 right-10 flex space-x-2 z-20 max-w-[200px] overflow-hidden">
                     {facts.map((_, idx) => (
                         <button
@@ -185,7 +178,6 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
                 </div>
             </div>
 
-            {/* NEW SECTION: Impact Stats & Why Lawify */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-fade-in-up delay-300">
                 <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-center">
                     <h3 className="text-xl font-bold text-slate-900 mb-6 flex items-center">
@@ -217,13 +209,12 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
                             </div>
                             <div>
                                 <p className="font-bold text-slate-800">{t.techModel}</p>
-                                <p className="text-xs text-slate-500">{t.techModelSub || "Gallyutsinatsiyasiz"}</p>
+                                <p className="text-xs text-slate-500">{t.techModelSub}</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Stats */}
                 <div className="bg-slate-900 p-8 rounded-3xl shadow-xl text-white relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/20 rounded-full blur-3xl -mr-16 -mt-16"></div>
                     <div className="relative z-10 h-full flex flex-col justify-between">
@@ -259,7 +250,6 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
                 </div>
             </div>
 
-            {/* NEW SECTION: Vision (Clean Corporate Cards Redesign) */}
             <div className="space-y-8 animate-fade-in-up delay-300">
                 <div className="flex items-center space-x-4">
                     <h3 className="text-xl font-bold text-slate-800 uppercase tracking-wide">{t.visTitle}</h3>
@@ -267,7 +257,6 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    {/* Card 1 */}
                     <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-start group">
                         <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
                             <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
@@ -276,7 +265,6 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
                         <p className="text-sm text-gray-500 leading-relaxed">{t.visAutoAgentsDesc}</p>
                     </div>
 
-                    {/* Card 2 */}
                     <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-start group">
                         <div className="w-14 h-14 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
                             <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path></svg>
@@ -285,7 +273,6 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
                         <p className="text-sm text-gray-500 leading-relaxed">{t.visCourtAPIDesc}</p>
                     </div>
 
-                    {/* Card 3 */}
                     <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-start group">
                         <div className="w-14 h-14 bg-green-50 text-green-600 rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
                             <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
@@ -294,7 +281,6 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
                         <p className="text-sm text-gray-500 leading-relaxed">{t.visBlockchainDesc}</p>
                     </div>
 
-                    {/* Card 4 */}
                     <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-start group">
                         <div className="w-14 h-14 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
                             <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
