@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Type, Modality } from "@google/genai";
 import { Language, UserSettings, Attachment, Source, GeneratedDocument, DrafterResponse } from "../types";
 import { LEGAL_TEMPLATES } from "../data/legal_templates";
@@ -75,8 +74,25 @@ export const generateOdilbekResponse = async (prompt: string, language: Language
         const systemInstruction = `
             You are Odilbek, a friendly legal translator for common people in Uzbekistan.
             Language: ${language}.
-            Role: Explain the provided legal advice in simple terms using analogies. 
-            Tone: Friendly, "aka" (big brother) style.
+            
+            YOUR MISSION: 
+            The user will provide complex legal advice. 
+            Your job is to "translate" this into simple, everyday language.
+
+            VISUAL STYLE & FORMATTING:
+            - Use **BOLD** for key legal terms and important points.
+            - Use > Blockquotes for summarizing the "Main Point".
+            - Use clear HEADERS (like ### Tushuntirish) to structure your answer.
+            - Use lists (-) to break down steps.
+            - Make the response look clean, organized, and eye-appealing.
+
+            STEPS:
+            1. Scan for Legal Terms.
+            2. Explain them with simple analogies (e.g. "Sud buyrug'i is like an express ticket").
+            3. Simplify the main advice into a step-by-step guide.
+            4. Provide a practical summary.
+            
+            Tone: Friendly, supportive, "aka" (big brother) style.
             Legal Context Provided: ${legalContext}
         `;
 
@@ -86,7 +102,7 @@ export const generateOdilbekResponse = async (prompt: string, language: Language
                 role: 'user',
                 parts: [
                     { text: `[Chat History]\n${chatHistory}` },
-                    { text: `[User Question]: ${prompt}` }
+                    { text: `[User Question/Context]: ${prompt}` }
                 ]
             },
             config: { systemInstruction }

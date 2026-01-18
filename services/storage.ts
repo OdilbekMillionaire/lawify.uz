@@ -3,6 +3,18 @@ import { ChatSession, Message } from "../types";
 
 const STORAGE_KEY = 'lawify_history';
 
+// Utility to strip markdown characters for clean text display
+export const cleanText = (text: string): string => {
+  if (!text) return "";
+  return text
+    .replace(/\*\*/g, '')         // Remove bold
+    .replace(/^#{1,6}\s+/gm, '')  // Remove headers
+    .replace(/#/g, '')            // Remove remaining hashes
+    .replace(/\*/g, '')           // Remove remaining asterisks
+    .replace(/`/g, '')            // Remove code ticks
+    .trim();
+};
+
 export const saveSession = (
     messages: Message[], 
     type: 'lawyer' | 'odilbek' | 'drafter' = 'lawyer', 
@@ -22,12 +34,14 @@ export const saveSession = (
         title = customData.title;
     } else {
         const firstUserMsg = messages.find(m => m.role === 'user');
-        title = firstUserMsg ? firstUserMsg.text.slice(0, 40) + (firstUserMsg.text.length > 40 ? '...' : '') : 'New Consultation';
+        // Clean title text as well
+        title = firstUserMsg ? cleanText(firstUserMsg.text).slice(0, 40) + (firstUserMsg.text.length > 40 ? '...' : '') : 'New Consultation';
     }
   }
 
   const lastMsg = messages[messages.length - 1];
-  const preview = lastMsg ? (lastMsg.text.slice(0, 60) + '...') : '';
+  // Clean preview text to remove markdown symbols
+  const preview = lastMsg ? (cleanText(lastMsg.text).slice(0, 60) + '...') : '';
 
   const newSession: ChatSession = {
     id: sessionId,

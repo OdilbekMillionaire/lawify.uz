@@ -3,6 +3,7 @@ import React, { useRef, useEffect, useState, useMemo } from 'react';
 import { parse } from 'marked';
 import { Message, Language, Attachment } from '../types';
 import { TRANSLATIONS } from '../constants';
+import { cleanText } from '../services/storage';
 
 interface ChatInterfaceProps {
   messages: Message[];
@@ -472,6 +473,11 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
             const isEditing = editingMessageId === msg.id;
             const isExpanded = expandedMessages.has(msg.id);
             const isLongMessage = msg.text.length > 500;
+            // Disable collapse for Odilbek mode
+            const shouldCollapse = isLongMessage && !isExpanded && !isOdilbekMode;
+            
+            // CUSTOM STYLE FOR ODILBEK USER CONTEXT
+            const isOdilbekContext = isOdilbekMode && msg.role === 'user';
             
             return (
               <div 
@@ -480,9 +486,11 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
               >
                 <div 
                   className={`max-w-[85%] rounded-2xl px-6 py-4 shadow-sm relative group ${
-                    msg.role === 'user' 
-                      ? 'bg-blue-600 text-white rounded-br-none' 
-                      : `${isOdilbekMode ? 'bg-amber-100 border-amber-200' : 'bg-white border-gray-100'} text-gray-800 rounded-bl-none`
+                    isOdilbekContext
+                      ? 'bg-white border-l-4 border-amber-500 text-slate-700 rounded-lg shadow-sm w-full max-w-[95%]' // Document style for Odilbek context
+                      : msg.role === 'user' 
+                        ? 'bg-blue-600 text-white rounded-br-none' 
+                        : `${isOdilbekMode ? 'bg-amber-100 border-amber-200' : 'bg-white border-gray-100'} text-gray-800 rounded-bl-none`
                   }`}
                 >
                   {/* EDIT MODE (User) */}
@@ -519,10 +527,14 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                              </div>
                           )}
 
-                          {/* Render content based on role: User gets plain text, Model gets Markdown */}
+                          {/* Render content based on role: User gets plain text (or clean text in Odilbek), Model gets Markdown */}
                           {msg.role === 'user' ? (
                              <div className="whitespace-pre-wrap">
-                                 {highlightText(msg.text || (msg.attachment?.mimeType.startsWith('audio/') ? "(Audio sent)" : ""), searchQuery)}
+                                 {/* IMPORTANT: Apply cleanText to user messages in Odilbek mode to strip markdown artifacts */}
+                                 {highlightText(
+                                     isOdilbekMode ? cleanText(msg.text) : (msg.text || (msg.attachment?.mimeType.startsWith('audio/') ? "(Audio sent)" : "")), 
+                                     searchQuery
+                                 )}
                                  {/* Edit Button for User */}
                                  <button 
                                     onClick={() => startEditing(msg)}
@@ -537,26 +549,39 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                             <div className="relative">
                                 {/* Animated Container */}
                                 <div 
-                                    className={`relative transition-[max-height] duration-500 ease-in-out overflow-hidden ${isExpanded || !isLongMessage ? 'max-h-[5000px]' : 'max-h-[200px]'}`}
+                                    className={`relative transition-[max-height] duration-500 ease-in-out overflow-hidden ${!shouldCollapse ? 'max-h-[5000px]' : 'max-h-[200px]'}`}
                                 >
                                     <div 
-                                        className="prose prose-sm prose-slate max-w-none break-words leading-relaxed prose-p:my-2 prose-headings:font-serif prose-headings:font-bold prose-headings:text-slate-900 prose-headings:mt-4 prose-headings:mb-2 prose-a:text-blue-600 prose-a:font-medium prose-strong:text-slate-900 prose-ul:my-2 prose-li:my-1"
+                                        className={`prose prose-sm max-w-none break-words leading-relaxed prose-p:my-2 prose-a:text-blue-600 prose-a:font-medium prose-ul:my-2 prose-li:my-1
+                                            ${isOdilbekMode 
+                                                ? 'prose-headings:font-serif prose-headings:text-amber-900 prose-headings:font-bold prose-headings:mt-4 prose-headings:mb-2 prose-strong:text-amber-900 prose-strong:font-bold prose-slate' 
+                                                : 'prose-headings:font-serif prose-headings:font-bold prose-headings:text-slate-900 prose-headings:mt-4 prose-headings:mb-2 prose-strong:text-slate-900 prose-slate'
+                                            }`}
                                         dangerouslySetInnerHTML={{ __html: highlightHtml(parse(msg.text) as string, searchQuery) }} 
                                     />
                                     {/* Gradient overlay when collapsed */}
-                                    {isLongMessage && !isExpanded && (
+                                    {shouldCollapse && (
                                         <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-transparent to-white/0 pointer-events-none"></div>
                                     )}
                                 </div>
 
-                                {isLongMessage && (
+                                {shouldCollapse && (
                                     <button 
                                         onClick={() => toggleExpand(msg.id)}
                                         className="text-blue-600 text-xs font-semibold hover:underline mt-2 inline-flex items-center z-10 relative"
                                         aria-expanded={isExpanded}
                                     >
-                                        {isExpanded ? "Show Less" : "Read More"}
-                                        <svg className={`w-3 h-3 ml-1 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                                        Read More
+                                        <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                                    </button>
+                                )}
+                                {isExpanded && !isOdilbekMode && isLongMessage && (
+                                    <button 
+                                        onClick={() => toggleExpand(msg.id)}
+                                        className="text-blue-600 text-xs font-semibold hover:underline mt-2 inline-flex items-center z-10 relative"
+                                    >
+                                        Show Less
+                                        <svg className="w-3 h-3 ml-1 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
                                     </button>
                                 )}
                             </div>
@@ -678,8 +703,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
             </div>
         )}
 
-        {/* ... Existing Attachment & Error UI ... */}
-        
         {/* ... Existing Input Box code, just minimal styling adjustments handled by container class ... */}
         <div className="flex items-end space-x-2">
           <div className="flex-1 bg-white rounded-2xl border border-gray-200 focus-within:ring-2 focus-within:ring-blue-100 focus-within:border-blue-400 transition-all flex items-center p-2 shadow-sm">
@@ -718,7 +741,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={isRecording ? "Listening..." : (isOdilbekMode ? "Ask Odilbek anything..." : t.inputPlaceholder)}
+              placeholder={isRecording ? "Listening..." : (isOdilbekMode ? t.odilbekPlaceholder : t.inputPlaceholder)}
               rows={1}
               className={`flex-1 bg-transparent border-none focus:ring-0 resize-none max-h-32 py-3 px-2 text-slate-800 placeholder-gray-500 scrollbar-hide text-base ${isRecording ? 'animate-pulse text-red-500' : ''}`}
               style={{ minHeight: '48px' }}

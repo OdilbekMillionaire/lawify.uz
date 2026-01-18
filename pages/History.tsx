@@ -1,7 +1,8 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Language, ChatSession } from '../types';
-import { getHistory, clearHistory } from '../services/storage';
+import { getHistory, clearHistory, cleanText } from '../services/storage';
 import { TRANSLATIONS } from '../constants'; 
 
 interface HistoryProps {
@@ -39,7 +40,7 @@ const History: React.FC<HistoryProps> = ({ language = Language.UZ }) => {
 
   return (
     <div className="h-full overflow-y-auto p-6 md:p-10 bg-slate-50">
-        <div className="max-w-4xl mx-auto space-y-8">
+        <div className="max-w-6xl mx-auto space-y-8">
              <div className="flex items-center justify-between">
                 <div>
                     <h2 className="text-3xl font-serif font-bold text-slate-900">{t.historyTitle}</h2>
@@ -50,8 +51,8 @@ const History: React.FC<HistoryProps> = ({ language = Language.UZ }) => {
                 )}
             </div>
 
-            {/* Tabs */}
-            <div className="flex space-x-1 bg-white p-1.5 rounded-xl border border-gray-200 w-full md:w-3/4 shadow-sm">
+            {/* Tabs - Expanded to w-full as requested */}
+            <div className="flex space-x-1 bg-white p-1.5 rounded-xl border border-gray-200 w-full shadow-sm">
                 <button
                     onClick={() => setActiveTab('lawyer')}
                     className={`flex-1 py-3 rounded-lg text-sm font-bold transition-all flex items-center justify-center space-x-2 ${
@@ -112,11 +113,11 @@ const History: React.FC<HistoryProps> = ({ language = Language.UZ }) => {
                                     session.type === 'drafter' ? 'text-green-900 group-hover:text-green-700' :
                                     'text-slate-800 group-hover:text-blue-600'
                                 }`}>
-                                    {session.title}
+                                    {cleanText(session.title)}
                                 </h3>
                                 <span className="text-xs text-gray-400">{new Date(session.date).toLocaleDateString()}</span>
                             </div>
-                            <p className="text-sm text-gray-500 line-clamp-2">{session.preview}</p>
+                            <p className="text-sm text-gray-500 line-clamp-2">{cleanText(session.preview)}</p>
                              <div className="mt-3 flex items-center text-xs text-gray-400 space-x-4">
                                 <span>{session.messages.length} {t.historyMessages}</span>
                                 <span className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity text-blue-500">

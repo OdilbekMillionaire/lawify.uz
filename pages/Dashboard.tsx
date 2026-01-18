@@ -28,124 +28,283 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
     { label: t.qlHousing, icon: "🏠", prompt: t.qlHousingPrompt },
     { label: t.qlBusiness, icon: "💼", prompt: t.qlBusinessPrompt },
     { label: t.qlAdmin, icon: "📋", prompt: t.qlAdminPrompt },
+    { label: t.qlBank, icon: "🏦", prompt: t.qlBankPrompt },
+    { label: t.qlHealth, icon: "🏥", prompt: t.qlHealthPrompt },
+    { label: t.qlEdu, icon: "🎓", prompt: t.qlEduPrompt },
+    { label: t.qlCustoms, icon: "🛃", prompt: t.qlCustomsPrompt },
+    { label: t.qlTax, icon: "💸", prompt: t.qlTaxPrompt },
+    { label: t.qlPension, icon: "👴", prompt: t.qlPensionPrompt },
   ];
 
   const handleQuickLink = (prompt: string) => {
       navigate('/chat', { state: { initialPrompt: prompt } });
   };
 
-  const ActionCard = ({ title, desc, icon, path, color, delayClass }: any) => (
+  const handleFactClick = (fact: any) => {
+      let prompt = "";
+      // Construct a natural language prompt based on the fact title
+      if (language === Language.UZ) {
+          prompt = `Men "${fact.title}" haqida batafsil ma'lumot olmoqchiman.`;
+      } else if (language === Language.RU) {
+          prompt = `Я хочу узнать подробнее о теме: "${fact.title}".`;
+      } else {
+          prompt = `I would like to know more about "${fact.title}".`;
+      }
+      navigate('/chat', { state: { initialPrompt: prompt } });
+  };
+
+  const AppCard = ({ title, desc, icon, path, color, gradient, delayClass }: any) => (
       <button 
         onClick={() => navigate(path)}
-        className={`flex flex-col text-left bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md hover:border-blue-200 transition-all group animate-fade-in-up ${delayClass} focus:outline-none focus:ring-2 focus:ring-blue-400`}
-        aria-label={`${title}: ${desc}`}
+        className={`relative overflow-hidden group flex flex-col items-start text-left bg-white p-8 rounded-3xl shadow-sm border border-gray-100 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 animate-fade-in-up ${delayClass}`}
       >
-          <div className={`w-12 h-12 rounded-full ${color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+          <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${gradient} opacity-10 rounded-bl-full transition-transform group-hover:scale-125`}></div>
+          
+          <div className={`w-14 h-14 rounded-2xl ${color} flex items-center justify-center mb-6 shadow-lg group-hover:rotate-12 transition-transform`}>
               {icon}
           </div>
-          <h3 className="font-serif font-bold text-lg text-slate-900 mb-1">{title}</h3>
-          <p className="text-sm text-gray-500">{desc}</p>
+          
+          <h3 className="font-serif font-bold text-2xl text-slate-900 mb-2 group-hover:text-blue-700 transition-colors">{title}</h3>
+          <p className="text-sm text-gray-500 leading-relaxed max-w-[85%]">{desc}</p>
+          
+          <div className="mt-6 flex items-center text-sm font-semibold text-gray-400 group-hover:text-blue-600 transition-colors">
+              <span>{t.openApp}</span>
+              <svg className="w-4 h-4 ml-2 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+          </div>
       </button>
   );
 
   return (
-    <div className="h-full overflow-y-auto p-6 md:p-10 bg-slate-50">
-        <div className="max-w-5xl mx-auto space-y-10">
-            {/* Header Section */}
-            <div className="space-y-2 animate-fade-in">
-                <h2 className="text-4xl font-serif font-bold text-slate-900">{t.dashboardWelcome}</h2>
-                <p className="text-lg text-slate-500 max-w-2xl">{t.dashboardSubtitle}</p>
+    <div className="h-full overflow-y-auto bg-slate-50 flex flex-col">
+        {/* Main Content */}
+        <div className="flex-1 p-6 md:p-10 max-w-7xl mx-auto w-full space-y-16 pb-24">
+            
+            {/* Professional Header */}
+            <div className="space-y-4 animate-fade-in pt-4">
+                <h1 className="text-5xl md:text-6xl font-serif font-bold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 pb-2">
+                    {t.dashboardWelcome}
+                </h1>
+                <p className="text-xl text-slate-500 max-w-3xl font-light leading-relaxed border-l-4 border-blue-500 pl-6">
+                    {t.dashboardSubtitle}
+                </p>
             </div>
 
-            {/* Quick Actions Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <ActionCard 
-                    title={t.quickChat}
+            {/* Core Modules Grid - Futuristic Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <AppCard 
+                    title={t.navChat}
                     desc={t.quickChatDesc}
                     path="/chat"
-                    color="bg-blue-100 text-blue-600"
-                    icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>}
+                    color="bg-blue-600 text-white"
+                    gradient="from-blue-400 to-indigo-600"
+                    icon={<svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path></svg>}
                     delayClass="delay-100"
                 />
-                 <ActionCard 
-                    title={t.quickContracts}
-                    desc={t.quickContractsDesc}
-                    path="/chat"
-                    color="bg-purple-100 text-purple-600"
-                    icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>}
+                 <AppCard 
+                    title={t.odilbekTitle}
+                    desc={t.odilbekSubtitle}
+                    path="/odilbek"
+                    color="bg-amber-500 text-white"
+                    gradient="from-amber-400 to-orange-600"
+                    icon={<span className="text-3xl">🧑‍🏫</span>}
                     delayClass="delay-200"
                 />
-                 <ActionCard 
-                    title={t.quickTemplates}
+                 <AppCard 
+                    title={t.navTemplates}
                     desc={t.quickTemplatesDesc}
                     path="/library"
-                    color="bg-green-100 text-green-600"
-                    icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>}
+                    color="bg-emerald-600 text-white"
+                    gradient="from-emerald-400 to-green-600"
+                    icon={<svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>}
                     delayClass="delay-300"
                 />
             </div>
 
-            {/* Quick Links Section */}
-            <div className="space-y-4 animate-fade-in-up delay-200">
-                <h3 className="text-xl font-serif font-bold text-slate-800 flex items-center">
-                    <span className="w-1.5 h-6 bg-blue-600 rounded-full mr-3"></span>
-                    {t.quickLinksTitle}
-                </h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+            {/* Quick Access Section */}
+            <div className="space-y-6 animate-fade-in-up delay-200">
+                <div className="flex items-center space-x-4">
+                    <h3 className="text-xl font-bold text-slate-800 uppercase tracking-wide">{t.quickLinksTitle}</h3>
+                    <div className="h-px bg-gray-200 flex-1"></div>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                     {quickLinks.map((link, idx) => (
                         <button
                             key={idx}
                             onClick={() => handleQuickLink(link.prompt)}
-                            className="flex flex-col items-center justify-center p-4 bg-white border border-gray-100 rounded-xl hover:shadow-md hover:border-blue-200 transition-all group focus:outline-none focus:ring-2 focus:ring-blue-400"
-                            aria-label={link.label}
+                            className="flex flex-col items-center justify-center p-4 bg-white border border-gray-200 rounded-2xl hover:border-blue-400 hover:shadow-lg hover:bg-blue-50 transition-all group h-32"
                         >
-                            <span className="text-2xl mb-2 group-hover:scale-110 transition-transform">{link.icon}</span>
-                            <span className="text-xs font-semibold text-center text-slate-600 group-hover:text-blue-700">{link.label}</span>
+                            <span className="text-3xl mb-3 group-hover:scale-125 transition-transform duration-300 filter drop-shadow-sm">{link.icon}</span>
+                            <span className="text-xs font-bold text-slate-600 group-hover:text-blue-800 text-center leading-tight">{link.label}</span>
                         </button>
                     ))}
                 </div>
             </div>
 
-            {/* Fact Carousel Section */}
-            <div className="relative h-64 overflow-hidden rounded-3xl shadow-xl animate-fade-in-up delay-300">
+            {/* Premium Insight Carousel */}
+            <div className="relative h-72 overflow-hidden rounded-3xl shadow-2xl animate-fade-in-up delay-300 group">
                 {facts.map((fact, index) => (
                     <div 
                         key={index}
-                        className={`absolute inset-0 transition-opacity duration-1000 bg-gradient-to-r from-slate-900 to-slate-800 p-8 text-white flex flex-col justify-center ${index === currentFactIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
+                        className={`absolute inset-0 transition-all duration-1000 ease-in-out bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-900 p-10 text-white flex flex-col justify-center ${index === currentFactIndex ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full'}`}
                     >
-                        <div className="absolute right-0 top-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -mr-16 -mt-16"></div>
-                        <div className="relative z-10">
-                            <div className="flex items-center space-x-2 mb-4 text-blue-300">
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                <span className="text-sm font-semibold uppercase tracking-wider">{t.didYouKnowTag}</span>
+                        {/* Background Shapes */}
+                        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
+                        <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl -ml-10 -mb-10"></div>
+                        
+                        <div className="relative z-10 max-w-3xl">
+                            <div className="flex items-center space-x-3 mb-6">
+                                <span className="px-3 py-1 bg-blue-500/20 text-blue-300 text-xs font-bold uppercase tracking-widest rounded-full border border-blue-500/30 backdrop-blur-sm flex items-center">
+                                    <span className="mr-2 text-lg">💡</span>
+                                    {t.didYouKnowTag || "Bilasizmi?"}
+                                </span>
                             </div>
-                            <h3 className="text-2xl font-serif font-bold mb-3">{fact.title}</h3>
-                            <p className="text-slate-300 max-w-xl leading-relaxed">
+                            <h3 className="text-3xl md:text-4xl font-serif font-bold mb-4 leading-tight">{fact.title}</h3>
+                            <p className="text-slate-300 text-lg leading-relaxed mb-8 border-l-2 border-slate-600 pl-4">
                                 {fact.content}
                             </p>
                             <button 
-                                onClick={() => navigate('/chat')}
-                                className="mt-6 bg-white text-slate-900 px-6 py-2 rounded-lg font-semibold hover:bg-blue-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"
-                                aria-label={fact.button}
+                                onClick={() => handleFactClick(fact)}
+                                className="inline-flex items-center space-x-2 text-white font-bold hover:text-blue-300 transition-colors group-hover:translate-x-2 duration-300"
                             >
-                                {fact.button}
+                                <span>{fact.button}</span>
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
                             </button>
                         </div>
                     </div>
                 ))}
                 
-                {/* Carousel Indicators */}
-                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
+                {/* Indicators */}
+                <div className="absolute bottom-8 right-10 flex space-x-2 z-20 max-w-[200px] overflow-hidden">
                     {facts.map((_, idx) => (
                         <button
                             key={idx}
                             onClick={() => setCurrentFactIndex(idx)}
-                            className={`w-2 h-2 rounded-full transition-all ${idx === currentFactIndex ? 'bg-white w-6' : 'bg-white/30 hover:bg-white/60'}`}
-                            aria-label={`Show fact ${idx + 1}`}
+                            className={`h-1.5 rounded-full transition-all duration-300 flex-shrink-0 ${idx === currentFactIndex ? 'bg-white w-6' : 'bg-white/20 w-2 hover:bg-white/40'}`}
                         />
                     ))}
                 </div>
             </div>
+
+            {/* NEW SECTION: Impact Stats & Why Lawify */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-fade-in-up delay-300">
+                <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-center">
+                    <h3 className="text-xl font-bold text-slate-900 mb-6 flex items-center">
+                        <span className="w-2 h-8 bg-blue-500 rounded-full mr-3"></span>
+                        {t.techTitle}
+                    </h3>
+                    <div className="space-y-4">
+                        <div className="flex items-center p-3 bg-gray-50 rounded-xl">
+                            <div className="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center mr-4">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </div>
+                            <div>
+                                <p className="font-bold text-slate-800">{t.statAccuracy}</p>
+                                <p className="text-xs text-slate-500">99.8% based on lex.uz</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center p-3 bg-gray-50 rounded-xl">
+                            <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mr-4">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                            </div>
+                            <div>
+                                <p className="font-bold text-slate-800">{t.techSecure}</p>
+                                <p className="text-xs text-slate-500">End-to-End Encryption</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center p-3 bg-gray-50 rounded-xl">
+                            <div className="w-10 h-10 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center mr-4">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                            </div>
+                            <div>
+                                <p className="font-bold text-slate-800">{t.techModel}</p>
+                                <p className="text-xs text-slate-500">{t.techModelSub || "Gallyutsinatsiyasiz"}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Stats */}
+                <div className="bg-slate-900 p-8 rounded-3xl shadow-xl text-white relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/20 rounded-full blur-3xl -mr-16 -mt-16"></div>
+                    <div className="relative z-10 h-full flex flex-col justify-between">
+                        <div>
+                            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-8">{t.statPlatformImpact}</h3>
+                            <div className="grid grid-cols-2 gap-8">
+                                <div>
+                                    <p className="text-4xl font-bold text-white mb-1">15k+</p>
+                                    <p className="text-xs text-slate-400">{t.statUsers}</p>
+                                </div>
+                                <div>
+                                    <p className="text-4xl font-bold text-white mb-1">85k+</p>
+                                    <p className="text-xs text-slate-400">{t.statDocs}</p>
+                                </div>
+                                <div>
+                                    <p className="text-4xl font-bold text-white mb-1">24/7</p>
+                                    <p className="text-xs text-slate-400">{t.statAIAvailability}</p>
+                                </div>
+                                <div>
+                                    <p className="text-4xl font-bold text-white mb-1">3</p>
+                                    <p className="text-xs text-slate-400">{t.statLanguages}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="mt-8 pt-8 border-t border-slate-800 flex justify-between items-center">
+                            <span className="text-xs text-slate-500">{t.footerCopyright}</span>
+                            <div className="flex space-x-3">
+                                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                <span className="text-xs text-green-400 font-bold">{t.statSystemOp}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* NEW SECTION: Vision (Clean Corporate Cards Redesign) */}
+            <div className="space-y-8 animate-fade-in-up delay-300">
+                <div className="flex items-center space-x-4">
+                    <h3 className="text-xl font-bold text-slate-800 uppercase tracking-wide">{t.visTitle}</h3>
+                    <div className="h-px bg-gray-200 flex-1"></div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    {/* Card 1 */}
+                    <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-start group">
+                        <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
+                            <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                        </div>
+                        <h4 className="font-bold text-slate-900 mb-2 group-hover:text-blue-700 transition-colors uppercase text-sm tracking-wide">{t.visAutoAgents}</h4>
+                        <p className="text-sm text-gray-500 leading-relaxed">{t.visAutoAgentsDesc}</p>
+                    </div>
+
+                    {/* Card 2 */}
+                    <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-start group">
+                        <div className="w-14 h-14 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
+                            <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path></svg>
+                        </div>
+                        <h4 className="font-bold text-slate-900 mb-2 group-hover:text-purple-700 transition-colors uppercase text-sm tracking-wide">{t.visCourtAPI}</h4>
+                        <p className="text-sm text-gray-500 leading-relaxed">{t.visCourtAPIDesc}</p>
+                    </div>
+
+                    {/* Card 3 */}
+                    <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-start group">
+                        <div className="w-14 h-14 bg-green-50 text-green-600 rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
+                            <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                        </div>
+                        <h4 className="font-bold text-slate-900 mb-2 group-hover:text-green-700 transition-colors uppercase text-sm tracking-wide">{t.visBlockchain}</h4>
+                        <p className="text-sm text-gray-500 leading-relaxed">{t.visBlockchainDesc}</p>
+                    </div>
+
+                    {/* Card 4 */}
+                    <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-start group">
+                        <div className="w-14 h-14 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
+                            <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                        <h4 className="font-bold text-slate-900 mb-2 group-hover:text-orange-700 transition-colors uppercase text-sm tracking-wide">{t.visAIJudge}</h4>
+                        <p className="text-sm text-gray-500 leading-relaxed">{t.visAIJudgeDesc}</p>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
   );

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Language, UserSettings, Message, Attachment } from '../types';
@@ -28,6 +29,7 @@ const ChatPage: React.FC<ChatPageProps> = ({
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [usageCount, setUsageCount] = useState(0);
+  const [prefilledPrompt, setPrefilledPrompt] = useState<string>('');
 
   // Handle Location State (Prompt or Restored Messages)
   useEffect(() => {
@@ -35,15 +37,14 @@ const ChatPage: React.FC<ChatPageProps> = ({
     
     if (state?.restoredMessages) {
         setMessages(state.restoredMessages);
-        // Clear state so a refresh doesn't duplicate logic if we were doing other things
-        // But for messages it's fine.
     } else if (state?.initialPrompt) {
-        // Automatically send the prompt if it came from another page
-        handleSendMessage(state.initialPrompt);
-        // Clear history state to prevent re-sending on refresh is hard in React Router v6 without replace
+        // Pre-fill the input instead of sending automatically
+        setPrefilledPrompt(state.initialPrompt);
+        
+        // Clear history state to prevent re-filling on refresh
         navigate('.', { replace: true, state: {} });
     }
-  }, [location.state]);
+  }, [location.state, navigate]);
 
   // Initialize usage count on mount
   useEffect(() => {
@@ -188,34 +189,8 @@ const ChatPage: React.FC<ChatPageProps> = ({
   };
 
   const handleAskOdilbek = (context: string) => {
-      const sessionId = Date.now().toString();
-      const contextPreview = context.length > 2000 ? context.slice(0, 2000) + "..." : context;
-      
-      const initialMsgs: Message[] = [
-          {
-              id: sessionId,
-              role: 'user',
-              text: `Please explain this context: "${contextPreview}"`,
-              timestamp: Date.now() - 1000
-          },
-          {
-              id: (Date.now() + 1).toString(),
-              role: 'model',
-              text: language === Language.UZ 
-                ? `Assalomu alaykum! Men Odilbekman. Advokatimizning maslahatini tushunishga qiynalyapsizmi? Menga yuboring, oddiy qilib tushuntirib beraman.\n\n**Advice Context:**\n> *${contextPreview}*`
-                : `Hello! I'm Odilbek. Is the lawyer's advice a bit complex? Let me break it down for you.\n\n**Advice Context:**\n> *${contextPreview}*`,
-              timestamp: Date.now()
-          }
-      ];
-      // Save initial session immediately
-      saveSession(initialMsgs, 'odilbek', `Explanation: ${context.slice(0, 30)}...`);
-      navigate('/odilbek', { state: { restoredMessages: initialMsgs } });
-  };
-
-  // ... (PDF Export Logic remains same)
-  const handleExportPDF = () => {
-       /* ... existing PDF logic ... */
-       alert("Exporting PDF..."); 
+      // Pass the full text to Odilbek page for explanation
+      navigate('/odilbek', { state: { legalContext: context } });
   };
 
   return (
@@ -229,9 +204,8 @@ const ChatPage: React.FC<ChatPageProps> = ({
                       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                   </button>
               </div>
-              {/* Settings Controls (Same as before) */}
+              
               <div className="space-y-8 flex-1">
-                 {/* Length */}
                  <div className="space-y-3">
                     <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">{t.length}</label>
                     <div className="grid grid-cols-3 gap-2">
@@ -250,7 +224,6 @@ const ChatPage: React.FC<ChatPageProps> = ({
                         ))}
                     </div>
                  </div>
-                 {/* Document Type, Perspective, Tone - omitted for brevity but should remain unchanged */}
               </div>
               <div className="text-[10px] text-gray-400 text-center mt-6">
                   {t.disclaimer}
@@ -309,6 +282,7 @@ const ChatPage: React.FC<ChatPageProps> = ({
                 isPro={isPro}
                 usageCount={usageCount}
                 onAskOdilbek={handleAskOdilbek}
+                initialInputValue={prefilledPrompt}
             />
           </div>
        </div>
