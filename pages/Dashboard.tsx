@@ -1,25 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { View, Language } from '../types';
+import { useNavigate } from 'react-router-dom';
+import { Language } from '../types';
 import { TRANSLATIONS, DID_YOU_KNOW_FACTS } from '../constants';
 
 interface DashboardProps {
-  onNavigate: (view: View) => void;
   language: Language;
-  onSelectQuickLink: (prompt: string) => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ onNavigate, language, onSelectQuickLink }) => {
+const Dashboard: React.FC<DashboardProps> = ({ language }) => {
+  const navigate = useNavigate();
   const t = TRANSLATIONS[language];
   const facts = DID_YOU_KNOW_FACTS[language];
   
-  // Carousel State
   const [currentFactIndex, setCurrentFactIndex] = useState(0);
 
-  // Auto-rotate facts
   useEffect(() => {
       const interval = setInterval(() => {
           setCurrentFactIndex((prev) => (prev + 1) % facts.length);
-      }, 8000); // 8 seconds per slide
+      }, 8000);
       return () => clearInterval(interval);
   }, [facts.length]);
 
@@ -32,9 +30,13 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate, language, onSelectQui
     { label: t.qlAdmin, icon: "📋", prompt: t.qlAdminPrompt },
   ];
 
-  const ActionCard = ({ title, desc, icon, view, color, delayClass }: any) => (
+  const handleQuickLink = (prompt: string) => {
+      navigate('/chat', { state: { initialPrompt: prompt } });
+  };
+
+  const ActionCard = ({ title, desc, icon, path, color, delayClass }: any) => (
       <button 
-        onClick={() => onNavigate(view)}
+        onClick={() => navigate(path)}
         className={`flex flex-col text-left bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md hover:border-blue-200 transition-all group animate-fade-in-up ${delayClass} focus:outline-none focus:ring-2 focus:ring-blue-400`}
         aria-label={`${title}: ${desc}`}
       >
@@ -60,7 +62,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate, language, onSelectQui
                 <ActionCard 
                     title={t.quickChat}
                     desc={t.quickChatDesc}
-                    view={View.CHAT}
+                    path="/chat"
                     color="bg-blue-100 text-blue-600"
                     icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>}
                     delayClass="delay-100"
@@ -68,7 +70,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate, language, onSelectQui
                  <ActionCard 
                     title={t.quickContracts}
                     desc={t.quickContractsDesc}
-                    view={View.CHAT}
+                    path="/chat"
                     color="bg-purple-100 text-purple-600"
                     icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>}
                     delayClass="delay-200"
@@ -76,7 +78,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate, language, onSelectQui
                  <ActionCard 
                     title={t.quickTemplates}
                     desc={t.quickTemplatesDesc}
-                    view={View.LIBRARY}
+                    path="/library"
                     color="bg-green-100 text-green-600"
                     icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>}
                     delayClass="delay-300"
@@ -93,7 +95,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate, language, onSelectQui
                     {quickLinks.map((link, idx) => (
                         <button
                             key={idx}
-                            onClick={() => onSelectQuickLink(link.prompt)}
+                            onClick={() => handleQuickLink(link.prompt)}
                             className="flex flex-col items-center justify-center p-4 bg-white border border-gray-100 rounded-xl hover:shadow-md hover:border-blue-200 transition-all group focus:outline-none focus:ring-2 focus:ring-blue-400"
                             aria-label={link.label}
                         >
@@ -122,7 +124,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate, language, onSelectQui
                                 {fact.content}
                             </p>
                             <button 
-                                onClick={() => onNavigate(View.CHAT)}
+                                onClick={() => navigate('/chat')}
                                 className="mt-6 bg-white text-slate-900 px-6 py-2 rounded-lg font-semibold hover:bg-blue-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"
                                 aria-label={fact.button}
                             >

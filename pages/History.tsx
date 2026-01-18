@@ -1,16 +1,15 @@
-
 import React, { useEffect, useState } from 'react';
-import { View, Language, ChatSession, Message } from '../types';
+import { useNavigate } from 'react-router-dom';
+import { Language, ChatSession } from '../types';
 import { getHistory, clearHistory } from '../services/storage';
 import { TRANSLATIONS } from '../constants'; 
 
 interface HistoryProps {
-  onNavigate: (view: View) => void;
   language?: Language; 
-  onRestore: (messages: Message[], type: 'lawyer' | 'odilbek' | 'drafter', customData?: any) => void;
 }
 
-const History: React.FC<HistoryProps> = ({ language = Language.UZ, onRestore }) => {
+const History: React.FC<HistoryProps> = ({ language = Language.UZ }) => {
+  const navigate = useNavigate();
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [activeTab, setActiveTab] = useState<'lawyer' | 'odilbek' | 'drafter'>('lawyer');
   const t = TRANSLATIONS[language]; 
@@ -25,6 +24,16 @@ const History: React.FC<HistoryProps> = ({ language = Language.UZ, onRestore }) 
           setSessions([]);
       }
   }
+
+  const handleRestore = (session: ChatSession) => {
+      if (session.type === 'odilbek') {
+          navigate('/odilbek', { state: { restoredMessages: session.messages } });
+      } else if (session.type === 'drafter') {
+          navigate('/studio', { state: { restoredMessages: session.messages, restoredDocData: session.customData } });
+      } else {
+          navigate('/chat', { state: { restoredMessages: session.messages } });
+      }
+  };
 
   const filteredSessions = sessions.filter(s => s.type === activeTab);
 
@@ -41,7 +50,7 @@ const History: React.FC<HistoryProps> = ({ language = Language.UZ, onRestore }) 
                 )}
             </div>
 
-            {/* Tabs - Expanded Width */}
+            {/* Tabs */}
             <div className="flex space-x-1 bg-white p-1.5 rounded-xl border border-gray-200 w-full md:w-3/4 shadow-sm">
                 <button
                     onClick={() => setActiveTab('lawyer')}
@@ -82,18 +91,13 @@ const History: React.FC<HistoryProps> = ({ language = Language.UZ, onRestore }) 
                 <div className="text-center py-20 text-gray-400">
                     <svg className="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     <p>{t.historyEmpty}</p>
-                    <p className="text-xs mt-2 text-gray-400">
-                        ({activeTab === 'lawyer' ? 'No legal consultations found' : 
-                          activeTab === 'odilbek' ? 'No Odilbek explanations found' : 
-                          'No drafted documents found'})
-                    </p>
                 </div>
             ) : (
                 <div className="space-y-4">
                     {filteredSessions.map((session) => (
                         <div 
                             key={session.id} 
-                            onClick={() => onRestore(session.messages, session.type, session.customData)}
+                            onClick={() => handleRestore(session)}
                             className={`p-5 rounded-xl shadow-sm border transition-all group cursor-pointer hover:shadow-md ${
                                 session.type === 'odilbek' 
                                 ? 'bg-amber-50 border-amber-100 hover:border-amber-300' 
@@ -115,13 +119,8 @@ const History: React.FC<HistoryProps> = ({ language = Language.UZ, onRestore }) 
                             <p className="text-sm text-gray-500 line-clamp-2">{session.preview}</p>
                              <div className="mt-3 flex items-center text-xs text-gray-400 space-x-4">
                                 <span>{session.messages.length} {t.historyMessages}</span>
-                                <span className={`flex items-center opacity-0 group-hover:opacity-100 transition-opacity ${
-                                    session.type === 'odilbek' ? 'text-amber-600' : 
-                                    session.type === 'drafter' ? 'text-green-600' :
-                                    'text-blue-500'
-                                }`}>
+                                <span className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity text-blue-500">
                                     Click to continue
-                                    <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
                                 </span>
                             </div>
                         </div>

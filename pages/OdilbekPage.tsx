@@ -1,5 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Language, Message, Attachment } from '../types';
 import { TRANSLATIONS } from '../constants';
 import ChatInterface from '../components/ChatInterface';
@@ -8,26 +8,24 @@ import { saveSession } from '../services/storage';
 
 interface OdilbekPageProps {
   language: Language;
-  onBack: () => void;
-  initialMessages?: Message[];
 }
 
-const OdilbekPage: React.FC<OdilbekPageProps> = ({ 
-    language, 
-    onBack,
-    initialMessages
-}) => {
+const OdilbekPage: React.FC<OdilbekPageProps> = ({ language }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const t = TRANSLATIONS[language];
+  
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  
-  const t = TRANSLATIONS[language];
 
   // Load initial session state
   useEffect(() => {
-      if (initialMessages && initialMessages.length > 0) {
-          setMessages(initialMessages);
+      const state = location.state as { restoredMessages?: Message[] } | null;
+
+      if (state?.restoredMessages && state.restoredMessages.length > 0) {
+          setMessages(state.restoredMessages);
       } else {
-          // If no history passed, default init with a welcome message
+          // Default welcome message
           const welcomeMsg: Message = {
             id: Date.now().toString(),
             role: 'model',
@@ -36,7 +34,7 @@ const OdilbekPage: React.FC<OdilbekPageProps> = ({
           };
           setMessages([welcomeMsg]);
       }
-  }, [initialMessages, t]);
+  }, [location.state, t]);
 
   // Auto-save history for Odilbek sessions
   useEffect(() => {
@@ -63,13 +61,11 @@ const OdilbekPage: React.FC<OdilbekPageProps> = ({
     try {
         const historyStr = messages.map(m => `${m.role}: ${m.text}`).join('\n');
         
-        // We assume the context is embedded in the first message(s) of the history
-        // so we just pass the history string which contains the context.
         const responseText = await generateOdilbekResponse(
             text, 
             language, 
             historyStr,
-            "" // Context is already in historyStr thanks to initialization in App.tsx
+            "" 
         );
 
         addMessage(responseText, 'model');
@@ -97,11 +93,11 @@ const OdilbekPage: React.FC<OdilbekPageProps> = ({
        <div className="flex-1 flex flex-col h-full relative">
           <div className="h-14 border-b border-amber-100 flex items-center justify-between px-6 bg-white/60 backdrop-blur-sm shrink-0">
                <button 
-                   onClick={onBack}
+                   onClick={() => navigate('/chat')}
                    className="flex items-center text-gray-500 hover:text-amber-600 transition-colors font-medium text-sm"
                >
                    <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                   Back
+                   Back to Lawyer
                </button>
                <h2 className="font-serif font-bold text-amber-900 flex items-center">
                    <span className="text-xl mr-2">🧑‍🏫</span>

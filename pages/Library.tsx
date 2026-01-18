@@ -1,24 +1,27 @@
-
 import React, { useState } from 'react';
-import { View, Language, TemplateCategory } from '../types';
+import { useNavigate } from 'react-router-dom';
+import { Language, TemplateCategory } from '../types';
 import { TRANSLATIONS } from '../constants';
 import { TEMPLATE_CATEGORIES } from '../data/legal_templates';
 
 interface LibraryProps {
-  onNavigate: (view: View) => void;
-  onSelectTemplate: (prompt: string) => void;
   language: Language;
 }
 
-const Library: React.FC<LibraryProps> = ({ onNavigate, onSelectTemplate, language }) => {
+const Library: React.FC<LibraryProps> = ({ language }) => {
+  const navigate = useNavigate();
   const t = TRANSLATIONS[language];
   const [activeCategory, setActiveCategory] = useState<string>(TEMPLATE_CATEGORIES[0].id);
   
   const currentCategory = TEMPLATE_CATEGORIES.find(c => c.id === activeCategory);
 
+  const handleSelectTemplate = (templateId: string) => {
+      navigate('/studio', { state: { initialTemplate: templateId } });
+  };
+
   return (
     <div className="h-full flex bg-slate-50 overflow-hidden">
-        {/* SIDEBAR: CATEGORIES */}
+        {/* SIDEBAR */}
         <div className="w-64 bg-white border-r border-gray-200 flex flex-col h-full overflow-y-auto shrink-0">
              <div className="p-6 border-b border-gray-100">
                 <h2 className="text-xl font-serif font-bold text-slate-900">{t.libraryTitle}</h2>
@@ -43,7 +46,7 @@ const Library: React.FC<LibraryProps> = ({ onNavigate, onSelectTemplate, languag
              </div>
         </div>
 
-        {/* MAIN CONTENT: SUBCATEGORIES & TEMPLATES */}
+        {/* MAIN */}
         <div className="flex-1 overflow-y-auto p-8">
             <div className="max-w-5xl mx-auto">
                  {currentCategory && (
@@ -59,7 +62,7 @@ const Library: React.FC<LibraryProps> = ({ onNavigate, onSelectTemplate, languag
                              </div>
                          </div>
 
-                         {/* Subcategories Loop */}
+                         {/* Subcategories */}
                          {currentCategory.subcategories.map((sub) => (
                              <div key={sub.id} className="space-y-4">
                                  <h3 className="text-lg font-bold text-slate-700 border-l-4 border-blue-500 pl-3 uppercase tracking-wide">
@@ -70,13 +73,11 @@ const Library: React.FC<LibraryProps> = ({ onNavigate, onSelectTemplate, languag
                                      {sub.templates.map((temp) => (
                                          <button
                                             key={temp.id}
-                                            onClick={() => onSelectTemplate(temp.templateId)}
+                                            onClick={() => handleSelectTemplate(temp.templateId)}
                                             className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 hover:shadow-lg hover:border-blue-300 transition-all text-left group relative overflow-hidden h-full flex flex-col"
                                          >
                                              {temp.isPro && (
-                                                 <div className="absolute top-0 right-0 bg-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg z-10">
-                                                     PRO
-                                                 </div>
+                                                 <div className="absolute top-0 right-0 bg-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg z-10">PRO</div>
                                              )}
                                              
                                              <div className="w-10 h-10 bg-slate-50 text-slate-600 rounded-lg flex items-center justify-center mb-3 group-hover:bg-blue-600 group-hover:text-white transition-colors flex-shrink-0">
@@ -84,12 +85,8 @@ const Library: React.FC<LibraryProps> = ({ onNavigate, onSelectTemplate, languag
                                              </div>
                                              
                                              <div className="flex-1">
-                                                 <h4 className="font-bold text-slate-800 group-hover:text-blue-700 transition-colors mb-1">
-                                                     {temp.title}
-                                                 </h4>
-                                                 <p className="text-xs text-gray-500 line-clamp-3">
-                                                     {temp.description}
-                                                 </p>
+                                                 <h4 className="font-bold text-slate-800 group-hover:text-blue-700 transition-colors mb-1">{temp.title}</h4>
+                                                 <p className="text-xs text-gray-500 line-clamp-3">{temp.description}</p>
                                              </div>
 
                                              <div className="mt-3 flex items-center space-x-2 pt-2">
@@ -97,9 +94,7 @@ const Library: React.FC<LibraryProps> = ({ onNavigate, onSelectTemplate, languag
                                                      temp.difficulty === 'Easy' ? 'bg-green-100 text-green-700' :
                                                      temp.difficulty === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
                                                      'bg-red-100 text-red-700'
-                                                 }`}>
-                                                     {temp.difficulty}
-                                                 </span>
+                                                 }`}>{temp.difficulty}</span>
                                              </div>
                                          </button>
                                      ))}
@@ -109,7 +104,6 @@ const Library: React.FC<LibraryProps> = ({ onNavigate, onSelectTemplate, languag
                      </div>
                  )}
             </div>
-            
              <div className="mt-12 p-6 bg-slate-100 rounded-xl text-center border-t border-slate-200">
                 <p className="text-sm text-slate-500">{t.libraryFooter}</p>
             </div>

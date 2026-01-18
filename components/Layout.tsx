@@ -1,11 +1,10 @@
 import React from 'react';
-import { View, Language, UserProfile } from '../types';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { Language, UserProfile } from '../types';
 import { TRANSLATIONS } from '../constants';
 
 interface LayoutProps {
   children: React.ReactNode;
-  currentView: View;
-  onNavigate: (view: View) => void;
   language: Language;
   onLanguageChange: (lang: Language) => void;
   onStartLive: () => void;
@@ -15,8 +14,6 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ 
   children, 
-  currentView, 
-  onNavigate, 
   language, 
   onLanguageChange,
   onStartLive,
@@ -24,23 +21,32 @@ const Layout: React.FC<LayoutProps> = ({
   onLogin
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
   const t = TRANSLATIONS[language];
 
-  const NavItem = ({ view, icon, label }: { view: View; icon: React.ReactNode; label: string }) => (
+  // Helper to check if a route is active
+  const isActive = (path: string) => {
+    if (path === '/' && location.pathname === '/') return true;
+    if (path !== '/' && location.pathname.startsWith(path)) return true;
+    return false;
+  };
+
+  const NavItem = ({ path, icon, label }: { path: string; icon: React.ReactNode; label: string }) => (
     <button
       onClick={() => {
-        onNavigate(view);
+        navigate(path);
         setIsMobileMenuOpen(false);
       }}
       className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-        currentView === view 
+        isActive(path)
           ? 'bg-blue-600 text-white shadow-md' 
           : 'text-gray-600 hover:bg-blue-50 hover:text-blue-700'
       }`}
       aria-label={label}
-      aria-current={currentView === view ? 'page' : undefined}
+      aria-current={isActive(path) ? 'page' : undefined}
     >
-      <div className={`${currentView === view ? 'text-white' : 'text-gray-500 group-hover:text-blue-600'}`}>
+      <div className={`${isActive(path) ? 'text-white' : 'text-gray-500 group-hover:text-blue-600'}`}>
         {icon}
       </div>
       <span className="font-medium">{label}</span>
@@ -52,7 +58,7 @@ const Layout: React.FC<LayoutProps> = ({
       {/* Sidebar - Desktop */}
       <aside className={`fixed md:relative z-50 w-72 h-full bg-white border-r border-gray-200 flex flex-col transition-transform duration-300 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
         <div className="p-8 border-b border-gray-100 flex items-center justify-between">
-            <div className="flex items-center space-x-3 cursor-pointer" onClick={() => onNavigate(View.DASHBOARD)} role="button" aria-label="Go to Dashboard">
+            <div className="flex items-center space-x-3 cursor-pointer" onClick={() => navigate('/')} role="button" aria-label="Go to Dashboard">
                 {/* Lady Justice Logo */}
                 <div className="w-12 h-12 bg-gradient-to-br from-blue-800 to-slate-900 rounded-full flex items-center justify-center text-white shadow-xl ring-2 ring-blue-100 overflow-hidden">
                    <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -76,37 +82,37 @@ const Layout: React.FC<LayoutProps> = ({
 
         <div className="flex-1 overflow-y-auto p-6 space-y-2">
             <NavItem 
-                view={View.DASHBOARD} 
+                path="/" 
                 label={t.navDashboard} 
                 icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>}
             />
             <NavItem 
-                view={View.CHAT} 
+                path="/chat" 
                 label={t.navChat} 
                 icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>}
             />
             <NavItem 
-                view={View.TOPICS} 
+                path="/topics" 
                 label={t.navTopics} 
                 icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>}
             />
             <NavItem 
-                view={View.LIBRARY} 
+                path="/library" 
                 label={t.navTemplates} 
                 icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>}
             />
             <NavItem 
-                view={View.HISTORY} 
+                path="/history" 
                 label={t.navHistory} 
                 icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>}
             />
             <NavItem 
-                view={View.PLANS} 
+                path="/plans" 
                 label={t.navPlans} 
                 icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>}
             />
              <NavItem 
-                view={View.PROFILE} 
+                path="/profile" 
                 label={t.navProfile} 
                 icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>}
             />
@@ -194,7 +200,7 @@ const Layout: React.FC<LayoutProps> = ({
             <div className="w-8"></div> {/* Spacer */}
         </header>
 
-        <div key={currentView} className="flex-1 overflow-hidden relative animate-fade-in">
+        <div className="flex-1 overflow-hidden relative animate-fade-in">
             {children}
         </div>
       </main>

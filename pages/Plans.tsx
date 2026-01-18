@@ -1,17 +1,16 @@
 import React, { useState } from 'react';
-import { View, Language, UserProfile } from '../types';
+import { Language, UserProfile } from '../types';
 import { TRANSLATIONS } from '../constants';
 import PaymentModal from '../components/PaymentModal';
 
 interface PlansProps {
-  onNavigate: (view: View) => void;
   language: Language;
   userProfile: UserProfile | null;
   onLogin: () => void;
   refreshProfile: () => void;
 }
 
-const Plans: React.FC<PlansProps> = ({ onNavigate, language, userProfile, onLogin, refreshProfile }) => {
+const Plans: React.FC<PlansProps> = ({ language, userProfile, onLogin, refreshProfile }) => {
   const t = TRANSLATIONS[language];
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<{
@@ -35,7 +34,6 @@ const Plans: React.FC<PlansProps> = ({ onNavigate, language, userProfile, onLogi
       alert("Welcome to Pro!");
   };
 
-  // Feature Icons
   const CheckIcon = () => (
       <svg className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
   );

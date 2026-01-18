@@ -1,12 +1,10 @@
-
 import React, { useState, useRef } from 'react';
-import { View, Language, UserSettings, UserProfile } from '../types';
+import { Language, UserSettings, UserProfile } from '../types';
 import { TRANSLATIONS } from '../constants';
 import { getHistory } from '../services/storage';
 import { updateUserProfile } from '../services/supabaseClient';
 
 interface ProfileProps {
-  onNavigate: (view: View) => void;
   language: Language;
   settings: UserSettings;
   setSettings: (s: UserSettings) => void;
@@ -51,7 +49,7 @@ const PRESET_AVATARS = [
     "https://api.dicebear.com/7.x/avataaars/svg?seed=Cuddles"
 ];
 
-const Profile: React.FC<ProfileProps> = ({ onNavigate, language, settings, setSettings, userProfile, onLogin, onLogout, refreshProfile }) => {
+const Profile: React.FC<ProfileProps> = ({ language, settings, setSettings, userProfile, onLogin, onLogout, refreshProfile }) => {
   const t = TRANSLATIONS[language];
   const history = getHistory();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -60,7 +58,7 @@ const Profile: React.FC<ProfileProps> = ({ onNavigate, language, settings, setSe
   
   const stats = {
       consultations: history.length,
-      savedDocs: 0 // Mocked for now
+      savedDocs: 0
   };
 
   const handleAvatarUpdate = async (newUrl: string) => {
@@ -84,7 +82,6 @@ const Profile: React.FC<ProfileProps> = ({ onNavigate, language, settings, setSe
           const reader = new FileReader();
           reader.onloadend = () => {
               const result = reader.result as string;
-              // Ideally upload to storage, but using base64 for demo
               handleAvatarUpdate(result);
           };
           reader.readAsDataURL(file);
@@ -255,60 +252,23 @@ const Profile: React.FC<ProfileProps> = ({ onNavigate, language, settings, setSe
                 </div>
             </div>
         </div>
-
-        {/* Avatar Selection Modal */}
+        {/* Avatar Modal */}
         {isAvatarModalOpen && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
                 <div className="bg-white rounded-2xl p-6 w-full max-w-lg shadow-2xl relative animate-fade-in">
-                    <button 
-                        onClick={() => setIsAvatarModalOpen(false)}
-                        className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
-                    >
+                    <button onClick={() => setIsAvatarModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
-                    
                     <h3 className="text-xl font-bold text-slate-900 mb-6">Choose Avatar</h3>
-                    
-                    {/* Custom Upload */}
                     <div className="mb-6">
-                         <div 
-                            onClick={() => fileInputRef.current?.click()}
-                            className="border-2 border-dashed border-gray-300 hover:border-blue-400 rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer transition-colors"
-                         >
-                             <input 
-                                type="file" 
-                                ref={fileInputRef} 
-                                onChange={handleFileUpload}
-                                accept="image/*"
-                                className="hidden"
-                             />
+                         <div onClick={() => fileInputRef.current?.click()} className="border-2 border-dashed border-gray-300 hover:border-blue-400 rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer transition-colors">
+                             <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept="image/*" className="hidden" />
                              <div className="w-12 h-12 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mb-2">
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                              </div>
                              <span className="text-sm font-bold text-gray-600">Upload Photo</span>
                          </div>
                     </div>
-
-                    <div className="border-t border-gray-100 my-4 pt-4">
-                        <p className="text-xs font-bold text-gray-400 uppercase mb-4">Or choose a preset</p>
-                        <div className="grid grid-cols-4 gap-4">
-                            {PRESET_AVATARS.map((url, idx) => (
-                                <button
-                                    key={idx}
-                                    onClick={() => handleAvatarUpdate(url)}
-                                    className="aspect-square rounded-full overflow-hidden border-2 border-transparent hover:border-blue-500 hover:scale-105 transition-all"
-                                >
-                                    <img src={url} alt={`Avatar ${idx + 1}`} className="w-full h-full object-cover bg-gray-50" />
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                    
-                    {loading && (
-                        <div className="absolute inset-0 bg-white/80 flex items-center justify-center rounded-2xl">
-                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                        </div>
-                    )}
                 </div>
             </div>
         )}
