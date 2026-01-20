@@ -42,6 +42,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   isOdilbekMode = false
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [inputText, setInputText] = useState('');
   const [selectedAttachment, setSelectedAttachment] = useState<Attachment | null>(null);
   const [isRecording, setIsRecording] = useState(false);
@@ -77,6 +78,14 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     }
   }, [initialInputValue]);
 
+  // Effect to auto-resize textarea
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 160)}px`;
+    }
+  }, [inputText]);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -94,6 +103,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     setInputText('');
     setSelectedAttachment(null);
     setUploadError(null);
+    // Reset height
+    if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto';
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -457,7 +470,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                     </div>
                     <div className="flex flex-col items-center text-center">
                         <span className="text-xs font-bold text-slate-700 tracking-wide uppercase">
-                            {language === Language.UZ ? "O'ZBEKISTONNING ENG YAXSHI RASMIY AI YURISTI" : "UZBEKISTAN'S PREMIER AI LEGAL ADVISOR"}
+                            {language === Language.UZ ? "O'ZBEKISTON QONUNCHILIGIGA IXTISOSLASHGAN AI YURIST" : "AI LEGAL ASSISTANT SPECIALIZED IN UZBEKISTAN LAW"}
                         </span>
                         <span className="text-[10px] text-emerald-700 font-medium">
                             {language === Language.UZ ? "100% O'zbekiston qonunchiligi asosida" : "100% Based on Uzbekistan Legislation"}
@@ -705,7 +718,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
         {/* ... Existing Input Box code, just minimal styling adjustments handled by container class ... */}
         <div className="flex items-end space-x-2">
-          <div className="flex-1 bg-white rounded-2xl border border-gray-200 focus-within:ring-2 focus-within:ring-blue-100 focus-within:border-blue-400 transition-all flex items-center p-2 shadow-sm">
+          <div className="flex-1 bg-white rounded-2xl border border-gray-200 focus-within:ring-2 focus-within:ring-blue-100 focus-within:border-blue-400 transition-all flex items-end p-2 shadow-sm">
             {/* ... inputs ... */}
             <input 
                 type="file" 
@@ -722,7 +735,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 className="hidden" 
             />
             
-            <div className="flex space-x-1 border-r border-gray-200 pr-2 mr-2">
+            <div className="flex space-x-1 border-r border-gray-200 pr-2 mr-2 mb-1">
                 <button 
                     onClick={() => fileInputRef.current?.click()}
                     className="p-3 text-gray-500 hover:text-blue-600 transition-colors rounded-xl hover:bg-gray-100"
@@ -738,13 +751,14 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
             </div>
 
             <textarea
+              ref={textareaRef}
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder={isRecording ? "Listening..." : (isOdilbekMode ? t.odilbekPlaceholder : t.inputPlaceholder)}
               rows={1}
-              className={`flex-1 bg-transparent border-none focus:ring-0 resize-none max-h-32 py-3 px-2 text-slate-800 placeholder-gray-500 scrollbar-hide text-base ${isRecording ? 'animate-pulse text-red-500' : ''}`}
-              style={{ minHeight: '48px' }}
+              className={`flex-1 bg-transparent border-none focus:ring-0 resize-none max-h-40 py-3 px-2 text-slate-800 placeholder-gray-500 scrollbar-hide text-base leading-relaxed ${isRecording ? 'animate-pulse text-red-500' : ''}`}
+              style={{ minHeight: '48px', height: 'auto' }}
               disabled={isRecording}
             />
           </div>
