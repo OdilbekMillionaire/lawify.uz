@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import { Language, UserSettings, UserProfile } from './types';
@@ -17,6 +18,7 @@ import Profile from './pages/Profile';
 import Plans from './pages/Plans';
 import OdilbekPage from './pages/OdilbekPage';
 import DocumentStudio from './pages/DocumentStudio';
+import Mediation from './pages/Mediation';
 
 const App: React.FC = () => {
   const navigate = useNavigate();
@@ -140,6 +142,9 @@ const App: React.FC = () => {
                         language={language}
                         isPro={userProfile?.is_pro || false}
                     />
+                } />
+                <Route path="/mediation" element={
+                    <Mediation language={language} />
                 } />
                 <Route path="/topics" element={<Topics language={language} />} />
                 <Route path="/history" element={<History language={language} />} />

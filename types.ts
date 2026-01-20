@@ -14,7 +14,8 @@ export enum View {
   HISTORY = 'history',
   TOPICS = 'topics',
   PROFILE = 'profile',
-  PLANS = 'plans'
+  PLANS = 'plans',
+  MEDIATION = 'mediation'
 }
 
 export enum LegalArea {
@@ -75,7 +76,7 @@ export interface ChatSession {
   date: number;
   preview: string;
   messages: Message[];
-  type: 'lawyer' | 'odilbek' | 'drafter';
+  type: 'lawyer' | 'odilbek' | 'drafter' | 'mediator';
   customData?: any; // Stores document state for drafter
 }
 
@@ -119,4 +120,18 @@ export interface TemplateCategory {
   title: { [key in Language]: string };
   icon: string; // Emoji or SVG path
   subcategories: TemplateSubcategory[];
+}
+
+// --- MEDIATION TYPES ---
+
+export type MediationCategory = 'Family' | 'Labor' | 'Business' | 'Civil';
+
+export interface MediationCase {
+  id: string;
+  category: MediationCategory;
+  initiatorName: string;
+  respondentName: string;
+  disputeSummary: string;
+  status: 'created' | 'agreed' | 'negotiating' | 'resolved';
+  createdAt: number;
 }
