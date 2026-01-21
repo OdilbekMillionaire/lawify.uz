@@ -14,6 +14,8 @@ interface ChatPageProps {
   isPro: boolean;
 }
 
+const SESSION_STORAGE_KEY = 'lawify_current_session';
+
 const ChatPage: React.FC<ChatPageProps> = ({ 
     language, 
     settings, 
@@ -36,13 +38,32 @@ const ChatPage: React.FC<ChatPageProps> = ({
     const state = location.state as { initialPrompt?: string; restoredMessages?: Message[] } | null;
     
     if (state?.restoredMessages) {
+        // Restoring from History: Overwrite everything
         setMessages(state.restoredMessages);
+        sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(state.restoredMessages));
     } else if (state?.initialPrompt) {
-        // Pre-fill the input instead of sending automatically
+        // Coming from Quick Link
         setPrefilledPrompt(state.initialPrompt);
+        // Do NOT clear messages immediately if coming from quick link, might want to append? 
+        // Design choice: Quick Link usually starts fresh.
+        setMessages([]); 
+        sessionStorage.removeItem(SESSION_STORAGE_KEY);
         
         // Clear history state to prevent re-filling on refresh
         navigate('.', { replace: true, state: {} });
+    } else {
+        // Normal Load / Refresh: Check SessionStorage
+        const savedSession = sessionStorage.getItem(SESSION_STORAGE_KEY);
+        if (savedSession) {
+            try {
+                const parsed = JSON.parse(savedSession);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    setMessages(parsed);
+                }
+            } catch (e) {
+                console.error("Failed to restore session", e);
+            }
+        }
     }
   }, [location.state, navigate]);
 
@@ -60,10 +81,13 @@ const ChatPage: React.FC<ChatPageProps> = ({
     }
   }, []);
 
-  // Auto-save history when messages change
+  // Auto-save history & session persistence when messages change
   useEffect(() => {
     if (messages.length > 0) {
+        // 1. Save to History (Long-term)
         saveSession(messages);
+        // 2. Save to Session (Short-term, for refresh)
+        sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(messages));
     }
   }, [messages]);
 
@@ -174,6 +198,7 @@ const ChatPage: React.FC<ChatPageProps> = ({
   const handleClearChat = () => {
       if (window.confirm("Are you sure you want to clear this conversation?")) {
           setMessages([]);
+          sessionStorage.removeItem(SESSION_STORAGE_KEY);
       }
   };
 
