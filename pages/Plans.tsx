@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Language, UserProfile } from '../types';
 import { TRANSLATIONS } from '../constants';
 import PaymentModal from '../components/PaymentModal';
+import Footer from '../components/Footer';
 
 interface PlansProps {
   language: Language;
@@ -144,8 +145,8 @@ const Plans: React.FC<PlansProps> = ({ language, userProfile, onLogin, refreshPr
   ];
 
   return (
-    <div className="h-full overflow-y-auto p-6 md:p-10 bg-slate-50">
-        <div className="max-w-[90rem] mx-auto space-y-10">
+    <div className="h-full overflow-y-auto bg-slate-50 flex flex-col">
+        <div className="flex-1 p-6 md:p-10 max-w-[90rem] mx-auto space-y-10 w-full">
              <div className="text-center space-y-4 animate-fade-in-up">
                 <h2 className="text-4xl font-serif font-bold text-slate-900">{t.plansTitle}</h2>
                 <p className="text-lg text-slate-500 max-w-2xl mx-auto">{t.plansSubtitle}</p>
@@ -198,6 +199,7 @@ const Plans: React.FC<PlansProps> = ({ language, userProfile, onLogin, refreshPr
                 <p>Prices include all applicable taxes. Secure payment processing provided by Payme/Click.</p>
             </div>
         </div>
+        <Footer />
 
         {selectedPlan && userProfile && (
             <PaymentModal 

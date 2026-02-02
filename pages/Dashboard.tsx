@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Language } from '../types';
 import { TRANSLATIONS, DID_YOU_KNOW_FACTS } from '../constants';
+import Footer from '../components/Footer';
 
 interface DashboardProps {
   language: Language;
@@ -309,6 +310,7 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
             </div>
 
         </div>
+        <Footer />
     </div>
   );
 };

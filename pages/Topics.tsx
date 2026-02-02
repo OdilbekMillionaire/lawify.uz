@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Language } from '../types';
 import { TRANSLATIONS, TOPICS_DATA } from '../constants';
+import Footer from '../components/Footer';
 
 interface TopicsProps {
   language: Language;
@@ -41,70 +42,73 @@ const Topics: React.FC<TopicsProps> = ({ language }) => {
   }
 
   return (
-    <div className="h-full overflow-y-auto bg-slate-50 p-6 md:p-10 lg:p-12">
-        <div className="max-w-7xl mx-auto">
-            {/* Page Header */}
-            <div className="space-y-4 mb-12 animate-fade-in text-center lg:text-left">
-                <h1 className="text-4xl md:text-5xl font-serif font-bold text-slate-900 leading-tight">
-                    {t.topicsTitle}
-                </h1>
-                <p className="text-lg text-slate-500 max-w-3xl font-light leading-relaxed border-l-4 border-blue-500 pl-6 hidden lg:block">
-                    {t.topicsSubtitle}
-                </p>
-                <p className="text-lg text-slate-500 font-light lg:hidden">
-                    {t.topicsSubtitle}
-                </p>
-            </div>
+    <div className="h-full overflow-y-auto bg-slate-50 flex flex-col">
+        <div className="flex-1 p-6 md:p-10 lg:p-12">
+            <div className="max-w-7xl mx-auto">
+                {/* Page Header */}
+                <div className="space-y-4 mb-12 animate-fade-in text-center lg:text-left">
+                    <h1 className="text-4xl md:text-5xl font-serif font-bold text-slate-900 leading-tight">
+                        {t.topicsTitle}
+                    </h1>
+                    <p className="text-lg text-slate-500 max-w-3xl font-light leading-relaxed border-l-4 border-blue-500 pl-6 hidden lg:block">
+                        {t.topicsSubtitle}
+                    </p>
+                    <p className="text-lg text-slate-500 font-light lg:hidden">
+                        {t.topicsSubtitle}
+                    </p>
+                </div>
 
-            {/* Topics Grid: Two-Column Layout for Categories */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
-                {topics.map((category, idx) => {
-                    const style = getCategoryStyle(category.category);
-                    const colorClass = getColorClasses(style.color);
+                {/* Topics Grid: Two-Column Layout for Categories */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
+                    {topics.map((category, idx) => {
+                        const style = getCategoryStyle(category.category);
+                        const colorClass = getColorClasses(style.color);
 
-                    return (
-                        <div 
-                            key={idx} 
-                            className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300 animate-fade-in-up"
-                            style={{ animationDelay: `${idx * 50}ms` }}
-                        >
-                            {/* Category Title Header */}
-                            <div className="flex items-center space-x-4 mb-8">
-                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm shrink-0 ${colorClass}`}>
-                                    {style.icon}
+                        return (
+                            <div 
+                                key={idx} 
+                                className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300 animate-fade-in-up"
+                                style={{ animationDelay: `${idx * 50}ms` }}
+                            >
+                                {/* Category Title Header */}
+                                <div className="flex items-center space-x-4 mb-8">
+                                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm shrink-0 ${colorClass}`}>
+                                        {style.icon}
+                                    </div>
+                                    <h3 className="text-2xl font-serif font-bold text-slate-800 truncate">{category.category}</h3>
                                 </div>
-                                <h3 className="text-2xl font-serif font-bold text-slate-800 truncate">{category.category}</h3>
+                                
+                                {/* Question Suggestions List: Two-Column Grid within each category card */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    {category.items.map((item, itemIdx) => (
+                                        <button
+                                            key={itemIdx}
+                                            onClick={() => handleTopicSelect(item.prompt)}
+                                            className="w-full text-left px-4 py-3 rounded-xl bg-gray-50/50 hover:bg-blue-50 border border-transparent hover:border-blue-100 transition-all group flex items-center justify-between h-full"
+                                        >
+                                            <span className="font-semibold text-slate-600 group-hover:text-blue-800 text-xs transition-colors line-clamp-2 leading-relaxed">
+                                                {item.title}
+                                            </span>
+                                            <svg className="w-3 h-3 text-gray-300 group-hover:text-blue-400 transform group-hover:translate-x-1 transition-all shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
-                            
-                            {/* Question Suggestions List: Two-Column Grid within each category card */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                {category.items.map((item, itemIdx) => (
-                                    <button
-                                        key={itemIdx}
-                                        onClick={() => handleTopicSelect(item.prompt)}
-                                        className="w-full text-left px-4 py-3 rounded-xl bg-gray-50/50 hover:bg-blue-50 border border-transparent hover:border-blue-100 transition-all group flex items-center justify-between h-full"
-                                    >
-                                        <span className="font-semibold text-slate-600 group-hover:text-blue-800 text-xs transition-colors line-clamp-2 leading-relaxed">
-                                            {item.title}
-                                        </span>
-                                        <svg className="w-3 h-3 text-gray-300 group-hover:text-blue-400 transform group-hover:translate-x-1 transition-all shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                                        </svg>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
+                        );
+                    })}
+                </div>
 
-            {/* Footer Notice */}
-            <div className="mt-16 py-8 border-t border-gray-200 text-center">
-                <p className="text-sm text-gray-400 font-medium tracking-wide uppercase">
-                    {language === Language.UZ ? "Barcha ma'lumotlar Lex.uz rasmiy bazasiga asoslangan" : "All data based on Official Lex.uz legal database"}
-                </p>
+                {/* Footer Notice */}
+                <div className="mt-16 py-8 border-t border-gray-200 text-center">
+                    <p className="text-sm text-gray-400 font-medium tracking-wide uppercase">
+                        {language === Language.UZ ? "Barcha ma'lumotlar Lex.uz rasmiy bazasiga asoslangan" : "All data based on Official Lex.uz legal database"}
+                    </p>
+                </div>
             </div>
         </div>
+        <Footer />
     </div>
   );
 };
