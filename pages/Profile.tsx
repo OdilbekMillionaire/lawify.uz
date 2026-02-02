@@ -41,15 +41,6 @@ const OptionCard: React.FC<OptionCardProps> = ({ label, selected, onClick, icon 
   </button>
 );
 
-const PRESET_AVATARS = [
-    "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix",
-    "https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka",
-    "https://api.dicebear.com/7.x/avataaars/svg?seed=Willow",
-    "https://api.dicebear.com/7.x/avataaars/svg?seed=Trouble",
-    "https://api.dicebear.com/7.x/avataaars/svg?seed=Gizmo",
-    "https://api.dicebear.com/7.x/avataaars/svg?seed=Cuddles"
-];
-
 const Profile: React.FC<ProfileProps> = ({ language, settings, setSettings, userProfile, onLogin, onLogout, refreshProfile }) => {
   const t = TRANSLATIONS[language];
   const history = getHistory();
