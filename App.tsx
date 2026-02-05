@@ -56,21 +56,72 @@ const App: React.FC = () => {
 
   const fetchProfile = async (currentUser: any) => {
     try {
-        const { data, error } = await supabase
+        let { data, error } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', currentUser.id)
             .single();
-            
+
         if (data) {
+            // 1. EXPIRATION CHECK LOGIC
+            // If user is marked as Pro, we must check if their time has run out.
+            if (data.is_pro && data.subscription_end_date) {
+                const expiryTime = new Date(data.subscription_end_date).getTime();
+                const now = Date.now();
+                
+                if (expiryTime < now) {
+                    // Subscription has expired! Downgrade immediately.
+                    console.log("Subscription expired. Downgrading to free...");
+                    
+                    await supabase.from('profiles').update({
+                        is_pro: false,
+                        plan_type: 'free',
+                        subscription_end_date: null
+                    }).eq('id', currentUser.id);
+                    
+                    // Update local state to reflect downgrade
+                    data.is_pro = false;
+                    data.plan_type = 'free';
+                    data.subscription_end_date = null;
+                }
+            }
+
+            // 2. VIP PERMANENT PRO LOGIC
+            // Special rule for the VIP investor
+            const VIP_EMAIL = 'rustameshboev1983@gmail.com';
+            
+            if (currentUser.email === VIP_EMAIL) {
+                const foreverDate = new Date('2099-12-31').toISOString();
+                
+                // If they are not Pro, or not Lawyer plan, or expire before 2090, force upgrade them.
+                const needsUpgrade = !data.is_pro || data.plan_type !== 'lawyer' || (data.subscription_end_date && new Date(data.subscription_end_date).getFullYear() < 2090);
+
+                if (needsUpgrade) {
+                    await supabase.from('profiles').update({
+                        is_pro: true,
+                        plan_type: 'lawyer',
+                        subscription_end_date: foreverDate
+                    }).eq('id', currentUser.id);
+                    
+                    // Update local state immediately
+                    data.is_pro = true;
+                    data.plan_type = 'lawyer';
+                    data.subscription_end_date = foreverDate;
+                }
+            }
+            
             setUserProfile(data);
         } else {
+            // New Profile Creation
+            const isVip = currentUser.email === 'rustameshboev1983@gmail.com';
+            
             const newProfile = {
                 id: currentUser.id,
                 email: currentUser.email,
                 full_name: currentUser.email?.split('@')[0] || 'User',
-                is_pro: false,
-                plan_type: 'free'
+                is_pro: isVip, // Auto-grant Pro for VIP on creation
+                plan_type: isVip ? 'lawyer' : 'free',
+                subscription_end_date: isVip ? new Date('2099-12-31').toISOString() : null
             };
             
             const { data: createdProfile, error: createError } = await supabase
