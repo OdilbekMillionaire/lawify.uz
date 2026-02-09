@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Language } from '../types';
@@ -106,7 +107,9 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
                     path="/odilbek"
                     color="bg-amber-500 text-white"
                     gradient="from-amber-400 to-orange-600"
-                    icon={<span className="text-3xl">🧑‍🏫</span>}
+                    icon={
+                        <span className="text-4xl" style={{ fontFamily: '"Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"' }}>👨‍🏫</span>
+                    }
                     delayClass="delay-200"
                 />
                  <AppCard 

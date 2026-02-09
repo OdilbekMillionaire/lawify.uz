@@ -443,11 +443,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       <div className={`flex-1 overflow-y-auto p-4 space-y-6 scrollbar-hide ${isOdilbekMode ? 'bg-amber-50/20' : 'bg-slate-50'}`}>
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-gray-400 space-y-6 animate-fade-in-up">
-            <div className={`p-6 rounded-full shadow-sm border ${isOdilbekMode ? 'bg-amber-100 border-amber-200' : 'bg-white border-gray-100'}`}>
+            <div className={`p-6 rounded-full shadow-sm border ${isOdilbekMode ? 'bg-amber-100 border-amber-200 text-amber-600' : 'bg-white border-gray-100 text-blue-600'}`}>
                  {isOdilbekMode ? (
-                     <div className="text-4xl">🧑‍🏫</div>
+                     /* MAN TEACHER EMOJI AS REQUESTED */
+                     <span className="text-6xl" style={{ fontFamily: '"Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"' }}>👨‍🏫</span>
                  ) : (
-                     <svg className="w-16 h-16 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                     <svg className="w-16 h-16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                       <circle cx="12" cy="5" r="2" strokeWidth="1" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M12 7v10M8 21h8M12 17l-4 4M12 17l4 4" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M6 9l-3 2v3m0-3l3 2v3m-3-5h3" />
@@ -654,7 +655,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                                             className="text-amber-600 hover:text-amber-800 bg-amber-50 hover:bg-amber-100 transition-colors text-xs font-bold flex items-center px-3 py-1.5 rounded-lg border border-amber-200"
                                             title="Get explanation from Odilbek"
                                         >
-                                            <span className="mr-1">🧑‍🏫</span>
+                                            <span className="mr-1 flex items-center">
+                                                {/* MAN TEACHER EMOJI AS REQUESTED */}
+                                                <span className="text-base" style={{ fontFamily: '"Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"' }}>👨‍🏫</span>
+                                            </span>
                                             {t.odilbekAction}
                                         </button>
                                     )}

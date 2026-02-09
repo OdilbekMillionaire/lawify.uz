@@ -192,7 +192,9 @@ const OdilbekPage: React.FC<OdilbekPageProps> = ({ language }) => {
                        {language === Language.UZ ? "Yuristga qaytish" : "Back to Lawyer"}
                    </button>
                    <h2 className="font-serif font-bold text-amber-900 flex items-center">
-                       <span className="text-xl mr-2">🧑‍🏫</span>
+                       <span className="w-8 h-8 mr-2 bg-amber-50 rounded-full flex items-center justify-center border border-amber-100 text-amber-600">
+                           <span className="text-xl" style={{ fontFamily: '"Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"' }}>👨‍🏫</span>
+                       </span>
                        Odilbek AI
                    </h2>
                    <div className="w-16"></div>
