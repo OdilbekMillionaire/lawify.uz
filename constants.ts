@@ -10,7 +10,8 @@ export const INITIAL_SETTINGS: UserSettings = {
   perspective: 'Neutral',
 };
 
-// --- MASSIVE DATASET RESTORATION (80 FACTS) ---
+// --- FACT DATASETS ---
+
 const FACT_DATA_UZ = [
     { title: "Yangi Mehnat kodeksi", content: "2023-yilgi Mehnat kodeksi xodimlar uchun yillik asosiy ta'tilni kamida 21 kalendar kuni etib belgiladi.", button: "Ta'til" },
     { title: "Mediatsiya qonuni", content: "Mediatsiya orqali hal qilingan nizolar uchun to'langan davlat boji sud tomonidan qaytarib beriladi.", button: "AI Murosa" },
@@ -94,15 +95,181 @@ const FACT_DATA_UZ = [
     { title: "Korrupsiya", content: "Pora berish ham, pora olish ham jinoyat hisoblanadi.", button: "Korrupsiya" }
 ];
 
+const FACT_DATA_RU = [
+    { title: "Новый Трудовой кодекс", content: "Трудовой кодекс 2023 года установил минимальный ежегодный отпуск для работников в 21 календарный день.", button: "Отпуск" },
+    { title: "Закон о медиации", content: "Государственная пошлина, уплаченная за споры, разрешенные через медиацию, возвращается судом.", button: "Медиация" },
+    { title: "Самозанятость", content: "Самозанятые лица освобождаются от подоходного налога и платят добровольный налог для стажа.", button: "Налог" },
+    { title: "Система прописки", content: "Отменено требование постоянной прописки для покупки недвижимости в Ташкенте.", button: "Жилье" },
+    { title: "Права потребителей", content: "Некачественный товар можно обменять или вернуть деньги не в течение 10 дней, а в течение гарантийного срока.", button: "Потребитель" },
+    { title: "Ночное время", content: "За работу в ночное время (с 22:00 до 06:00) должна производиться оплата не менее чем в 1,5 размере.", button: "Зарплата" },
+    { title: "Работа в выходные", content: "За работу в выходные и праздничные дни выплачивается не менее 2-кратного размера или предоставляется отгул.", button: "Рабочее время" },
+    { title: "Алименты", content: "Если плательщик алиментов безработный, алименты рассчитываются исходя из средней месячной зарплаты.", button: "Семья" },
+    { title: "Брачный возраст", content: "Брачный возраст для мужчин и женщин в Узбекистане установлен в 18 лет.", button: "Брак" },
+    { title: "Наследство", content: "При отсутствии завещания наследство распределяется поровну между наследниками первой очереди (дети, супруг, родители).", button: "Наследство" },
+    { title: "Предпринимательство", content: "Индивидуальный предприниматель (ИП) может нанимать до 5 работников.", button: "Бизнес" },
+    { title: "Налоговые льготы", content: "Женщинам, включенным в «Женскую тетрадь», выделяются кредиты для начала предпринимательства.", button: "Льготы" },
+    { title: "Земельный участок", content: "Самовольный захват земельных участков влечет уголовную ответственность.", button: "Земля" },
+    { title: "Административный штраф", content: "При оплате штрафа в течение 15 дней скидка 50%, в течение 30 дней — 30%.", button: "Штраф" },
+    { title: "Получение паспорта", content: "Получение гражданского паспорта (ID-карты) обязательно по достижении 16 лет.", button: "Документ" },
+    { title: "Пенсионный возраст", content: "Пенсионный возраст для мужчин установлен в 60 лет, для женщин — 55 лет.", button: "Пенсия" },
+    { title: "Пособие по инвалидности", content: "Пособие по инвалидности назначается на основании заключения врачебно-трудовой экспертной комиссии (ВТЭК).", button: "Соц. защита" },
+    { title: "Субсидии", content: "Семьям с невысоким доходом выплачивается субсидия по ипотечному кредиту.", button: "Ипотека" },
+    { title: "Электроэнергия", content: "Незаконное использование электроэнергии влечет перерасчет и штраф.", button: "Коммуналка" },
+    { title: "Детское пособие", content: "Детское пособие малообеспеченным семьям назначается через Единый реестр социальной защиты.", button: "Пособие" },
+    { title: "Обращение в суд", content: "При подаче иска в гражданский суд уплачивается госпошлина (за исключением льготников).", button: "Суд" },
+    { title: "Услуги адвоката", content: "В уголовных делах подозреваемый имеет право пользоваться услугами защитника (адвоката).", button: "Адвокат" },
+    { title: "Допрос", content: "При допросе несовершеннолетнего обязательно участие педагога или психолога.", button: "Преступление" },
+    { title: "Обыск", content: "Для проведения обыска требуется санкция суда или разрешение прокурора (кроме безотлагательных случаев).", button: "Процесс" },
+    { title: "Портал Президента", content: "Обращение в виртуальную приемную Президента бесплатно, и каждое обращение берется на контроль.", button: "Обращение" },
+    { title: "Госуслуги", content: "Через Единый портал интерактивных государственных услуг (my.gov.uz) оказывается более 300 услуг.", button: "ЕПИГУ" },
+    { title: "Частная собственность", content: "Частная собственность неприкосновенна и защищается государством.", button: "Конституция" },
+    { title: "Фриланс", content: "Фрилансеры могут зарегистрироваться как самозанятые лица.", button: "Фриланс" },
+    { title: "Кредитные каникулы", content: "При форс-мажорных обстоятельствах банк может предоставить каникулы по выплате кредита.", button: "Кредит" },
+    { title: "Страхование", content: "Обязательное страхование транспортного средства (ОСАГО) обязательно для каждого водителя.", button: "Страхование" },
+    { title: "Водительские права", content: "Для замены прав на новые сдача экзамена не требуется.", button: "Авто" },
+    { title: "Тонировка", content: "Затемнение заднего стекла автомобиля бесплатно и не требует разрешения.", button: "Тонировка" },
+    { title: "Дроны", content: "Ввоз и использование дронов в Узбекистане без разрешения запрещены.", button: "Админ." },
+    { title: "Обмен валюты", content: "Покупка/продажа иностранной валюты законна только через банки и обменные пункты.", button: "Валюта" },
+    { title: "Крипто-активы", content: "Торговля крипто-активами должна осуществляться только через лицензированные биржи.", button: "Крипто" },
+    { title: "Высшее образование", content: "Обучение в магистратуре для женщин полностью покрывается за счет госбюджета.", button: "Образование" },
+    { title: "Студенческое жилье", content: "Если студенты не обеспечены общежитием, часть арендной платы возмещается.", button: "Студент" },
+    { title: "Школьная форма", content: "Утверждена единая школьная форма для учащихся школ.", button: "Школа" },
+    { title: "Оплата за сад", content: "Размер платы в государственных детсадах зависит от региона.", button: "Детсад" },
+    { title: "Медстрахование", content: "Поэтапно внедряется система государственного медицинского страхования.", button: "Медицина" },
+    { title: "Скорая помощь", content: "Вызов скорой помощи бесплатен для всех граждан.", button: "103" },
+    { title: "Лекарства", content: "Список безрецептурных лекарств утверждается Минздравом.", button: "Аптека" },
+    { title: "Санитария", content: "Предприниматели обязаны соблюдать санитарные правила и нормы (СанПиН).", button: "Санитария" },
+    { title: "Экология", content: "Незаконная вырубка деревьев влечет крупный штраф (Мораторий).", button: "Экология" },
+    { title: "Мусор", content: "Выброс бытовых отходов в неположенном месте влечет административную ответственность.", button: "Природа" },
+    { title: "Охота", content: "Для охоты обязательно наличие специального разрешения и охотничьего билета.", button: "Охота" },
+    { title: "Рыбалка", content: "В запрещенные сезоны (нерест) ловля рыбы запрещена.", button: "Рыбалка" },
+    { title: "Красная книга", content: "Охота на животных, занесенных в Красную книгу Узбекистана, влечет уголовную ответственность.", button: "Природа" },
+    { title: "Трудовая книжка", content: "Система электронных трудовых книжек (my.mehnat.uz) полностью запущена.", button: "HR" },
+    { title: "Стаж", content: "Трудовой стаж учитывается в электронном виде при назначении пенсии.", button: "Стаж" },
+    { title: "Декрет", content: "Женщинам предоставляется отпуск 70 дней до родов и 56 дней после родов.", button: "Декрет" },
+    { title: "Уход за ребенком", content: "Предоставляется отпуск по уходу за ребенком до 2 лет и пособие.", button: "Мать и дитя" },
+    { title: "Суюнчи", content: "При рождении ребенка выдается единовременное пособие (суюнчи).", button: "Суюнчи" },
+    { title: "Многодетная семья", content: "Семья с 4 и более детьми считается многодетной.", button: "Льготы" },
+    { title: "Одинокие матери", content: "Для одиноких матерей есть льготы по оплате детских садов.", button: "Мать-одиночка" },
+    { title: "Инвалидная коляска", content: "Нуждающиеся лица с инвалидностью обеспечиваются бесплатными протезно-ортопедическими изделиями.", button: "Помощь" },
+    { title: "Дома Мурруват", content: "Дома «Мурувват» и «Саховат» для престарелых и инвалидов находятся на гособеспечении.", button: "Саховат" },
+    { title: "Опека", content: "Детям, лишенным родительской опеки, назначается опека и попечительство.", button: "Опека" },
+    { title: "Усыновление", content: "Усыновление осуществляется только через суд.", button: "Ребенок" },
+    { title: "Смена имени", content: "Смена имени, фамилии и отчества после 16 лет производится через ЗАГС.", button: "ЗАГС" },
+    { title: "Выезд за границу", content: "Для выезда за границу нужен биометрический загранпаспорт.", button: "Виза" },
+    { title: "Безвиз", content: "Для граждан Узбекистана введен безвизовый режим в ряд стран.", button: "Путешествие" },
+    { title: "Миграция", content: "Безопасно выезжать на работу за границу через Агентство по внешней трудовой миграции.", button: "Миграция" },
+    { title: "Консульский учет", content: "Граждане, длительно проживающие за рубежом, должны встать на консульский учет.", button: "Консул" },
+    { title: "Декларация", content: "Декларация о годовом доходе подается ежегодно до 1 апреля.", button: "Декларация" },
+    { title: "Кешбэк", content: "Зарегистрировав чеки в приложении Soliq.uz, можно получить 1% кешбэка.", button: "Кешбэк" },
+    { title: "ЭЦП", content: "Ключ ЭЦП можно получить в Центре госуслуг или онлайн.", button: "ЭЦП" },
+    { title: "Нотариус", content: "Купля-продажа недвижимости и авто должна быть нотариально заверена.", button: "Нотариус" },
+    { title: "Апелляция", content: "Если вы не согласны с решением суда, вы имеете право подать жалобу в вышестоящий суд.", button: "Жалоба" },
+    { title: "Омбудсман", content: "Уполномоченный по правам человека (Омбудсман) защищает права граждан.", button: "Право" },
+    { title: "Бизнес-омбудсман", content: "Бизнес-омбудсман защищает права предпринимателей.", button: "Бизнес" },
+    { title: "Общественный контроль", content: "Граждане могут устанавливать общественный контроль за деятельностью госорганов.", button: "Общество" },
+    { title: "Выборы", content: "Граждане Узбекистана, достигшие 18 лет, имеют право избирать.", button: "Выборы" },
+    { title: "Референдум", content: "Важнейшие вопросы госзначения могут решаться через референдум.", button: "Политика" },
+    { title: "СМИ", content: "СМИ свободны и действуют в соответствии с законом.", button: "Пресса" },
+    { title: "Клевета", content: "Распространение заведомо ложных сведений (клевета) влечет административную и уголовную ответственность.", button: "Ответственность" },
+    { title: "Оскорбление", content: "Умышленное унижение чести и достоинства личности (оскорбление) наказывается законом.", button: "Честь" },
+    { title: "Киберпреступление", content: "Кража денег с пластиковой карты является тяжким преступлением.", button: "Безопасность" },
+    { title: "Мошенничество", content: "Завладение имуществом путем обмана или злоупотребления доверием — это мошенничество.", button: "Осторожно" },
+    { title: "Коррупция", content: "Дача взятки и получение взятки являются преступлениями.", button: "Коррупция" }
+];
+
+const FACT_DATA_EN = [
+    { title: "New Labor Code", content: "The 2023 Labor Code set a minimum annual basic leave of at least 21 calendar days for employees.", button: "Leave" },
+    { title: "Mediation Law", content: "State fees paid for disputes resolved through mediation are refunded by the court.", button: "Mediation" },
+    { title: "Self-employment", content: "Self-employed persons are exempt from income tax and pay a voluntary tax for pension tenure.", button: "Tax" },
+    { title: "Propiska System", content: "The requirement for permanent registration (propiska) to purchase real estate in Tashkent has been abolished.", button: "Housing" },
+    { title: "Consumer Rights", content: "Defective products can be exchanged or refunded not just within 10 days, but throughout the warranty period.", button: "Consumer" },
+    { title: "Night Shift", content: "Work during night hours (22:00 to 06:00) must be paid at least 1.5 times the regular rate.", button: "Wages" },
+    { title: "Weekend Work", content: "Work on weekends and holidays is paid at least double or compensated with another day off.", button: "Work Time" },
+    { title: "Alimony", content: "If the alimony payer is unemployed, alimony is calculated based on the average monthly salary.", button: "Family" },
+    { title: "Marriage Age", content: "The marriage age for men and women in Uzbekistan is set at 18 years.", button: "Marriage" },
+    { title: "Inheritance", content: "Without a will, inheritance is distributed equally among first-line heirs (children, spouse, parents).", button: "Inheritance" },
+    { title: "Entrepreneurship", content: "An individual entrepreneur (IE) can hire up to 5 employees.", button: "Business" },
+    { title: "Tax Breaks", content: "Loans are allocated for women included in the 'Women's Notebook' to start a business.", button: "Benefits" },
+    { title: "Land Plot", content: "Unauthorized seizure of land plots leads to criminal liability.", button: "Land Code" },
+    { title: "Admin Fine", content: "If a fine is paid within 15 days, a 50% discount applies; within 30 days, a 30% discount.", button: "Fine" },
+    { title: "Passport", content: "Obtaining a civil passport (ID card) is mandatory upon reaching 16 years of age.", button: "Document" },
+    { title: "Pension Age", content: "The retirement age is set at 60 for men and 55 for women.", button: "Pension" },
+    { title: "Disability Benefit", content: "Disability benefits are assigned based on the conclusion of the Medical-Labor Expert Commission.", button: "Social" },
+    { title: "Subsidies", content: "Subsidies for mortgage loans are paid to low-income families.", button: "Mortgage" },
+    { title: "Electricity", content: "Illegal use of electricity leads to recalculation and fines.", button: "Utilities" },
+    { title: "Child Money", content: "Child benefits for low-income families are assigned through the Single Registry of Social Protection.", button: "Benefit" },
+    { title: "Court Filing", content: "State duty is paid when filing a lawsuit in civil court (exceptions apply).", button: "Court" },
+    { title: "Lawyer Services", content: "In criminal cases, a suspect has the right to use a defense attorney.", button: "Lawyer" },
+    { title: "Interrogation", content: "A pedagogue or psychologist must be present when interrogating a minor.", button: "Crime" },
+    { title: "Search", content: "A search requires a court sanction or prosecutor's permission (except in urgent cases).", button: "Process" },
+    { title: "President Portal", content: "Appeals to the President's Virtual Reception are free and monitored.", button: "Appeal" },
+    { title: "Public Services", content: "Over 300 services are provided through the Single Portal (my.gov.uz).", button: "Gov Services" },
+    { title: "Private Property", content: "Private property is inviolable and protected by the state.", button: "Constitution" },
+    { title: "Freelance", content: "Freelancers can register as self-employed persons.", button: "Freelance" },
+    { title: "Loan Holidays", content: "In force majeure cases, the bank may grant loan repayment holidays.", button: "Credit" },
+    { title: "Insurance", content: "Mandatory vehicle insurance (OSAGO) is required for every driver.", button: "Insurance" },
+    { title: "Driving License", content: "No exam is required to replace a license with a new one.", button: "Auto" },
+    { title: "Tinting", content: "Tinting the rear window of a car is free and does not require a permit.", button: "Tinting" },
+    { title: "Drones", content: "Importing and flying drones in Uzbekistan without permission is prohibited.", button: "Admin" },
+    { title: "Currency Exchange", content: "Buying/selling foreign currency is legal only through banks and exchange offices.", button: "Currency" },
+    { title: "Crypto Assets", content: "Trading crypto assets must be done only through licensed exchanges.", button: "Crypto" },
+    { title: "Higher Education", content: "Master's degree education for women is fully covered by the state budget.", button: "Education" },
+    { title: "Student Housing", content: "If students are not provided with a dormitory, part of the rent is reimbursed.", button: "Student" },
+    { title: "School Uniform", content: "A uniform school uniform has been approved for school students.", button: "School" },
+    { title: "Kindergarten Fee", content: "Fees in state kindergartens vary by region.", button: "Kindergarten" },
+    { title: "Health Insurance", content: "A state health insurance system is being introduced in stages.", button: "Medicine" },
+    { title: "Ambulance", content: "Ambulance calls are free for all citizens.", button: "103" },
+    { title: "Medicines", content: "The list of over-the-counter medicines is approved by the Ministry of Health.", button: "Pharmacy" },
+    { title: "Sanitation", content: "Entrepreneurs must comply with sanitary rules and norms.", button: "Sanitation" },
+    { title: "Ecology", content: "Illegal cutting of trees leads to a large fine (Moratorium).", button: "Ecology" },
+    { title: "Waste", content: "Dumping household waste in unauthorized places incurs administrative liability.", button: "Nature" },
+    { title: "Hunting", content: "A special permit and hunting ticket are required for hunting.", button: "Hunting" },
+    { title: "Fishing", content: "Fishing is prohibited during restricted seasons (spawning).", button: "Fishing" },
+    { title: "Red Book", content: "Hunting animals listed in the Red Book of Uzbekistan leads to criminal liability.", button: "Nature" },
+    { title: "Labor Book", content: "The electronic labor book system (my.mehnat.uz) is fully operational.", button: "HR" },
+    { title: "Work Experience", content: "Work experience is calculated electronically for pension assignment.", button: "Tenure" },
+    { title: "Maternity Leave", content: "Women are granted 70 days leave before birth and 56 days after.", button: "Maternity" },
+    { title: "Child Care", content: "Child care leave and benefits are provided until the child turns 2.", button: "Mother & Child" },
+    { title: "Birth Benefit", content: "A one-time benefit (suyunchi) is given upon the birth of a child.", button: "Suyunchi" },
+    { title: "Large Family", content: "A family with 4 or more children is considered a large family.", button: "Benefits" },
+    { title: "Single Mothers", content: "There are benefits for single mothers in kindergarten fees.", button: "Single Mom" },
+    { title: "Wheelchair", content: "Needy persons with disabilities are provided with free prosthetic-orthopedic devices.", button: "Help" },
+    { title: "Muruvvat Homes", content: "Muruvvat and Sahovat homes for the elderly and disabled are state-funded.", button: "Sahovat" },
+    { title: "Guardianship", content: "Guardianship is established for children deprived of parental care.", button: "Guardianship" },
+    { title: "Adoption", content: "Adoption is carried out only through the court.", button: "Adoption" },
+    { title: "Name Change", content: "Changing name, surname, and patronymic after 16 is done through the Civil Registry.", button: "Registry" },
+    { title: "Going Abroad", content: "A biometric passport for travel abroad is required to leave the country.", button: "Visa" },
+    { title: "Visa Free", content: "A visa-free regime has been introduced for Uzbek citizens to several countries.", button: "Travel" },
+    { title: "Migration", content: "It is safe to go abroad for work through the External Labor Migration Agency.", button: "Migration" },
+    { title: "Consular Reg", content: "Citizens living abroad for a long time must register with the consulate.", button: "Consul" },
+    { title: "Declaration", content: "The annual income declaration is submitted by April 1st each year.", button: "Declaration" },
+    { title: "Cashback", content: "By registering receipts in the Soliq.uz app, you can get 1% cashback.", button: "Cashback" },
+    { title: "Digital Signature", content: "E-IMZO key can be obtained at the Public Service Center or online.", button: "E-IMZO" },
+    { title: "Notary", content: "Real estate and car sales must be notarized.", button: "Notary" },
+    { title: "Appeal", content: "If you disagree with a court decision, you have the right to appeal to a higher court.", button: "Complaint" },
+    { title: "Ombudsman", content: "The Human Rights Commissioner (Ombudsman) protects citizens' rights.", button: "Rights" },
+    { title: "Biz Ombudsman", content: "The Business Ombudsman protects the rights of entrepreneurs.", button: "Business" },
+    { title: "Public Control", content: "Citizens can establish public control over the activities of state bodies.", button: "Society" },
+    { title: "Voting Right", content: "Citizens of Uzbekistan who have reached 18 years of age have the right to vote.", button: "Election" },
+    { title: "Referendum", content: "The most important state issues can be decided through a referendum.", button: "Politics" },
+    { title: "Media Freedom", content: "Mass media are free and operate in accordance with the law.", button: "Press" },
+    { title: "Slander", content: "Spreading knowingly false fabrications (slander) entails administrative and criminal liability.", button: "Liability" },
+    { title: "Insult", content: "Intentional humiliation of honor and dignity (insult) is punishable by law.", button: "Honor" },
+    { title: "Cybercrime", content: "Stealing money from a plastic card is a serious crime.", button: "Security" },
+    { title: "Fraud", content: "Acquiring property by deception or abuse of trust is fraud.", button: "Beware" },
+    { title: "Corruption", content: "Giving a bribe and taking a bribe are crimes.", button: "Corruption" }
+];
+
 export const DID_YOU_KNOW_FACTS = {
   [Language.UZ]: FACT_DATA_UZ,
-  [Language.RU]: FACT_DATA_UZ.map(f => ({ ...f, title: f.title + " (RU)", content: f.content + " (Перевод на русский)" })), // Simplified for brevity in code, real app needs real translations
-  [Language.EN]: FACT_DATA_UZ.map(f => ({ ...f, title: f.title + " (EN)", content: f.content + " (English Translation)" }))
+  [Language.RU]: FACT_DATA_RU,
+  [Language.EN]: FACT_DATA_EN
 };
 
-// --- MASSIVE TOPICS DATASET (16 CATEGORIES x 6 QUESTIONS) ---
-export const TOPICS_DATA = {
-  [Language.UZ]: [
+// --- TOPICS DATASETS ---
+
+const TOPICS_DATA_UZ = [
     {
       category: "Oila va nikoh",
       items: [
@@ -117,197 +284,542 @@ export const TOPICS_DATA = {
     {
       category: "Mehnat huquqi",
       items: [
-        { title: "Noqonuniy bo'shatish", prompt: "Meni ishdan noqonuniy bo'shatishdi. Qanday tiklanishim mumkin?" },
-        { title: "Mehnat ta'tili", prompt: "Yangi Mehnat kodeksi bo'yicha ta'til necha kun beriladi?" },
-        { title: "Dekret pullari", prompt: "Homiladorlik va tug'ish ta'tili to'lovlari qanday hisoblanadi?" },
-        { title: "Ish haqi kechikishi", prompt: "Ish beruvchi oylikni kechiktiryapti. Qayerga shikoyat qilish kerak?" },
-        { title: "Ishdan bo'shash", prompt: "O'z xohishi bilan ishdan bo'shash tartibi qanday?" },
-        { title: "Sinov muddati", prompt: "Sinov muddati davrida ishdan bo'shatish qonuniymi?" }
+        { title: "Noqonuniy bo'shatish", prompt: "Ish beruvchi meni noqonuniy ishdan bo'shatdi. Qanday qilib ishga tiklanishim mumkin?" },
+        { title: "Mehnat ta'tili", prompt: "Yillik mehnat ta'tili necha kun bo'lishi kerak va ta'til puli qanday hisoblanadi?" },
+        { title: "Dekret pullari", prompt: "Homiladorlik va tug'ish nafaqasi (dekret) kimlarga va qancha to'lanadi?" },
+        { title: "Ish haqi kechikishi", prompt: "Ish haqi o'z vaqtida berilmasa, qayerga shikoyat qilish kerak?" },
+        { title: "Ishdan bo'shash", prompt: "O'z xohishi bilan ishdan bo'shash tartibi qanday? 2 hafta oldin aytish shartmi?" },
+        { title: "Sinov muddati", prompt: "Ishga kirishda sinov muddati qancha bo'lishi mumkin va bu davrda maosh to'lanadimi?" }
       ]
     },
     {
       category: "Jinoyat qonunchiligi",
       items: [
-        { title: "Oqlash hukmi", prompt: "Sudda oqlash hukmiga qanday erishish mumkin?" },
-        { title: "Firibgarlik", prompt: "Firibgarlik qurboni bo'ldim. Pulimni qanday qaytarib olsam bo'ladi?" },
+        { title: "Oqlash hukmi", prompt: "Jinoyat ishida oqlash hukmi qanday holatlarda chiqariladi?" },
+        { title: "Firibgarlik", prompt: "Firibgarlik qurboni bo'ldim. Puliimni qaytarish uchun nima qilishim kerak?" },
         { title: "Tan jarohati", prompt: "Qasddan badanga shikast yetkazishning jazosi qanday?" },
-        { title: "O'g'rilik", prompt: "O'g'rilik jinoyati uchun qanday jazo belgilangan?" },
-        { title: "Yarashuv", prompt: "Yarashuv instituti qanday ishlaydi va kimlarga qo'llaniladi?" },
-        { title: "Gumonlanuvchi huquqlari", prompt: "Ushlangan shaxsning qanday huquqlari bor (Miranda qoidasi)?" }
+        { title: "O'g'rilik", prompt: "O'g'rilik jinoyati uchun qanday javobgarlik belgilangan?" },
+        { title: "Yarashuv", prompt: "Qaysi jinoyatlar bo'yicha yarashuv instituti qo'llaniladi?" },
+        { title: "Gumonlanuvchi huquqlari", prompt: "Ushlab turilgan shaxsning qanday huquqlari bor? Advokat qachon kerak?" }
       ]
     },
     {
       category: "Ma'muriy javobgarlik",
       items: [
-        { title: "Jarima to'lash", prompt: "Ma'muriy jarimani 70% chegirma bilan qanday to'lash mumkin?" },
-        { title: "Bezorilik", prompt: "Maida bezorilik uchun qanday jazo bor?" },
-        { title: "Ichkilikbozlik", prompt: "Jamoat joyida spirtli ichimlik ichishning oqibatlari." },
-        { title: "Tuhmat qilish", prompt: "Tuhmat va haqorat uchun ma'muriy javobgarlik bormi?" },
-        { title: "Pasport rejimi", prompt: "Pasportni yo'qotganlik uchun jarima qancha?" },
-        { title: "Sukunatni buzish", prompt: "Tungi vaqtda shovqin solganlik uchun qo'shnilarni javobgarlikka tortish." }
+        { title: "Jarima to'lash", prompt: "Ma'muriy jarimani 15 kun ichida to'lasa qancha chegirma bor?" },
+        { title: "Bezorilik", prompt: "Mayda bezorilik (so'kinish, jamoat tartibini buzish) uchun qanday jazo bor?" },
+        { title: "Ichkilikbozlik", prompt: "Jamoat joyida spirtli ichimlik ichishning oqibatlari qanday?" },
+        { title: "Tuhmat qilish", prompt: "Tuhmat va haqorat qilganlik uchun ma'muriy javobgarlik bormi?" },
+        { title: "Pasport rejimi", prompt: "Pasportni yo'qotish yoki propiskasiz yashash uchun jarima qancha?" },
+        { title: "Sukunatni buzish", prompt: "Kechasi shovqin qilgan qo'shnilar ustidan qayerga arz qilish mumkin?" }
       ]
     },
     {
       category: "Fuqarolik huquqi",
       items: [
-        { title: "Qarzni undirish", prompt: "Tilxat asosida berilgan qarzni sud orqali qanday undirish mumkin?" },
-        { title: "Zararni qoplash", prompt: "Moddiy va ma'naviy zararni undirish tartibi qanday?" },
-        { title: "Bitimni haqiqiy emas", prompt: "Oldi-sotdi shartnomasini qanday qilib haqiqiy emas deb topish mumkin?" },
+        { title: "Qarzni undirish", prompt: "Tilxat asosida berilgan qarzni sud orqali qanday undirsa bo'ladi?" },
+        { title: "Zararni qoplash", prompt: "Menga yetkazilgan moddiy va ma'naviy zararni qanday undirish mumkin?" },
+        { title: "Bitimni haqiqiy emas", prompt: "Oldi-sotdi shartnomasini qanday hollarda haqiqiy emas deb topish mumkin?" },
         { title: "Mulk huquqi", prompt: "Ko'chmas mulkka egalik huquqini qanday e'tirof etish mumkin?" },
-        { title: "Merxosxo'rlik", prompt: "Vafot etgan shaxsning qarzlarini merosxo'r to'laydimi?" },
-        { title: "Hadiya", prompt: "Uyni hadiya qilish shartnomasini bekor qilish mumkinmi?" }
+        { title: "Merxosxo'rlik", prompt: "Vafot etgan shaxsning qarzlari uchun merosxo'rlar javob beradimi?" },
+        { title: "Hadiya", content: "Uy-joyni hadiya qilish shartnomasini bekor qilib bo'ladimi?" }
       ]
     },
     {
       category: "Uy-joy va mulk",
       items: [
-        { title: "Kvartira sotib olish", prompt: "Ikkilamchi bozordan kvartira sotib olishda nimalarga e'tibor berish kerak?" },
-        { title: "Kadastr", prompt: "Uyga kadastr hujjatini qanday rasmiylashtirish mumkin?" },
-        { title: "Propiska", prompt: "Toshkent shahrida doimiy ro'yxatga turish tartibi." },
-        { title: "Snos (Buzilish)", prompt: "Uyim 'snos'ga tushdi. Menga qanday kompensatsiya to'lanishi kerak?" },
-        { title: "Ijara shartnomasi", prompt: "Ijara shartnomasini soliq organida qanday ro'yxatdan o'tkazish kerak?" },
-        { title: "Kommunal to'lovlar", prompt: "Asossiz yozilgan kommunal qarzlarni qanday bekor qilish mumkin?" }
+        { title: "Kvartira sotib olish", prompt: "Ipoteka krediti orqali uy olish tartibi qanday?" },
+        { title: "Kadastr", prompt: "Uy-joyga kadastr hujjatlarini rasmiylashtirish qancha vaqt oladi?" },
+        { title: "Propiska", prompt: "Toshkent shahriga doimiy ro'yxatga (propiska) turishning yangi tartibi qanday?" },
+        { title: "Snos (Buzilish)", prompt: "Uyim 'snos'ga tushdi. Kompensatsiya qanday to'lanishi kerak?" },
+        { title: "Ijara shartnomasi", prompt: "Ijaraga beruvchi shartnomani soliqda ro'yxatdan o'tkazmasa nima bo'ladi?" },
+        { title: "Kommunal to'lovlar", prompt: "Kommunal to'lovlardan asossiz qarz yozilsa, nima qilish kerak?" }
       ]
     },
     {
       category: "Biznes va tadbirkorlik",
       items: [
-        { title: "MCHJ ochish", prompt: "MCHJ va YTT farqi nimada? Qaysi birini ochgan ma'qul?" },
-        { title: "Litsenziya olish", prompt: "Faoliyat uchun litsenziya va ruxsatnomalarni qayerdan olish mumkin?" },
-        { title: "Tekshirishlar", prompt: "Tadbirkorlik subyektlarini tekshirish tartibi qanday?" },
-        { title: "Imtiyozli kredit", prompt: "Biznes uchun imtiyozli kreditlarni qanday olish mumkin?" },
-        { title: "Eksport", prompt: "Mahsulotni eksport qilish uchun qanday hujjatlar kerak?" },
-        { title: "Bankrotlik", prompt: "Firmani bankrot deb e'lon qilish oqibatlari qanday?" }
+        { title: "MCHJ ochish", prompt: "MCHJ ochish uchun qanday hujjatlar kerak va ustav fondi qancha bo'lishi lozim?" },
+        { title: "Litsenziya olish", prompt: "Qaysi faoliyat turlari uchun litsenziya talab qilinadi?" },
+        { title: "Tekshirishlar", prompt: "Tadbirkorlik subyektlarini tekshirish tartibi qanday? Biznes Ombudsman nima qiladi?" },
+        { title: "Imtiyozli kredit", prompt: "Kichik biznes uchun davlatdan imtiyozli kredit olish shartlari qanday?" },
+        { title: "Eksport", prompt: "Mahsulotni eksport qilishda qanday bojxona imtiyozlari bor?" },
+        { title: "Bankrotlik", prompt: "Korxonani bankrot deb e'lon qilish tartibi qanday?" }
       ]
     },
     {
       category: "Soliq va bojxona",
       items: [
-        { title: "Daromad solig'i", prompt: "Jismoniy shaxslardan olinadigan daromad solig'i stavkalari qanday?" },
-        { title: "QQS (NDS)", prompt: "QQS to'lovchisi bo'lish tartibi va afzalliklari." },
-        { title: "Bojxona to'lovlari", prompt: "Chet eldan avtomobil olib kirishda qancha boj to'lanadi?" },
-        { title: "Yashil yo'lak", prompt: "Bojxonada yashil yo'lak tizimi qanday ishlaydi?" },
-        { title: "Soliq deklaratsiyasi", prompt: "Jami yillik daromad to'g'risidagi deklaratsiyani qanday topshirish kerak?" },
-        { title: "O'zini o'zi band qilish", prompt: "O'zini o'zi band qilgan shaxslar qanday soliqlarni to'laydi?" }
+        { title: "Daromad solig'i", prompt: "Jismoniy shaxslardan olinadigan daromad solig'i stavkasi qancha?" },
+        { title: "QQS (NDS)", prompt: "QQS to'lovchisi bo'lish kimlar uchun majburiy?" },
+        { title: "Bojxona to'lovlari", prompt: "Chet eldan avtomobil olib kirishda (rastamojka) qancha to'lov to'lanadi?" },
+        { title: "Yashil yo'lak", prompt: "Bojxonada 'yashil yo'lak' tizimi nima va u kimlar uchun?" },
+        { title: "Soliq deklaratsiyasi", prompt: "Yillik daromad deklaratsiyasini kimlar va qachon topshirishi kerak?" },
+        { title: "O'zini o'zi band qilish", prompt: "O'zini o'zi band qilgan shaxslar qanday soliqlardan ozod qilingan?" }
       ]
     },
     {
       category: "Ta'lim",
       items: [
-        { title: "Kontrakt to'lovi", prompt: "Super-kontrakt narxlari va to'lash tartibi qanday?" },
-        { title: "O'qishni ko'chirish", prompt: "Xorijdan o'qishni O'zbekistonga qanday ko'chirish (perevod) mumkin?" },
-        { title: "Magistratura", prompt: "Xotin-qizlar uchun magistratura to'lovlari qoplab beriladimi?" },
-        { title: "Grantlar", prompt: "Davlat grantida o'qigan talaba ishlab berishga majburmi?" },
-        { title: "Maktabgacha ta'lim", prompt: "Bolani bog'chaga joylashtirish uchun navbatga qanday turiladi?" },
-        { title: "Xususiy maktab", prompt: "Xususiy maktab ochish uchun qanday talablar mavjud?" }
+        { title: "Kontrakt to'lovi", prompt: "Talabalar kontrakt to'lovini bo'lib to'lashi mumkinmi?" },
+        { title: "O'qishni ko'chirish", prompt: "Xorijdan yoki boshqa OTMdan o'qishni ko'chirish (perevod) tartibi qanday?" },
+        { title: "Magistratura", prompt: "Xotin-qizlar uchun magistratura to'lovi davlat tomonidan qoplanadimi?" },
+        { title: "Grantlar", prompt: "Prezident granti va boshqa stipendiyalar kimlarga beriladi?" },
+        { title: "Maktabgacha ta'lim", prompt: "Bolani davlat bog'chasiga navbatga qo'yish qanday amalga oshiriladi?" },
+        { title: "Xususiy maktab", prompt: "Xususiy maktab litsenziyasi bo'lmasa, berilgan attestat o'tadimi?" }
       ]
     },
     {
       category: "Sog'liqni saqlash",
       items: [
-        { title: "Bepul davolanish", prompt: "Order (yo'llanma) asosida bepul davolanish tartibi qanday?" },
-        { title: "Nogironlik", prompt: "Nogironlik guruhini belgilash tartibi va pensiya miqdori." },
-        { title: "Xususiy klinika", prompt: "Xususiy klinikada davolanganda soliq imtiyozi bormi?" },
-        { title: "Shifokor xatosi", prompt: "Shifokorning xatosi tufayli sog'liqqa zarar yetganda nima qilish kerak?" },
+        { title: "Bepul davolanish", prompt: "Order (yo'llanma) asosida bepul davolanish huquqiga kimlar ega?" },
+        { title: "Nogironlik", prompt: "Nogironlik guruhini belgilash tartibi va TMEK ko'rigi qanday o'tadi?" },
+        { title: "Xususiy klinika", prompt: "Xususiy klinikada noto'g'ri davolashsa, zararni qanday undirish mumkin?" },
+        { title: "Shifokor xatosi", prompt: "Shifokor xatosi tufayli sog'liqqa zarar yetkazilsa, qanday javobgarlik bor?" },
         { title: "Dori-darmon", prompt: "Imtiyozli toifadagi shaxslarga bepul dori vositalari beriladimi?" },
-        { title: "Ruhiy kasalliklar", prompt: "Ruhiy kasal deb topish va muomalaga layoqatsiz deb e'lon qilish." }
+        { title: "Ruhiy kasalliklar", prompt: "Shaxsni majburiy tartibda psixiatrik shifoxonaga yotqizish mumkinmi?" }
       ]
     },
     {
       category: "Avtomobil va yo'l",
       items: [
-        { title: "Jarimani bekor qilish", prompt: "Kamera noto'g'ri jarima yozdi. Qanday bekor qilsa bo'ladi?" },
-        { title: "Sug'urta to'lovi", prompt: "YTH (Avariya) bo'lganda sug'urta kompaniyasidan pulni qanday undirish kerak?" },
-        { title: "Ishonchnoma", prompt: "Bosh ishonchnoma (General doverennost) bilan mashinani sotsa bo'ladimi?" },
-        { title: "Mast holda haydash", prompt: "Mast holda mashina haydashning huquqiy oqibatlari." },
-        { title: "Mashina sotib olish", prompt: "Avtomobilni notarius orqali rasmiylashtirish xarajatlari." },
-        { title: "YPX xodimi", prompt: "YPX xodimi to'xtatganda haydovchining huquq va majburiyatlari." }
+        { title: "Jarimani bekor qilish", prompt: "Kameraga tushgan noto'g'ri jarimani qanday bekor qilsa bo'ladi?" },
+        { title: "Sug'urta to'lovi", prompt: "YTH (Avariya) bo'lganda sug'urta kompaniyasidan to'lovni qanday olish kerak?" },
+        { title: "Ishonchnoma", prompt: "Avtomobilni ishonchnomasiz boshqarish (General doverennost) mumkinmi?" },
+        { title: "Mast holda haydash", prompt: "Mast holda mashina haydashning oqibatlari (prava olish, jarima) qanday?" },
+        { title: "Mashina sotib olish", prompt: "Mashina oldi-sotdisini notariusda rasmiylashtirish xarajatlari qancha?" },
+        { title: "YPX xodimi", prompt: "YPX xodimi to'xtatganda haydovchining qanday huquqlari bor?" }
       ]
     },
     {
       category: "Iste'molchi huquqlari",
       items: [
-        { title: "Tovarni qaytarish", prompt: "Sifatsiz texnikani do'konga qanday qaytarib berish mumkin?" },
-        { title: "Pulni qaytarish", prompt: "Onlayn xarid qilingan mahsulot uchun pulni qaytarib olish." },
-        { title: "Kafolat", prompt: "Kafolat muddati ichida buzilgan tovar bepul ta'mirlab beriladimi?" },
-        { title: "Yaroqlilik muddati", prompt: "Muddati o'tgan oziq-ovqat mahsulotlarini sotganlik uchun jazo." },
-        { title: "Xizmat ko'rsatish", prompt: "Restoranda xizmat haqi (servis) majburiymi?" },
-        { title: "Kommunal", prompt: "Svet yoki gaz o'chganda yetkazilgan zararni kim qoplaydi?" }
+        { title: "Tovarni qaytarish", prompt: "Sifatsiz tovarni qancha muddatda qaytarib berish yoki almashtirish mumkin?" },
+        { title: "Pulni qaytarish", prompt: "Xizmat ko'rsatilmagan bo'lsa, to'langan pulni (predoplata) qaytarib olsa bo'ladimi?" },
+        { title: "Kafolat", prompt: "Kafolat muddati davomida tovar buzilsa, ta'mirlash kimning hisobidan bo'ladi?" },
+        { title: "Yaroqlilik muddati", prompt: "Muddati o'tgan mahsulot sotilganini ko'rsam, qayerga xabar berishim kerak?" },
+        { title: "Xizmat ko'rsatish", prompt: "Restoran yoki do'konda qo'pol muomala qilishsa, qanday chora ko'rish mumkin?" },
+        { title: "Kommunal", prompt: "Svet yoki gaz o'chib qolsa, yetkazilgan zararni talab qilsa bo'ladimi?" }
       ]
     },
     {
       category: "Bank va kredit",
       items: [
-        { title: "Kredit tarixi", prompt: "Yomon kredit tarixini qanday to'g'irlash yoki o'chirish mumkin?" },
-        { title: "Mikroqarz", prompt: "Onlayn mikroqarz olish tartibi va foizlari." },
-        { title: "Kafil bo'lish", prompt: "Birovga kafil bo'lishning xavfli tomonlari nimada?" },
-        { title: "Kredit ta'tili", prompt: "Kredit to'lovlarini vaqtincha to'xtatib turish (kredit ta'tili) mumkinmi?" },
-        { title: "Omonatlar", prompt: "Bankdagi omonatlar davlat tomonidan kafolatlanganmi?" },
-        { title: "Plastik karta", prompt: "Plastik kartadan o'g'irlangan pullarni bank qaytarib beradimi?" }
+        { title: "Kredit tarixi", prompt: "Yomon kredit tarixini tozalash yoki yaxshilash mumkinmi?" },
+        { title: "Mikroqarz", prompt: "Mikroqarz olish uchun qanday hujjatlar kerak va foizlari qancha?" },
+        { title: "Kafil bo'lish", prompt: "Kreditga kafil bo'lgan shaxsning qanday majburiyatlari bor?" },
+        { title: "Kredit ta'tili", prompt: "To'lov qobiliyati pasayganda kredit ta'tili olish tartibi qanday?" },
+        { title: "Omonatlar", prompt: "Bank bankrot bo'lsa, omonatdagi pullar to'liq qaytariladimi?" },
+        { title: "Plastik karta", prompt: "Plastik kartadan pul o'g'irlansa, bank javobgarmi yoki egasimi?" }
       ]
     },
     {
       category: "Meros huquqi",
       items: [
-        { title: "Vasiyatnoma", prompt: "Vasiyatnoma qanday tuziladi va uni kimlar tasdiqlaydi?" },
-        { title: "Merosga kirishish", prompt: "Merosni qabul qilib olish muddati (6 oy) o'tib ketsa nima bo'ladi?" },
-        { title: "Majburiy ulush", prompt: "Vasiyatnomada yozilmagan bo'lsa ham, kimlar merosdan ulush olishga haqli?" },
-        { title: "Merosni rad etish", prompt: "Merosdan voz kechish tartibi qanday?" },
-        { title: "Qarzlar", prompt: "Meros qolgan uy bilan birga qarzlar ham o'tadimi?" },
-        { title: "Nizolar", prompt: "Merosxo'rlar o'rtasidagi nizolar qanday hal qilinadi?" }
+        { title: "Vasiyatnoma", prompt: "Vasiyatnoma qanday tuziladi va uni notariusda tasdiqlash shartmi?" },
+        { title: "Merosga kirishish", prompt: "Merosga kirishish uchun qancha muddat ichida ariza berish kerak?" },
+        { title: "Majburiy ulush", prompt: "Vasiyatnomada yozilmagan bo'lsa ham, kimlar merosdan majburiy ulush oladi?" },
+        { title: "Merosni rad etish", prompt: "Merosdan voz kechish tartibi qanday? Qarzlar ham meros bo'lib o'tadimi?" },
+        { title: "Qarzlar", prompt: "Vafot etgan shaxsning kredit qarzlari merosxo'rlarga o'tadimi?" },
+        { title: "Nizolar", prompt: "Meros taqsimoti bo'yicha nizo chiqsa, sudga qanday da'vo kiritiladi?" }
       ]
     },
     {
       category: "Migratsiya va viza",
       items: [
-        { title: "Zagran pasport", prompt: "Xorijga chiqish biometrik pasportini olish tartibi." },
-        { title: "Deportatsiya", prompt: "Deportatsiya qilingan fuqaro qachon qaytib kirishi mumkin?" },
-        { title: "Chet elda ishlash", prompt: "Tashqi mehnat migratsiyasi agentligi orqali ishlashning afzalliklari." },
-        { title: "Fuqarolik", prompt: "O'zbekiston fuqaroligini olish yoki undan chiqish tartibi." },
-        { title: "Vaqtinchalik ro'yxat", prompt: "Chet el fuqarolari O'zbekistonda qanday ro'yxatdan o'tadi?" },
-        { title: "Elchixona", prompt: "Chet elda pasport yo'qolsa, elchixonaga qanday murojaat qilish kerak?" }
+        { title: "Zagran pasport", prompt: "Xorijga chiqish pasportini olish uchun qanday hujjatlar kerak va narxi qancha?" },
+        { title: "Deportatsiya", prompt: "Deportatsiya qilingan shaxs qachon qaytib kirishi mumkin?" },
+        { title: "Chet elda ishlash", prompt: "Xorijda qonuniy ishlash uchun qaysi agentlikka murojaat qilish kerak?" },
+        { title: "Fuqarolik", prompt: "O'zbekiston fuqaroligini olish yoki undan chiqish tartibi qanday?" },
+        { title: "Vaqtinchalik ro'yxat", prompt: "Chet el fuqarosi O'zbekistonda vaqtinchalik ro'yxatdan qanday o'tadi?" },
+        { title: "Elchixona", prompt: "Xorijda pasport yo'qolsa, O'zbekiston elchixonasiga qanday murojaat qilinadi?" }
       ]
     },
     {
       category: "Sud jarayoni",
       items: [
-        { title: "Da'vo ariza yozish", prompt: "Sudga da'vo ariza yozishda nimalarga e'tibor berish kerak?" },
-        { title: "Davlat boji", prompt: "Sudga murojaat qilishda davlat boji stavkalari qancha?" },
-        { title: "Apellyatsiya", prompt: "Sud qaroridan norozi bo'lib apellyatsiya shikoyati berish muddati." },
-        { title: "Sud ijrochisi (MIB)", prompt: "Sud qarori ijro etilmayotgan bo'lsa, MIBga qanday shikoyat qilinadi?" },
-        { title: "Onlayn sud", prompt: "Sud majlisida videokonferensaloqa orqali qatnashish mumkinmi?" },
+        { title: "Da'vo ariza yozish", prompt: "Sudga da'vo ariza qanday yoziladi? Namuna qayerdan olsa bo'ladi?" },
+        { title: "Davlat boji", prompt: "Sudga murojaat qilishda davlat boji qancha va kimlar ozod qilingan?" },
+        { title: "Apellyatsiya", prompt: "Sud qaroridan norozi bo'lsam, apellyatsiya shikoyatini necha kun ichida berishim kerak?" },
+        { title: "Sud ijrochisi (MIB)", prompt: "Sud qarori ijro etilmayotgan bo'lsa, MIB ustidan qayerga shikoyat qilish kerak?" },
+        { title: "Onlayn sud", prompt: "Sud majlisida videokonferensaloqa orqali onlayn qatnashish mumkinmi?" },
         { title: "Dalillar", prompt: "Audio va video yozuvlar sudda dalil sifatida o'tadimi?" }
       ]
     }
-  ],
-  [Language.RU]: [
-    // Placeholder - In a real scenario, full translation of above 16 categories * 6 items
-    // Replicating structure with basic translation instruction to satisfy "don't leave empty" rule while respecting token limits
-    { category: "Семья и Брак", items: [{ title: "Развод", prompt: "Как развестись?" }] }, 
-    // ... (Normally I would output all 96 items here too, but to ensure the response fits, I'm focusing on the UZ dataset perfection as per primary language). 
-    // NOTE: For the sake of the "Exact" user request, I will populate the RU/EN with copies of UZ structure but generic prompts to ensure the App doesn't crash, 
-    // as typing 300 unique strings manually in one go is risky for JSON syntax errors in LLM output. 
-    // *However*, since the user was angry, I will duplicate the UZ data structure to RU/EN so the UI shows full 16 categories, even if text is UZ (or simulated translation).*
-  ],
-  [Language.EN]: [
-     // Same strategy
-     { category: "Family Law", items: [{ title: "Divorce", prompt: "How to divorce?" }] }
-  ]
+];
+
+const TOPICS_DATA_RU = [
+    {
+      category: "Семья и Брак",
+      items: [
+        { title: "Процесс развода", prompt: "Как развестись через суд? Сколько времени занимает процесс?" },
+        { title: "Взыскание алиментов", prompt: "Как рассчитывается сумма алиментов и каков порядок их взыскания?" },
+        { title: "Раздел имущества", prompt: "Как делится дом и машина между супругами при разводе?" },
+        { title: "Установление опеки", prompt: "Какие документы нужны для оформления опеки над ребенком?" },
+        { title: "Брачный контракт", prompt: "Что такое брачный контракт и как он составляется?" },
+        { title: "Признание отцовства", prompt: "Как подать в суд на установление отцовства?" }
+      ]
+    },
+    {
+      category: "Трудовое право",
+      items: [
+        { title: "Незаконное увольнение", prompt: "Работодатель незаконно меня уволил. Как мне восстановиться на работе?" },
+        { title: "Трудовой отпуск", prompt: "Сколько дней должен длиться ежегодный трудовой отпуск и как рассчитываются отпускные?" },
+        { title: "Декретные", prompt: "Кому и сколько выплачивается пособие по беременности и родам (декретные)?" },
+        { title: "Задержка зарплаты", prompt: "Куда жаловаться, если зарплату не выдают вовремя?" },
+        { title: "Увольнение", prompt: "Каков порядок увольнения по собственному желанию? Обязательно ли предупреждать за 2 недели?" },
+        { title: "Испытательный срок", prompt: "Какой может быть испытательный срок при приеме на работу и оплачивается ли он?" }
+      ]
+    },
+    {
+      category: "Уголовное право",
+      items: [
+        { title: "Оправдательный приговор", prompt: "В каких случаях выносится оправдательный приговор по уголовному делу?" },
+        { title: "Мошенничество", prompt: "Я стал жертвой мошенничества. Что делать, чтобы вернуть деньги?" },
+        { title: "Телесные повреждения", prompt: "Какое наказание предусмотрено за умышленное нанесение телесных повреждений?" },
+        { title: "Кража", prompt: "Какая ответственность предусмотрена за преступление кражи?" },
+        { title: "Примирение", prompt: "По каким преступлениям применяется институт примирения?" },
+        { title: "Права подозреваемого", prompt: "Какие права есть у задержанного лица? Когда нужен адвокат?" }
+      ]
+    },
+    {
+      category: "Административная ответственность",
+      items: [
+        { title: "Оплата штрафа", prompt: "Какая скидка, если оплатить административный штраф в течение 15 дней?" },
+        { title: "Хулиганство", prompt: "Какое наказание за мелкое хулиганство (нецензурная брань, нарушение порядка)?" },
+        { title: "Алкоголь", prompt: "Каковы последствия распития спиртных напитков в общественном месте?" },
+        { title: "Клевета", prompt: "Есть ли административная ответственность за клевету и оскорбление?" },
+        { title: "Паспортный режим", prompt: "Каков штраф за утерю паспорта или проживание без прописки?" },
+        { title: "Нарушение тишины", prompt: "Куда жаловаться на соседей, которые шумят ночью?" }
+      ]
+    },
+    {
+      category: "Гражданское право",
+      items: [
+        { title: "Взыскание долга", prompt: "Как взыскать долг по расписке через суд?" },
+        { title: "Возмещение ущерба", prompt: "Как взыскать причиненный мне материальный и моральный ущерб?" },
+        { title: "Недействительность сделки", prompt: "В каких случаях договор купли-продажи можно признать недействительным?" },
+        { title: "Право собственности", prompt: "Как признать право собственности на недвижимость?" },
+        { title: "Долги умершего", prompt: "Отвечают ли наследники за долги умершего лица?" },
+        { title: "Дарение", prompt: "Можно ли отменить договор дарения жилья?" }
+      ]
+    },
+    {
+      category: "Жилье и недвижимость",
+      items: [
+        { title: "Покупка квартиры", prompt: "Каков порядок покупки жилья через ипотечный кредит?" },
+        { title: "Кадастр", prompt: "Сколько времени занимает оформление кадастровых документов на жилье?" },
+        { title: "Прописка", prompt: "Каков новый порядок постоянной регистрации (прописки) в Ташкенте?" },
+        { title: "Снос", prompt: "Мой дом попал под снос. Как должна выплачиваться компенсация?" },
+        { title: "Договор аренды", prompt: "Что будет, если арендодатель не зарегистрирует договор в налоговой?" },
+        { title: "Коммунальные платежи", prompt: "Что делать, если начислен необоснованный долг за коммунальные услуги?" }
+      ]
+    },
+    {
+      category: "Бизнес и предпринимательство",
+      items: [
+        { title: "Открыть ООО", prompt: "Какие документы нужны для открытия ООО и каков уставной фонд?" },
+        { title: "Получение лицензии", prompt: "Для каких видов деятельности требуется лицензия?" },
+        { title: "Проверки", prompt: "Каков порядок проверки субъектов предпринимательства? Что делает Бизнес-омбудсман?" },
+        { title: "Льготный кредит", prompt: "Каковы условия получения льготного кредита от государства для малого бизнеса?" },
+        { title: "Экспорт", prompt: "Какие таможенные льготы есть при экспорте продукции?" },
+        { title: "Банкротство", prompt: "Каков порядок объявления предприятия банкротом?" }
+      ]
+    },
+    {
+      category: "Налоги и таможня",
+      items: [
+        { title: "Подоходный налог", prompt: "Какова ставка подоходного налога с физических лиц?" },
+        { title: "НДС", prompt: "Для кого обязательно быть плательщиком НДС?" },
+        { title: "Таможенные платежи", prompt: "Сколько стоит растаможка автомобиля из-за границы?" },
+        { title: "Зеленый коридор", prompt: "Что такое система 'зеленый коридор' на таможне и для кого она?" },
+        { title: "Налоговая декларация", prompt: "Кто и когда должен сдавать декларацию о годовом доходе?" },
+        { title: "Самозанятые", prompt: "От каких налогов освобождены самозанятые лица?" }
+      ]
+    },
+    {
+      category: "Образование",
+      items: [
+        { title: "Оплата контракта", prompt: "Могут ли студенты платить контракт по частям?" },
+        { title: "Перевод учебы", prompt: "Каков порядок перевода учебы (перевод) из зарубежного или другого ВУЗа?" },
+        { title: "Магистратура", prompt: "Покрывается ли оплата магистратуры для женщин государством?" },
+        { title: "Гранты", prompt: "Кому выдаются Президентский грант и другие стипендии?" },
+        { title: "Дошкольное образование", prompt: "Как поставить ребенка в очередь в государственный детский сад?" },
+        { title: "Частная школа", prompt: "Действителен ли аттестат, если у частной школы нет лицензии?" }
+      ]
+    },
+    {
+      category: "Здравоохранение",
+      items: [
+        { title: "Бесплатное лечение", prompt: "Кто имеет право на бесплатное лечение на основании ордера?" },
+        { title: "Инвалидность", prompt: "Как проходит порядок установления группы инвалидности и осмотр ВТЭК?" },
+        { title: "Частная клиника", prompt: "Как взыскать ущерб, если в частной клинике неправильно лечили?" },
+        { title: "Врачебная ошибка", prompt: "Какая ответственность предусмотрена за вред здоровью из-за ошибки врача?" },
+        { title: "Лекарства", prompt: "Выдаются ли бесплатные лекарства льготным категориям лиц?" },
+        { title: "Психические заболевания", prompt: "Можно ли принудительно поместить лицо в психиатрическую больницу?" }
+      ]
+    },
+    {
+      category: "Автомобиль и дорога",
+      items: [
+        { title: "Отмена штрафа", prompt: "Как отменить неправильный штраф, зафиксированный камерой?" },
+        { title: "Страховая выплата", prompt: "Как получить выплату от страховой компании при ДТП?" },
+        { title: "Доверенность", prompt: "Можно ли управлять автомобилем без доверенности (Генеральная доверенность)?" },
+        { title: "Вождение пьяным", prompt: "Каковы последствия вождения в нетрезвом виде (лишение прав, штраф)?" },
+        { title: "Покупка машины", prompt: "Каковы расходы на оформление купли-продажи машины у нотариуса?" },
+        { title: "Сотрудник ДПС", prompt: "Какие права есть у водителя, когда его останавливает сотрудник ДПС?" }
+      ]
+    },
+    {
+      category: "Права потребителей",
+      items: [
+        { title: "Возврат товара", prompt: "В какой срок можно вернуть или обменять некачественный товар?" },
+        { title: "Возврат денег", prompt: "Можно ли вернуть деньги (предоплату), если услуга не была оказана?" },
+        { title: "Гарантия", prompt: "За чей счет производится ремонт, если товар сломался в течение гарантийного срока?" },
+        { title: "Срок годности", prompt: "Куда сообщить, если я увидел продажу просроченного продукта?" },
+        { title: "Обслуживание", prompt: "Как принять меры, если в ресторане или магазине грубо обслужили?" },
+        { title: "Коммуналка", prompt: "Можно ли требовать возмещения ущерба, если отключили свет или газ?" }
+      ]
+    },
+    {
+      category: "Банк и кредит",
+      items: [
+        { title: "Кредитная история", prompt: "Можно ли очистить или улучшить плохую кредитную историю?" },
+        { title: "Микрозайм", prompt: "Какие документы нужны для микрозайма и каковы проценты?" },
+        { title: "Поручительство", prompt: "Какие обязательства есть у поручителя по кредиту?" },
+        { title: "Кредитные каникулы", prompt: "Каков порядок получения кредитных каникул при снижении платежеспособности?" },
+        { title: "Вклады", prompt: "Возвращаются ли деньги с вкладов полностью, если банк обанкротится?" },
+        { title: "Пластиковая карта", prompt: "Если с карты украли деньги, ответственен банк или владелец?" }
+      ]
+    },
+    {
+      category: "Наследственное право",
+      items: [
+        { title: "Завещание", prompt: "Как составляется завещание и обязательно ли заверять его у нотариуса?" },
+        { title: "Вступление в наследство", prompt: "В какой срок нужно подать заявление для вступления в наследство?" },
+        { title: "Обязательная доля", prompt: "Кто получает обязательную долю в наследстве, даже если не указан в завещании?" },
+        { title: "Отказ от наследства", prompt: "Каков порядок отказа от наследства? Переходят ли долги по наследству?" },
+        { title: "Долги", prompt: "Переходят ли кредитные долги умершего к наследникам?" },
+        { title: "Споры", prompt: "Как подать иск в суд, если возник спор по разделу наследства?" }
+      ]
+    },
+    {
+      category: "Миграция и виза",
+      items: [
+        { title: "Загранпаспорт", prompt: "Какие документы нужны для загранпаспорта и сколько он стоит?" },
+        { title: "Депортация", prompt: "Когда может вернуться депортированное лицо?" },
+        { title: "Работа за границей", prompt: "В какое агентство обращаться для легальной работы за рубежом?" },
+        { title: "Гражданство", prompt: "Каков порядок получения или выхода из гражданства Узбекистана?" },
+        { title: "Временная регистрация", prompt: "Как иностранцу пройти временную регистрацию в Узбекистане?" },
+        { title: "Посольство", prompt: "Как обратиться в посольство Узбекистана при утере паспорта за границей?" }
+      ]
+    },
+    {
+      category: "Судебный процесс",
+      items: [
+        { title: "Написание иска", prompt: "Как написать исковое заявление в суд? Где взять образец?" },
+        { title: "Госпошлина", prompt: "Сколько составляет госпошлина при обращении в суд и кто освобожден?" },
+        { title: "Апелляция", prompt: "В течение скольких дней нужно подать апелляцию, если я не согласен с решением суда?" },
+        { title: "Судоисполнитель (МИБ)", prompt: "Куда жаловаться на МИБ, если решение суда не исполняется?" },
+        { title: "Онлайн суд", prompt: "Можно ли участвовать в суде онлайн через видеоконференцсвязь?" },
+        { title: "Доказательства", prompt: "Проходят ли аудио и видеозаписи как доказательства в суде?" }
+      ]
+    }
+];
+
+const TOPICS_DATA_EN = [
+    {
+      category: "Family & Marriage",
+      items: [
+        { title: "Divorce Process", prompt: "How do couples divorce through court? How long does the process take?" },
+        { title: "Alimony Collection", prompt: "How is alimony calculated and what is the collection procedure?" },
+        { title: "Property Division", prompt: "How are the house and car divided between spouses upon divorce?" },
+        { title: "Guardianship", prompt: "What documents are needed to formalize guardianship of a child?" },
+        { title: "Prenuptial Agreement", prompt: "What is a prenuptial agreement and how is it drafted?" },
+        { title: "Paternity Recognition", prompt: "How to apply to court to establish paternity?" }
+      ]
+    },
+    {
+      category: "Labor Law",
+      items: [
+        { title: "Illegal Dismissal", prompt: "My employer fired me illegally. How can I be reinstated?" },
+        { title: "Annual Leave", prompt: "How many days should annual leave be and how is vacation pay calculated?" },
+        { title: "Maternity Pay", prompt: "Who receives maternity benefits and how much?" },
+        { title: "Salary Delay", prompt: "Where to complain if wages are not paid on time?" },
+        { title: "Resignation", prompt: "What is the procedure for resigning voluntarily? Is 2 weeks notice mandatory?" },
+        { title: "Probation Period", prompt: "How long can the probation period be and is it paid?" }
+      ]
+    },
+    {
+      category: "Criminal Law",
+      items: [
+        { title: "Acquittal", prompt: "In what cases is an acquittal issued in a criminal case?" },
+        { title: "Fraud", prompt: "I became a victim of fraud. What should I do to get my money back?" },
+        { title: "Bodily Injury", prompt: "What is the punishment for intentional bodily injury?" },
+        { title: "Theft", prompt: "What liability is prescribed for the crime of theft?" },
+        { title: "Reconciliation", prompt: "For which crimes is the institution of reconciliation applied?" },
+        { title: "Suspect Rights", prompt: "What rights does a detained person have? When is a lawyer needed?" }
+      ]
+    },
+    {
+      category: "Administrative Liability",
+      items: [
+        { title: "Paying Fines", prompt: "What is the discount if an administrative fine is paid within 15 days?" },
+        { title: "Hooliganism", prompt: "What is the punishment for petty hooliganism (swearing, disturbing public order)?" },
+        { title: "Public Drinking", prompt: "What are the consequences of drinking alcohol in a public place?" },
+        { title: "Slander", prompt: "Is there administrative liability for slander and insult?" },
+        { title: "Passport Regime", prompt: "What is the fine for losing a passport or living without registration?" },
+        { title: "Noise Violation", prompt: "Where to complain about neighbors making noise at night?" }
+      ]
+    },
+    {
+      category: "Civil Law",
+      items: [
+        { title: "Debt Collection", prompt: "How to collect a debt based on a receipt through the court?" },
+        { title: "Damage Compensation", prompt: "How to recover material and moral damages caused to me?" },
+        { title: "Invalid Transaction", prompt: "In what cases can a sales contract be declared invalid?" },
+        { title: "Property Rights", prompt: "How to recognize ownership rights to real estate?" },
+        { title: "Heir Liability", prompt: "Do heirs answer for the debts of a deceased person?" },
+        { title: "Donation", prompt: "Can a housing donation contract be cancelled?" }
+      ]
+    },
+    {
+      category: "Housing & Property",
+      items: [
+        { title: "Buying Apartment", prompt: "What is the procedure for buying a house through a mortgage loan?" },
+        { title: "Cadastre", prompt: "How long does it take to process cadastre documents for a house?" },
+        { title: "Propiska", prompt: "What is the new procedure for permanent registration (propiska) in Tashkent?" },
+        { title: "Demolition (Snos)", prompt: "My house is up for demolition. How should compensation be paid?" },
+        { title: "Rental Agreement", prompt: "What happens if the landlord does not register the contract with the tax office?" },
+        { title: "Utilities", prompt: "What to do if unjustified debt is charged for utility services?" }
+      ]
+    },
+    {
+      category: "Business",
+      items: [
+        { title: "Open LLC", prompt: "What documents are needed to open an LLC and how much is the authorized capital?" },
+        { title: "Obtaining License", prompt: "Which types of activities require a license?" },
+        { title: "Inspections", prompt: "What is the procedure for inspecting business entities? What does the Business Ombudsman do?" },
+        { title: "Preferential Loan", prompt: "What are the conditions for obtaining a preferential state loan for small business?" },
+        { title: "Export", prompt: "What customs privileges exist when exporting products?" },
+        { title: "Bankruptcy", prompt: "What is the procedure for declaring an enterprise bankrupt?" }
+      ]
+    },
+    {
+      category: "Tax & Customs",
+      items: [
+        { title: "Income Tax", prompt: "What is the personal income tax rate?" },
+        { title: "VAT", prompt: "For whom is it mandatory to be a VAT payer?" },
+        { title: "Customs Duties", prompt: "How much is the customs clearance fee for importing a car from abroad?" },
+        { title: "Green Channel", prompt: "What is the 'green channel' system at customs and who is it for?" },
+        { title: "Tax Declaration", prompt: "Who needs to submit an annual income declaration and when?" },
+        { title: "Self-employed", prompt: "What taxes are self-employed persons exempt from?" }
+      ]
+    },
+    {
+      category: "Education",
+      items: [
+        { title: "Tuition Fee", prompt: "Can students pay tuition fees in installments?" },
+        { title: "Transfer Studies", prompt: "What is the procedure for transferring studies from abroad or another university?" },
+        { title: "Masters Degree", prompt: "Is Master's degree tuition covered by the state for women?" },
+        { title: "Grants", prompt: "Who receives the Presidential Grant and other scholarships?" },
+        { title: "Preschool", prompt: "How to queue a child for a state kindergarten?" },
+        { title: "Private School", prompt: "Is the certificate valid if the private school has no license?" }
+      ]
+    },
+    {
+      category: "Healthcare",
+      items: [
+        { title: "Free Treatment", prompt: "Who is entitled to free treatment based on an order?" },
+        { title: "Disability", prompt: "How does the procedure for establishing disability and the commission exam work?" },
+        { title: "Private Clinic", prompt: "How to recover damages if treated incorrectly in a private clinic?" },
+        { title: "Medical Error", prompt: "What liability exists for harm to health due to doctor's error?" },
+        { title: "Medicines", prompt: "Are free medicines given to privileged categories of persons?" },
+        { title: "Mental Illness", prompt: "Can a person be forcibly hospitalized in a psychiatric hospital?" }
+      ]
+    },
+    {
+      category: "Auto & Road",
+      items: [
+        { title: "Cancel Fine", prompt: "How to cancel an incorrect fine recorded by a camera?" },
+        { title: "Insurance Payout", prompt: "How to get a payout from an insurance company in case of an accident?" },
+        { title: "Power of Attorney", prompt: "Is it possible to drive a car without a power of attorney?" },
+        { title: "Drunk Driving", prompt: "What are the consequences of drunk driving (license revocation, fine)?" },
+        { title: "Buying Car", prompt: "What are the notary costs for processing a car sale?" },
+        { title: "Traffic Officer", prompt: "What rights does a driver have when stopped by a traffic officer?" }
+      ]
+    },
+    {
+      category: "Consumer Rights",
+      items: [
+        { title: "Return Goods", prompt: "Within what period can defective goods be returned or exchanged?" },
+        { title: "Refund", prompt: "Can I get a refund (prepayment) if the service was not provided?" },
+        { title: "Warranty", prompt: "Who pays for repairs if the product breaks during the warranty period?" },
+        { title: "Expiration Date", prompt: "Where should I report if I see expired products being sold?" },
+        { title: "Service", prompt: "What action can be taken if treated rudely in a restaurant or shop?" },
+        { title: "Utilities", prompt: "Can compensation be claimed if electricity or gas is cut off?" }
+      ]
+    },
+    {
+      category: "Bank & Credit",
+      items: [
+        { title: "Credit History", prompt: "Is it possible to clear or improve bad credit history?" },
+        { title: "Microloan", prompt: "What documents are needed for a microloan and what are the interest rates?" },
+        { title: "Guarantor", prompt: "What obligations does a loan guarantor have?" },
+        { title: "Credit Holidays", prompt: "What is the procedure for obtaining credit holidays when solvency drops?" },
+        { title: "Deposits", prompt: "Is money in deposits fully refunded if the bank goes bankrupt?" },
+        { title: "Plastic Card", prompt: "If money is stolen from a card, is the bank or the owner responsible?" }
+      ]
+    },
+    {
+      category: "Inheritance",
+      items: [
+        { title: "Will", prompt: "How is a will drafted and must it be notarized?" },
+        { title: "Accepting Inheritance", prompt: "Within what period must an application be submitted to accept inheritance?" },
+        { title: "Mandatory Share", prompt: "Who receives a mandatory share in inheritance even if not listed in the will?" },
+        { title: "Renouncing Inheritance", prompt: "What is the procedure for renouncing inheritance? Do debts also pass?" },
+        { title: "Debts", prompt: "Do the deceased's credit debts pass to the heirs?" },
+        { title: "Disputes", prompt: "How to file a lawsuit if there is a dispute over inheritance division?" }
+      ]
+    },
+    {
+      category: "Migration & Visa",
+      items: [
+        { title: "Intl Passport", prompt: "What documents are needed for an international passport and how much does it cost?" },
+        { title: "Deportation", prompt: "When can a deported person return?" },
+        { title: "Work Abroad", prompt: "Which agency should I contact for legal work abroad?" },
+        { title: "Citizenship", prompt: "What is the procedure for obtaining or renouncing Uzbekistan citizenship?" },
+        { title: "Temp Registration", prompt: "How does a foreigner get temporary registration in Uzbekistan?" },
+        { title: "Embassy", prompt: "How to contact the Uzbek embassy if a passport is lost abroad?" }
+      ]
+    },
+    {
+      category: "Court Process",
+      items: [
+        { title: "Writing Claim", prompt: "How to write a statement of claim to the court? Where to get a sample?" },
+        { title: "State Duty", prompt: "How much is the state duty for court filing and who is exempt?" },
+        { title: "Appeal", prompt: "Within how many days should I file an appeal if I disagree with the court decision?" },
+        { title: "Enforcement (MIB)", prompt: "Where to complain about MIB if the court decision is not enforced?" },
+        { title: "Online Court", prompt: "Is it possible to participate in court online via video conferencing?" },
+        { title: "Evidence", prompt: "Are audio and video recordings accepted as evidence in court?" }
+      ]
+    }
+];
+
+export const TOPICS_DATA = {
+  [Language.UZ]: TOPICS_DATA_UZ,
+  [Language.RU]: TOPICS_DATA_RU,
+  [Language.EN]: TOPICS_DATA_EN
 };
-
-// Filling RU/EN with full structure to prevent "empty page" bugs, using UZ data as fallback for now
-TOPICS_DATA[Language.RU] = TOPICS_DATA[Language.UZ].map(cat => ({
-    category: cat.category + " (RU)",
-    items: cat.items.map(i => ({ title: i.title, prompt: "Russian translation of: " + i.prompt }))
-}));
-TOPICS_DATA[Language.EN] = TOPICS_DATA[Language.UZ].map(cat => ({
-    category: cat.category + " (EN)",
-    items: cat.items.map(i => ({ title: i.title, prompt: "English translation of: " + i.prompt }))
-}));
-
 
 export const TRANSLATIONS = {
   [Language.UZ]: {
+    // ... Existing
+    verifyBtn: "Chuqur Tahlil (Pro)",
+    verifyTitle: "Yuridik Audit",
+    verifyLoading: "Javob qayta tekshirilmoqda...",
+    deepAnalysis: "Chuqur Yuridik Tahlil",
+    // ...
     profileLoginPrompt: "Profilingizni boshqarish uchun tizimga kiring.",
     profileLoginBtn: "Kirish / Ro'yxatdan o'tish",
     title: "LAWIFY",
@@ -546,6 +1058,10 @@ export const TRANSLATIONS = {
     medDisclaimer: "Ushbu hujjatlar \"Mediatsiya to'g'risida\"gi qonun talablari asosida shakllantirildi.",
   },
   [Language.RU]: {
+    verifyBtn: "Глубокий Анализ (Pro)",
+    verifyTitle: "Юридический Аудит",
+    verifyLoading: "Проверка ответа...",
+    deepAnalysis: "Глубокий Юр. Анализ",
     profileLoginPrompt: "Пожалуйста, войдите в систему, чтобы управлять профилем и подпиской.",
     profileLoginBtn: "Войти / Регистрация",
     title: "LAWIFY",
@@ -784,6 +1300,10 @@ export const TRANSLATIONS = {
     medDisclaimer: "Документы составлены на основании Закона РУз 'О медиации'.",
   },
   [Language.EN]: {
+    verifyBtn: "Deep Analysis (Pro)",
+    verifyTitle: "Legal Audit",
+    verifyLoading: "Auditing response...",
+    deepAnalysis: "Deep Legal Analysis",
     profileLoginPrompt: "Please login to manage your profile and subscription.",
     profileLoginBtn: "Login / Register",
     title: "LAWIFY",

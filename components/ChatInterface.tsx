@@ -15,10 +15,12 @@ interface ChatInterfaceProps {
   onRegenerate?: () => void;
   onFeedback?: (messageId: string, type: 'like' | 'dislike') => void;
   onAskOdilbek?: (contextText: string) => void;
+  onVerify?: (messageId: string, originalPrompt: string, aiResponse: string) => void;
   initialInputValue?: string;
   isPro?: boolean;
   usageCount?: number;
   isOdilbekMode?: boolean;
+  isVerifying?: boolean;
 }
 
 // Utility to escape regex characters
@@ -36,10 +38,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   onRegenerate,
   onFeedback,
   onAskOdilbek,
+  onVerify,
   initialInputValue,
   isPro = false,
   usageCount = 0,
-  isOdilbekMode = false
+  isOdilbekMode = false,
+  isVerifying = false
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -261,7 +265,23 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       }
   };
 
-  // --- Highlighting Logic ---
+  // --- Highlighting & Citation Logic ---
+  const processMessageContent = (text: string, query: string) => {
+      let html = parse(text) as string;
+
+      // 1. Highlight Search Query (if any)
+      if (query.trim()) {
+          const regex = new RegExp(`(${escapeRegExp(query)})(?![^<]*>)`, 'gi');
+          html = html.replace(regex, '<mark class="bg-yellow-200 text-gray-900 rounded-sm">$1</mark>');
+      }
+
+      // 2. Format Inline Citations [1], [2] to match user requirement
+      // Replaces [1] with a styled superscript
+      html = html.replace(/\[(\d+)\]/g, '<sup class="text-blue-600 font-bold ml-0.5 cursor-pointer hover:underline" title="Source $1">[$1]</sup>');
+
+      return html;
+  };
+
   const highlightText = (text: string, query: string) => {
       if (!query.trim()) return text;
       const parts = text.split(new RegExp(`(${escapeRegExp(query)})`, 'gi'));
@@ -270,13 +290,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
               ? <span key={i} className="bg-yellow-200 text-gray-900 rounded-sm px-0.5">{part}</span> 
               : part
       );
-  };
-
-  const highlightHtml = (htmlContent: string, query: string) => {
-      if (!query.trim()) return htmlContent;
-      // Regex to match text content that is NOT inside an HTML tag
-      const regex = new RegExp(`(${escapeRegExp(query)})(?![^<]*>)`, 'gi');
-      return htmlContent.replace(regex, '<mark class="bg-yellow-200 text-gray-900 rounded-sm">$1</mark>');
   };
 
   // Helper to categorize sources
@@ -304,6 +317,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                                 className="flex items-center space-x-1 bg-blue-50 hover:bg-blue-100 text-blue-800 px-3 py-1.5 rounded-lg text-xs border border-blue-200 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 aria-label={`Source: ${source.title}`}
                             >
+                                <span className="text-[10px] bg-blue-200 text-blue-800 px-1 rounded mr-1">[{idx + 1}]</span>
                                 <span className="font-semibold truncate max-w-[200px]">{source.title}</span>
                                 <svg className="w-3 h-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                             </a>
@@ -325,6 +339,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                                 className="flex items-center space-x-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 px-3 py-1.5 rounded-lg text-xs border border-indigo-200 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 aria-label={`Reference: ${source.title}`}
                             >
+                                <span className="text-[10px] bg-indigo-200 text-indigo-800 px-1 rounded mr-1">[{officialSources.length + idx + 1}]</span>
                                 <span className="truncate max-w-[200px] font-medium">{source.title}</span>
                                 <svg className="w-3 h-3 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                             </a>
@@ -483,12 +498,16 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
           </div>
         )}
         
-        {filteredMessages.map((msg) => {
+        {filteredMessages.map((msg, index) => {
             const isEditing = editingMessageId === msg.id;
             const isExpanded = expandedMessages.has(msg.id);
             const isLongMessage = msg.text.length > 500;
             // Disable collapse for Odilbek mode
             const shouldCollapse = isLongMessage && !isExpanded && !isOdilbekMode;
+            
+            // Find the previous user message for verification context
+            // In a simple chat flow, the previous message to a model response is likely the prompt
+            const previousUserMsg = messages[index - 1]?.role === 'user' ? messages[index - 1] : null;
             
             // CUSTOM STYLE FOR ODILBEK USER CONTEXT
             const isOdilbekContext = isOdilbekMode && msg.role === 'user';
@@ -571,7 +590,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                                                 ? 'prose-headings:font-serif prose-headings:text-amber-900 prose-headings:font-bold prose-headings:mt-4 prose-headings:mb-2 prose-strong:text-amber-900 prose-strong:font-bold prose-slate' 
                                                 : 'prose-headings:font-serif prose-headings:font-bold prose-headings:text-slate-900 prose-headings:mt-4 prose-headings:mb-2 prose-strong:text-slate-900 prose-slate'
                                             }`}
-                                        dangerouslySetInnerHTML={{ __html: highlightHtml(parse(msg.text) as string, searchQuery) }} 
+                                        dangerouslySetInnerHTML={{ __html: processMessageContent(msg.text, searchQuery) }} 
                                     />
                                     {/* Gradient overlay when collapsed */}
                                     {shouldCollapse && (
@@ -605,80 +624,108 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                           {msg.role === 'model' && msg.sources && msg.sources.length > 0 && renderSources(msg.sources)}
 
                           {msg.role === 'model' && (
-                            <div className="mt-4 pt-2 border-t border-gray-50/50 flex items-center justify-between">
-                                 {/* Feedback Actions */}
-                                 <div className="flex items-center space-x-2">
-                                    <button 
-                                        onClick={() => handleCopy(msg.text, msg.id)}
-                                        className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors relative"
-                                        title="Copy"
-                                    >
-                                        {copiedMessageId === msg.id ? (
-                                            <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
-                                        ) : (
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                            <div className="mt-4 pt-2 border-t border-gray-50/50 flex flex-col space-y-2">
+                                 {/* Utility Actions Row */}
+                                 <div className="flex items-center justify-between">
+                                     <div className="flex items-center space-x-2">
+                                        <button 
+                                            onClick={() => handleCopy(msg.text, msg.id)}
+                                            className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors relative"
+                                            title="Copy"
+                                        >
+                                            {copiedMessageId === msg.id ? (
+                                                <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+                                            ) : (
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                                            )}
+                                        </button>
+                                        
+                                        <button 
+                                            onClick={() => onFeedback && onFeedback(msg.id, 'like')}
+                                            className={`p-2 rounded-lg transition-colors ${msg.feedback === 'like' ? 'text-green-500 bg-green-50' : 'text-gray-400 hover:text-green-500 hover:bg-green-50'}`}
+                                            title="Helpful"
+                                        >
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"></path></svg>
+                                        </button>
+
+                                        <button 
+                                            onClick={() => onFeedback && onFeedback(msg.id, 'dislike')}
+                                            className={`p-2 rounded-lg transition-colors ${msg.feedback === 'dislike' ? 'text-red-500 bg-red-50' : 'text-gray-400 hover:text-red-500 hover:bg-red-50'}`}
+                                            title="Not Helpful"
+                                        >
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.92m-7 10v5a2 2 0 002 2h.095c.5 0 .905-.405.905-.905 0-.714.211-1.412.608-2.006L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5"></path></svg>
+                                        </button>
+
+                                        <button 
+                                            onClick={onRegenerate}
+                                            className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-all transform hover:scale-110" 
+                                            title="Regenerate"
+                                            aria-label="Regenerate response"
+                                        >
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                                        </button>
+                                     </div>
+
+                                     <div className="flex items-center space-x-2">
+                                        {/* ODILBEK BUTTON */}
+                                        {!isOdilbekMode && onAskOdilbek && (
+                                            <button 
+                                                onClick={() => onAskOdilbek(msg.text)}
+                                                className="text-amber-600 hover:text-amber-800 bg-amber-50 hover:bg-amber-100 transition-colors text-xs font-bold flex items-center px-3 py-1.5 rounded-lg border border-amber-200"
+                                                title="Get explanation from Odilbek"
+                                            >
+                                                <span className="mr-1 flex items-center">
+                                                    {/* MAN TEACHER EMOJI AS REQUESTED */}
+                                                    <span className="text-base" style={{ fontFamily: '"Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"' }}>👨‍🏫</span>
+                                                </span>
+                                                {t.odilbekAction}
+                                            </button>
                                         )}
-                                    </button>
-                                    
-                                    <button 
-                                        onClick={() => onFeedback && onFeedback(msg.id, 'like')}
-                                        className={`p-2 rounded-lg transition-colors ${msg.feedback === 'like' ? 'text-green-500 bg-green-50' : 'text-gray-400 hover:text-green-500 hover:bg-green-50'}`}
-                                        title="Helpful"
-                                    >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"></path></svg>
-                                    </button>
 
-                                    <button 
-                                        onClick={() => onFeedback && onFeedback(msg.id, 'dislike')}
-                                        className={`p-2 rounded-lg transition-colors ${msg.feedback === 'dislike' ? 'text-red-500 bg-red-50' : 'text-gray-400 hover:text-red-500 hover:bg-red-50'}`}
-                                        title="Not Helpful"
-                                    >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.92m-7 10v5a2 2 0 002 2h.095c.5 0 .905-.405.905-.905 0-.714.211-1.412.608-2.006L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5"></path></svg>
-                                    </button>
-
-                                    <button 
-                                        onClick={onRegenerate}
-                                        className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-all transform hover:scale-110" 
-                                        title="Regenerate"
-                                        aria-label="Regenerate response"
-                                    >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                                    </button>
+                                        <button 
+                                            onClick={() => handleShare(msg.text)}
+                                            className="text-gray-400 hover:text-blue-600 transition-colors text-xs flex items-center px-2 py-1 rounded hover:bg-gray-50"
+                                            title="Share"
+                                        >
+                                             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
+                                        </button>
+                                        
+                                        <button 
+                                            onClick={() => onTTS(msg.text)}
+                                            className="text-gray-400 hover:text-purple-600 transition-colors text-xs flex items-center px-2 py-1 rounded hover:bg-purple-50"
+                                            title="Listen (TTS)"
+                                        >
+                                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
+                                        </button>
+                                    </div>
                                  </div>
 
-                                 {/* Utility Actions */}
-                                 <div className="flex items-center space-x-2">
-                                    {/* ODILBEK BUTTON */}
-                                    {!isOdilbekMode && onAskOdilbek && (
-                                        <button 
-                                            onClick={() => onAskOdilbek(msg.text)}
-                                            className="text-amber-600 hover:text-amber-800 bg-amber-50 hover:bg-amber-100 transition-colors text-xs font-bold flex items-center px-3 py-1.5 rounded-lg border border-amber-200"
-                                            title="Get explanation from Odilbek"
-                                        >
-                                            <span className="mr-1 flex items-center">
-                                                {/* MAN TEACHER EMOJI AS REQUESTED */}
-                                                <span className="text-base" style={{ fontFamily: '"Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"' }}>👨‍🏫</span>
-                                            </span>
-                                            {t.odilbekAction}
-                                        </button>
-                                    )}
-
-                                    <button 
-                                        onClick={() => handleShare(msg.text)}
-                                        className="text-gray-400 hover:text-blue-600 transition-colors text-xs flex items-center px-2 py-1 rounded hover:bg-gray-50"
-                                        title="Share"
-                                    >
-                                         <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
-                                    </button>
-                                    
-                                    <button 
-                                        onClick={() => onTTS(msg.text)}
-                                        className="text-gray-400 hover:text-purple-600 transition-colors text-xs flex items-center px-2 py-1 rounded hover:bg-purple-50"
-                                        title="Listen (TTS)"
-                                    >
-                                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
-                                    </button>
-                                </div>
+                                 {/* PRO FEATURE: VERIFY BUTTON (DEEP ANALYSIS) */}
+                                 {!isOdilbekMode && onVerify && previousUserMsg && (
+                                     <div className="pt-2">
+                                         <button 
+                                            onClick={() => onVerify(msg.id, previousUserMsg.text, msg.text)}
+                                            className={`w-full flex items-center justify-center space-x-2 py-2 rounded-xl transition-all border ${
+                                                isPro 
+                                                ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 text-blue-800 hover:shadow-md' 
+                                                : 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed opacity-80'
+                                            }`}
+                                            title={isPro ? t.deepAnalysis : "Upgrade to Pro for Deep Analysis"}
+                                         >
+                                             {isPro ? (
+                                                 <>
+                                                     <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                     <span className="text-xs font-bold uppercase tracking-wide">{t.verifyBtn}</span>
+                                                 </>
+                                             ) : (
+                                                 <>
+                                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                                                     <span className="text-xs font-bold uppercase tracking-wide">{t.verifyBtn}</span>
+                                                 </>
+                                             )}
+                                         </button>
+                                     </div>
+                                 )}
                             </div>
                           )}
                       </>
@@ -700,6 +747,16 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
             </div>
           </div>
         )}
+        
+        {isVerifying && (
+             <div className="flex justify-start">
+                <div className="rounded-2xl rounded-bl-none px-6 py-4 border border-blue-200 shadow-sm bg-blue-50 flex items-center space-x-3 animate-message-in">
+                    <svg className="w-5 h-5 text-blue-600 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    <span className="text-sm font-bold text-blue-800">{t.verifyLoading}</span>
+                </div>
+            </div>
+        )}
+
         <div ref={messagesEndRef} />
       </div>
 
@@ -763,13 +820,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
               rows={1}
               className={`flex-1 bg-transparent border-none focus:ring-0 resize-none max-h-40 py-3 px-2 text-slate-800 placeholder-gray-500 scrollbar-hide text-base leading-relaxed ${isRecording ? 'animate-pulse text-red-500' : ''}`}
               style={{ minHeight: '48px', height: 'auto' }}
-              disabled={isRecording}
+              disabled={isRecording || isVerifying}
             />
           </div>
 
            <button
             onClick={toggleRecording}
-            disabled={isLoading}
+            disabled={isLoading || isVerifying}
             className={`p-4 rounded-full flex items-center justify-center transition-all shadow-md border ${
               isRecording
                 ? 'bg-red-50 border-red-200 text-red-600 animate-pulse' 
@@ -785,9 +842,9 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
           <button
             onClick={handleSend}
-            disabled={(!inputText.trim() && !selectedAttachment) || isLoading || isRecording}
+            disabled={(!inputText.trim() && !selectedAttachment) || isLoading || isRecording || isVerifying}
             className={`p-4 rounded-full flex items-center justify-center transition-all shadow-md ${
-              (!inputText.trim() && !selectedAttachment) || isLoading || isRecording
+              (!inputText.trim() && !selectedAttachment) || isLoading || isRecording || isVerifying
                 ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none' 
                 : `${isOdilbekMode ? 'bg-amber-500 hover:bg-amber-600' : 'bg-blue-600 hover:bg-blue-700'} text-white hover:shadow-lg hover:-translate-y-0.5`
             }`}

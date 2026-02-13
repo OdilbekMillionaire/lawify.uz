@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Language, UserProfile } from '../types';
 import { TRANSLATIONS } from '../constants';
@@ -56,6 +57,7 @@ const Plans: React.FC<PlansProps> = ({ language, userProfile, onLogin, refreshPr
         features: [
             { text: `5 ${t.featRequestLimit}`, included: true },
             { text: t.featNoDocs, included: false },
+            { text: t.deepAnalysis, included: false },
             { text: t.featSpeedNormal, included: true },
             { text: t.featLive, included: false },
             { text: t.featHistory, included: true },
@@ -75,6 +77,7 @@ const Plans: React.FC<PlansProps> = ({ language, userProfile, onLogin, refreshPr
         features: [
             { text: t.featUnlimited, included: true },
             { text: `5 ${t.featDocs}`, included: true },
+            { text: t.deepAnalysis, included: true },
             { text: t.featSpeedFast, included: true },
             { text: `10 ${t.featLiveLimit} ${t.startLive}`, included: true },
             { text: t.featMobile, included: true },
@@ -93,6 +96,7 @@ const Plans: React.FC<PlansProps> = ({ language, userProfile, onLogin, refreshPr
         features: [
             { text: t.featUnlimited, included: true },
             { text: `20 ${t.featDocs}`, included: true },
+            { text: t.deepAnalysis, included: true },
             { text: t.featSpeedFast, included: true },
             { text: `30 ${t.featLiveLimit} ${t.startLive}`, included: true },
             { text: t.featHistory, included: true },
@@ -114,6 +118,7 @@ const Plans: React.FC<PlansProps> = ({ language, userProfile, onLogin, refreshPr
         features: [
             { text: t.featUnlimited, included: true },
             { text: `100 ${t.featDocs}`, included: true },
+            { text: t.deepAnalysis, included: true },
             { text: t.featSpeedFast, included: true },
             { text: `Unlimited ${t.featLive}`, included: true },
             { text: t.featReasoning, included: true },
@@ -135,7 +140,7 @@ const Plans: React.FC<PlansProps> = ({ language, userProfile, onLogin, refreshPr
             { text: t.featUnlimited, included: true },
             { text: `Unlimited ${t.featDocs}`, included: true },
             { text: "Priority Reasoning API", included: true },
-            { text: "Citation Export", included: true },
+            { text: t.deepAnalysis, included: true },
             { text: "Case Strategy Mode", included: true },
             { text: t.featAds, included: true },
             { text: t.featSupport, included: true },

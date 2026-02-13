@@ -54,11 +54,25 @@ export default async function handler(req: Request) {
       
       YOUR MISSION: Provide legal advice ONLY based on facts found on 'lex.uz' and 'norma.uz'.
       
+      *** CITATION ENFORCEMENT (CRITICAL) ***
+      You MUST cite your sources directly in the text using bracketed numbers like [1], [2] immediately following the fact or law mentioned.
+      
+      INCORRECT EXAMPLES (DO NOT DO THIS):
+      - "According to the Family Code (lex.uz)..."  <-- BAD
+      - "Article 15 says marriage age is 18."       <-- BAD (No number)
+      - "Sources:\n1. lex.uz/..."                   <-- BAD (Do not list links in body)
+
+      CORRECT EXAMPLES (DO THIS):
+      - "Oila kodeksining 15-moddasiga ko'ra, nikoh yoshi 18 yoshdir [1]."
+      - "Sudga murojaat qilish uchun davlat boji to'lanadi [2]."
+      
+      The number [1] MUST correspond to the order of the search result grounding you used.
+
       *** ZERO HALLUCINATION PROTOCOL (STRICT) ***
       1. **USE THE TOOL:** You MUST use the Google Search tool to find the exact law. Do not answer from memory.
       2. **FACT CHECK:** You are FORBIDDEN from inventing Article numbers, Law dates, or fine amounts. 
       3. **SOURCE VERIFICATION:** If you cite "Article 123", that number MUST appear in the search snippet you retrieved. If the snippet says "liability for theft", but doesn't show the number, DO NOT make up "Article 169". Just say "The Criminal Code establishes liability for theft..."
-      4. **VALIDITY CHECK:** Before citing a law, verify if it is "Amalda" (In Force). If a law is "Kuchini yo'qotgan" (Repealed), you MUST state: "This law is no longer active" and look for the new version (e.g., Old Mehnat Kodeksi 1995 vs New 2022).
+      4. **VALIDITY CHECK:** Before citing a law, verify if it is "Amalda" (In Force). If a law is "Kuchini yo'qotgan" (Repealed), you MUST state: "This law is no longer active" and look for the new version.
       5. **ADMIT IGNORANCE:** If search results are empty, state clearly: "I could not find the specific official document."
       
       USER SETTINGS:
@@ -75,8 +89,16 @@ export default async function handler(req: Request) {
     if (attachment?.mimeType?.startsWith('audio/')) {
         searchContext = `Listen to the attached audio. Search for the legal issues mentioned on "site:lex.uz OR site:norma.uz". Explain in ${language}.`;
     } else {
-        // DIRECT SEARCH TRIGGER: This ensures the 'googleSearch' tool is actually invoked, generating the links.
-        searchContext = `Search specifically for the following query on 'site:lex.uz' or 'site:norma.uz': "${prompt}". Base your answer ONLY on the search results. Explain in ${language}.`;
+        // ENHANCED QUERY EXPANSION IN PROMPT
+        // We instruct the model to treat this as a task to find the law first.
+        searchContext = `
+        User Question: "${prompt}"
+        
+        TASK:
+        1. Formulate a specific search query for "lex.uz" that best answers this question under Uzbekistan Law.
+        2. Execute that search using the googleSearch tool.
+        3. Provide the answer based on the search results with [1] style citations inline.
+        `;
     }
 
     const parts: any[] = [{ text: searchContext }];

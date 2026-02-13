@@ -28,6 +28,7 @@ const ChatPage: React.FC<ChatPageProps> = ({
   
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [usageCount, setUsageCount] = useState(0);
@@ -214,8 +215,36 @@ const ChatPage: React.FC<ChatPageProps> = ({
   };
 
   const handleAskOdilbek = (context: string) => {
-      // Pass the full text to Odilbek page for explanation
       navigate('/odilbek', { state: { legalContext: context } });
+  };
+
+  const handleVerify = async (messageId: string, originalPrompt: string, aiResponse: string) => {
+      if (!isPro) {
+          alert(language === Language.UZ 
+              ? "Bu funksiya faqat Pro foydalanuvchilar uchun!" 
+              : "This feature is for Pro users only!");
+          navigate('/plans');
+          return;
+      }
+
+      setIsVerifying(true);
+      try {
+          const response = await fetch('/api/verify-advice', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ originalPrompt, aiResponse, language })
+          });
+          const data = await response.json();
+          
+          if (data.text) {
+              addMessage(data.text, 'model'); // Append verification as new message
+          }
+      } catch (e) {
+          console.error("Verification failed", e);
+          addMessage("Verification system unavailable.", 'model');
+      } finally {
+          setIsVerifying(false);
+      }
   };
 
   return (
@@ -308,6 +337,8 @@ const ChatPage: React.FC<ChatPageProps> = ({
                 usageCount={usageCount}
                 onAskOdilbek={handleAskOdilbek}
                 initialInputValue={prefilledPrompt}
+                onVerify={handleVerify}
+                isVerifying={isVerifying}
             />
           </div>
        </div>
