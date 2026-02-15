@@ -86,7 +86,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 160)}px`;
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`;
     }
   }, [inputText]);
 
@@ -276,7 +276,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       }
 
       // 2. Format Inline Citations [1], [2] to match user requirement
-      // Replaces [1] with a styled superscript
       html = html.replace(/\[(\d+)\]/g, '<sup class="text-blue-600 font-bold ml-0.5 cursor-pointer hover:underline" title="Source $1">[$1]</sup>');
 
       return html;
@@ -306,7 +305,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
               
               {officialSources.length > 0 && (
                   <div className="flex flex-col space-y-1">
-                      <span className="text-[10px] font-semibold text-green-800 bg-green-50 px-2 py-0.5 rounded w-fit">Government Sources</span>
                       <div className="flex flex-wrap gap-2">
                         {officialSources.map((source, idx) => (
                             <a 
@@ -314,12 +312,11 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                                 href={source.uri} 
                                 target="_blank" 
                                 rel="noopener noreferrer"
-                                className="flex items-center space-x-1 bg-blue-50 hover:bg-blue-100 text-blue-800 px-3 py-1.5 rounded-lg text-xs border border-blue-200 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="flex items-center space-x-1 bg-blue-50 hover:bg-blue-100 text-blue-800 px-3 py-1.5 rounded-lg text-xs border border-blue-200 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 max-w-full"
                                 aria-label={`Source: ${source.title}`}
                             >
-                                <span className="text-[10px] bg-blue-200 text-blue-800 px-1 rounded mr-1">[{idx + 1}]</span>
-                                <span className="font-semibold truncate max-w-[200px]">{source.title}</span>
-                                <svg className="w-3 h-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                                <span className="text-[10px] bg-blue-200 text-blue-800 px-1 rounded mr-1 flex-shrink-0">[{idx + 1}]</span>
+                                <span className="font-semibold truncate">{source.title}</span>
                             </a>
                         ))}
                       </div>
@@ -328,7 +325,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
               {otherSources.length > 0 && (
                   <div className="flex flex-col space-y-1 mt-2">
-                      <span className="text-[10px] font-semibold text-indigo-800 bg-indigo-50 px-2 py-0.5 rounded w-fit">Reference Material</span>
                       <div className="flex flex-wrap gap-2">
                         {otherSources.map((source, idx) => (
                             <a 
@@ -336,12 +332,11 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                                 href={source.uri} 
                                 target="_blank" 
                                 rel="noopener noreferrer"
-                                className="flex items-center space-x-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 px-3 py-1.5 rounded-lg text-xs border border-indigo-200 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                className="flex items-center space-x-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 px-3 py-1.5 rounded-lg text-xs border border-indigo-200 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 max-w-full"
                                 aria-label={`Reference: ${source.title}`}
                             >
-                                <span className="text-[10px] bg-indigo-200 text-indigo-800 px-1 rounded mr-1">[{officialSources.length + idx + 1}]</span>
-                                <span className="truncate max-w-[200px] font-medium">{source.title}</span>
-                                <svg className="w-3 h-3 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                                <span className="text-[10px] bg-indigo-200 text-indigo-800 px-1 rounded mr-1 flex-shrink-0">[{officialSources.length + idx + 1}]</span>
+                                <span className="truncate font-medium">{source.title}</span>
                             </a>
                         ))}
                       </div>
@@ -390,7 +385,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
               <div className="relative flex-1">
                   <input
                       type="text"
-                      placeholder="Search in chat..."
+                      placeholder="Qidirish..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-300 transition-colors text-gray-800 placeholder-gray-500"
@@ -473,26 +468,25 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                    </svg>
                  )}
             </div>
-            <div className="text-center max-w-sm">
+            <div className="text-center max-w-sm px-4">
                 <h3 className="text-2xl font-serif font-bold text-slate-800 mb-2">{isOdilbekMode ? t.odilbekTitle : t.title}</h3>
                 <p className="text-sm text-gray-500 leading-relaxed">{isOdilbekMode ? t.odilbekSubtitle : t.subtitle}</p>
             </div>
             {/* Connected Sources Badge */}
             {!isOdilbekMode && (
-                <div className="flex items-center space-x-3 bg-gradient-to-r from-emerald-50 to-green-50 px-5 py-3 rounded-xl shadow-sm border border-emerald-100">
-                    <div className="relative flex h-3 w-3">
+                <div className="flex items-center space-x-2 md:space-x-3 bg-gradient-to-r from-emerald-50 to-green-50 px-4 py-2 md:px-5 md:py-3 rounded-xl shadow-sm border border-emerald-100 max-w-[90%] md:max-w-none">
+                    <div className="relative flex h-3 w-3 flex-shrink-0">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
                     </div>
                     <div className="flex flex-col items-center text-center">
-                        <span className="text-xs font-bold text-slate-700 tracking-wide uppercase">
+                        <span className="text-[10px] md:text-xs font-bold text-slate-700 tracking-wide uppercase">
                             {language === Language.UZ ? "O'ZBEKISTON QONUNCHILIGIGA IXTISOSLASHGAN AI YURIST" : "AI LEGAL ASSISTANT SPECIALIZED IN UZBEKISTAN LAW"}
                         </span>
-                        <span className="text-[10px] text-emerald-700 font-medium">
+                        <span className="text-[8px] md:text-[10px] text-emerald-700 font-medium">
                             {language === Language.UZ ? "100% O'zbekiston qonunchiligi asosida" : "100% Based on Uzbekistan Legislation"}
                         </span>
                     </div>
-                    <svg className="w-6 h-6 text-emerald-500 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </div>
             )}
           </div>
@@ -518,7 +512,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-message-in`}
               >
                 <div 
-                  className={`max-w-[85%] rounded-2xl px-6 py-4 shadow-sm relative group ${
+                  className={`max-w-[85%] md:max-w-[75%] rounded-2xl px-4 py-3 md:px-6 md:py-4 shadow-sm relative group text-sm md:text-base ${
                     isOdilbekContext
                       ? 'bg-white border-l-4 border-amber-500 text-slate-700 rounded-lg shadow-sm w-full max-w-[95%]' // Document style for Odilbek context
                       : msg.role === 'user' 
@@ -528,7 +522,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 >
                   {/* EDIT MODE (User) */}
                   {isEditing ? (
-                      <div className="w-full min-w-[300px]">
+                      <div className="w-full min-w-[200px] md:min-w-[300px]">
                           <textarea 
                              value={editInputText}
                              onChange={(e) => setEditInputText(e.target.value)}
@@ -562,7 +556,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
                           {/* Render content based on role: User gets plain text (or clean text in Odilbek), Model gets Markdown */}
                           {msg.role === 'user' ? (
-                             <div className="whitespace-pre-wrap">
+                             <div className="whitespace-pre-wrap break-words">
                                  {/* IMPORTANT: Apply cleanText to user messages in Odilbek mode to strip markdown artifacts */}
                                  {highlightText(
                                      isOdilbekMode ? cleanText(msg.text) : (msg.text || (msg.attachment?.mimeType.startsWith('audio/') ? "(Audio sent)" : "")), 
@@ -585,7 +579,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                                     className={`relative transition-[max-height] duration-500 ease-in-out overflow-hidden ${!shouldCollapse ? 'max-h-[5000px]' : 'max-h-[200px]'}`}
                                 >
                                     <div 
-                                        className={`prose prose-sm max-w-none break-words leading-relaxed prose-p:my-2 prose-a:text-blue-600 prose-a:font-medium prose-ul:my-2 prose-li:my-1
+                                        className={`prose prose-sm md:prose-base max-w-none break-words leading-relaxed prose-p:my-2 prose-a:text-blue-600 prose-a:font-medium prose-ul:my-2 prose-li:my-1
                                             ${isOdilbekMode 
                                                 ? 'prose-headings:font-serif prose-headings:text-amber-900 prose-headings:font-bold prose-headings:mt-4 prose-headings:mb-2 prose-strong:text-amber-900 prose-strong:font-bold prose-slate' 
                                                 : 'prose-headings:font-serif prose-headings:font-bold prose-headings:text-slate-900 prose-headings:mt-4 prose-headings:mb-2 prose-strong:text-slate-900 prose-slate'
@@ -760,8 +754,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area */}
-      <div className={`p-4 border-t ${isOdilbekMode ? 'bg-amber-50 border-amber-100' : 'bg-white border-gray-100'}`}>
+      {/* Input Area (Mobile Optimized) */}
+      <div className={`p-3 md:p-4 border-t ${isOdilbekMode ? 'bg-amber-50 border-amber-100' : 'bg-white border-gray-100'}`}>
         {!isPro && !isOdilbekMode && (
             <div className="text-xs text-gray-400 mb-2 text-center flex items-center justify-center">
                  <span className={`px-2 py-0.5 rounded-full border ${usageCount >= 5 ? 'bg-red-50 text-red-500 border-red-100' : 'bg-gray-50 text-gray-500 border-gray-100'}`}>
@@ -777,40 +771,47 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
             </div>
         )}
 
-        {/* ... Existing Input Box code, just minimal styling adjustments handled by container class ... */}
         <div className="flex items-end space-x-2">
-          <div className="flex-1 bg-white rounded-2xl border border-gray-200 focus-within:ring-2 focus-within:ring-blue-100 focus-within:border-blue-400 transition-all flex items-end p-2 shadow-sm">
-            {/* ... inputs ... */}
-            <input 
-                type="file" 
-                ref={fileInputRef} 
-                onChange={(e) => handleFileChange(e, false)} 
-                accept="image/jpeg,image/png,image/webp" 
-                className="hidden" 
-            />
-             <input 
-                type="file" 
-                ref={docInputRef} 
-                onChange={(e) => handleFileChange(e, true)} 
-                accept=".pdf,.doc,.docx,.txt" 
-                className="hidden" 
-            />
+          {/* Main Input Container */}
+          <div className="flex-1 bg-white rounded-3xl border border-gray-200 shadow-sm focus-within:shadow-md focus-within:ring-2 focus-within:ring-blue-100 focus-within:border-blue-400 transition-all flex items-center p-1.5 md:p-2">
             
-            <div className="flex space-x-1 border-r border-gray-200 pr-2 mr-2 mb-1">
+            {/* Attachment Button Group */}
+            <div className="flex items-center space-x-1 pr-2 border-r border-gray-100 mr-2 pl-1">
+                <input 
+                    type="file" 
+                    ref={fileInputRef} 
+                    onChange={(e) => handleFileChange(e, false)} 
+                    accept="image/jpeg,image/png,image/webp" 
+                    className="hidden" 
+                />
+                 <input 
+                    type="file" 
+                    ref={docInputRef} 
+                    onChange={(e) => handleFileChange(e, true)} 
+                    accept=".pdf,.doc,.docx,.txt" 
+                    className="hidden" 
+                />
+                
+                {/* Gallery Button */}
                 <button 
                     onClick={() => fileInputRef.current?.click()}
-                    className="p-3 text-gray-500 hover:text-blue-600 transition-colors rounded-xl hover:bg-gray-100"
+                    className="p-2 text-gray-400 hover:text-blue-600 transition-colors rounded-full hover:bg-gray-100 active:scale-95"
+                    title="Upload Image"
                 >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                 </button>
+                
+                {/* File Button */}
                 <button 
                     onClick={() => docInputRef.current?.click()}
-                    className="p-3 text-gray-500 hover:text-blue-600 transition-colors rounded-xl hover:bg-gray-100"
+                    className="p-2 text-gray-400 hover:text-blue-600 transition-colors rounded-full hover:bg-gray-100 active:scale-95"
+                    title="Upload Document"
                 >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
                 </button>
             </div>
 
+            {/* Text Input */}
             <textarea
               ref={textareaRef}
               value={inputText}
@@ -818,39 +819,44 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
               onKeyDown={handleKeyDown}
               placeholder={isRecording ? "Listening..." : (isOdilbekMode ? t.odilbekPlaceholder : t.inputPlaceholder)}
               rows={1}
-              className={`flex-1 bg-transparent border-none focus:ring-0 resize-none max-h-40 py-3 px-2 text-slate-800 placeholder-gray-500 scrollbar-hide text-base leading-relaxed ${isRecording ? 'animate-pulse text-red-500' : ''}`}
-              style={{ minHeight: '48px', height: 'auto' }}
+              className={`flex-1 bg-transparent border-none focus:ring-0 resize-none py-2 text-slate-800 placeholder-gray-400 scrollbar-hide text-sm md:text-base leading-relaxed ${isRecording ? 'animate-pulse text-red-500' : ''}`}
+              style={{ minHeight: '24px', maxHeight: '120px' }}
               disabled={isRecording || isVerifying}
             />
           </div>
 
-           <button
-            onClick={toggleRecording}
-            disabled={isLoading || isVerifying}
-            className={`p-4 rounded-full flex items-center justify-center transition-all shadow-md border ${
-              isRecording
-                ? 'bg-red-50 border-red-200 text-red-600 animate-pulse' 
-                : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700'
-            }`}
-          >
-             {isRecording ? (
-                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2" /></svg>
-             ) : (
-                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
-             )}
-          </button>
+          {/* Action Buttons Group */}
+          <div className="flex items-center space-x-2 shrink-0">
+               {/* Mic Button */}
+               <button
+                onClick={toggleRecording}
+                disabled={isLoading || isVerifying}
+                className={`w-12 h-12 rounded-full flex items-center justify-center transition-all shadow-sm border ${
+                  isRecording
+                    ? 'bg-red-50 border-red-200 text-red-600 animate-pulse' 
+                    : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+                }`}
+              >
+                 {isRecording ? (
+                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2" /></svg>
+                 ) : (
+                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
+                 )}
+              </button>
 
-          <button
-            onClick={handleSend}
-            disabled={(!inputText.trim() && !selectedAttachment) || isLoading || isRecording || isVerifying}
-            className={`p-4 rounded-full flex items-center justify-center transition-all shadow-md ${
-              (!inputText.trim() && !selectedAttachment) || isLoading || isRecording || isVerifying
-                ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none' 
-                : `${isOdilbekMode ? 'bg-amber-500 hover:bg-amber-600' : 'bg-blue-600 hover:bg-blue-700'} text-white hover:shadow-lg hover:-translate-y-0.5`
-            }`}
-          >
-            <svg className="w-6 h-6 transform rotate-45" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
-          </button>
+              {/* Send Button */}
+              <button
+                onClick={handleSend}
+                disabled={(!inputText.trim() && !selectedAttachment) || isLoading || isRecording || isVerifying}
+                className={`w-12 h-12 rounded-full flex items-center justify-center transition-all shadow-md active:scale-95 ${
+                  (!inputText.trim() && !selectedAttachment) || isLoading || isRecording || isVerifying
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none' 
+                    : `${isOdilbekMode ? 'bg-amber-500 hover:bg-amber-600' : 'bg-blue-600 hover:bg-blue-700'} text-white hover:shadow-lg`
+                }`}
+              >
+                <svg className="w-5 h-5 transform rotate-90 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+              </button>
+          </div>
         </div>
       </div>
     </div>

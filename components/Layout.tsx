@@ -21,7 +21,6 @@ const Layout: React.FC<LayoutProps> = ({
   userProfile,
   onLogin
 }) => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const t = TRANSLATIONS[language];
@@ -35,10 +34,7 @@ const Layout: React.FC<LayoutProps> = ({
 
   const NavItem = ({ path, icon, label }: { path: string; icon: React.ReactNode; label: string }) => (
     <button
-      onClick={() => {
-        navigate(path);
-        setIsMobileMenuOpen(false);
-      }}
+      onClick={() => navigate(path)}
       className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group focus:outline-none focus:ring-2 focus:ring-blue-500 ${
         isActive(path)
           ? 'bg-blue-600 text-white shadow-md' 
@@ -54,10 +50,25 @@ const Layout: React.FC<LayoutProps> = ({
     </button>
   );
 
+  const BottomNavItem = ({ path, icon, label }: { path: string; icon: React.ReactNode; label: string }) => (
+    <button
+        onClick={() => navigate(path)}
+        className={`flex-1 flex flex-col items-center justify-center py-2 transition-colors active:scale-95 ${
+            isActive(path) ? 'text-blue-600' : 'text-gray-400 hover:text-gray-600'
+        }`}
+    >
+        <div className={`mb-1 transition-transform ${isActive(path) ? 'transform scale-110' : ''}`}>
+            {icon}
+        </div>
+        <span className="text-[9px] font-bold uppercase tracking-wide leading-none">{label}</span>
+        {isActive(path) && <div className="w-1 h-1 bg-blue-600 rounded-full mt-1"></div>}
+    </button>
+  );
+
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden font-sans text-gray-800">
-      {/* Sidebar - Desktop */}
-      <aside className={`fixed md:relative z-50 w-72 h-full bg-white border-r border-gray-200 flex flex-col transition-transform duration-300 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+      {/* Sidebar - DESKTOP ONLY */}
+      <aside className="hidden md:flex z-50 w-72 h-full bg-white border-r border-gray-200 flex-col transition-transform duration-300">
         <div className="p-8 border-b border-gray-100 flex items-center justify-between">
             <div className="flex items-center space-x-3 cursor-pointer" onClick={() => navigate('/')} role="button" aria-label="Go to Dashboard">
                 {/* Lady Justice Logo */}
@@ -76,9 +87,6 @@ const Layout: React.FC<LayoutProps> = ({
                     <span className="text-[10px] text-blue-700 font-bold tracking-widest uppercase mt-1">AI Legal Counsel</span>
                 </div>
             </div>
-            <button onClick={() => setIsMobileMenuOpen(false)} className="md:hidden text-gray-500 p-1 rounded hover:bg-gray-100" aria-label="Close menu">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-2">
@@ -190,25 +198,47 @@ const Layout: React.FC<LayoutProps> = ({
         </div>
       </aside>
 
-      {/* Mobile Overlay */}
-      {isMobileMenuOpen && (
-        <div onClick={() => setIsMobileMenuOpen(false)} className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 md:hidden" aria-hidden="true"></div>
-      )}
-
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col h-full relative overflow-hidden">
-        {/* Mobile Header */}
-        <header className="md:hidden h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 z-30 sticky top-0">
-            <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 text-gray-600 hover:text-gray-800" aria-label="Open menu">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-            </button>
-            <span className="font-serif font-bold text-slate-900 text-lg">LAWIFY</span>
-            <div className="w-8"></div> {/* Spacer */}
+      <main className="flex-1 flex flex-col h-full relative overflow-hidden pb-16 md:pb-0">
+        {/* Mobile Header - Logo Only */}
+        <header className="md:hidden h-14 bg-white border-b border-gray-200 flex items-center justify-center px-4 z-30 sticky top-0 shrink-0">
+            <span className="font-serif font-bold text-slate-900 text-lg flex items-center tracking-tight">
+               LAWIFY
+            </span>
         </header>
 
         <div className="flex-1 overflow-hidden relative animate-fade-in">
             {children}
         </div>
+
+        {/* Bottom Navigation - MOBILE ONLY */}
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 h-16 z-50 flex items-center justify-around px-2 pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+            <BottomNavItem 
+                path="/" 
+                label={t.navDashboard} 
+                icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>} 
+            />
+            <BottomNavItem 
+                path="/chat" 
+                label={t.navChat} 
+                icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>} 
+            />
+            <BottomNavItem 
+                path="/library" 
+                label={t.navTemplates} 
+                icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>} 
+            />
+            <BottomNavItem 
+                path="/mediation" 
+                label={t.navMediation} 
+                icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>} 
+            />
+            <BottomNavItem 
+                path="/profile" 
+                label={t.navProfile} 
+                icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>} 
+            />
+        </nav>
       </main>
     </div>
   );
