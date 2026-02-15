@@ -2,8 +2,7 @@
 // Service to handle Payment Links
 
 export const generatePaymeLink = (amount: number, userId: string) => {
-    // Payme Merchant ID (Replace with Env Var in real app, hardcoded for now or passed from config)
-    // You will get this ID from the Payme dashboard later.
+    // Payme Merchant ID (Get this from Payme dashboard later)
     const MERCHANT_ID = "67b05d..."; // Placeholder
     
     // Payme expects amount in Tiyin (Sum * 100)
@@ -17,9 +16,9 @@ export const generatePaymeLink = (amount: number, userId: string) => {
 };
 
 export const generateClickLink = (amount: number, userId: string) => {
-    // You will get these from Click dashboard later
-    const SERVICE_ID = "YOUR_SERVICE_ID"; 
-    const MERCHANT_ID = "YOUR_MERCHANT_ID";
+    // UPDATED FROM SCREENSHOTS
+    const SERVICE_ID = "94567"; 
+    const MERCHANT_ID = "76619"; 
     
     return `https://my.click.uz/services/pay?service_id=${SERVICE_ID}&merchant_id=${MERCHANT_ID}&amount=${amount}&transaction_param=${userId}`;
 };
