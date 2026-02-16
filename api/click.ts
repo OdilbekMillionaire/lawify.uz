@@ -43,8 +43,9 @@ export default async function handler(req: any, res: any) {
     // 2. SIGNATURE CHECK (Security)
     if (process.env.CLICK_SECRET_KEY) {
         const secretKey = process.env.CLICK_SECRET_KEY;
+        // CORRECTED: amount is required for both Action 0 (Prepare) and Action 1 (Complete)
         const mySignature = createMd5(
-            `${click_trans_id}${service_id}${secretKey}${merchant_trans_id}${action === '1' ? amount : ''}${action}${sign_time}`
+            `${click_trans_id}${service_id}${secretKey}${merchant_trans_id}${amount}${action}${sign_time}`
         );
         if (sign_string !== mySignature) {
             return res.status(200).json({ error: -1, error_note: "Invalid Signature" });

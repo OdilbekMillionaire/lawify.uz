@@ -16,9 +16,11 @@ export const generatePaymeLink = (amount: number, userId: string) => {
 };
 
 export const generateClickLink = (amount: number, userId: string) => {
-    // UPDATED FROM SCREENSHOTS
-    const SERVICE_ID = "94567"; 
-    const MERCHANT_ID = "76619"; 
+    // UPDATED: Correct Merchant ID for OXFORDER MCHJ
+    // Service ID should be verified in your Click Merchant dashboard (My Uzcard/Humo/Click settings)
+    const SERVICE_ID = "94567"; // Verify this Service ID in your Click cabinet
+    const MERCHANT_ID = "55697"; 
+    const RETURN_URL = `${window.location.origin}/plans`;
     
-    return `https://my.click.uz/services/pay?service_id=${SERVICE_ID}&merchant_id=${MERCHANT_ID}&amount=${amount}&transaction_param=${userId}`;
+    return `https://my.click.uz/services/pay?service_id=${SERVICE_ID}&merchant_id=${MERCHANT_ID}&amount=${amount}&transaction_param=${userId}&return_url=${RETURN_URL}`;
 };
