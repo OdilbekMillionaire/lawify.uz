@@ -52,6 +52,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const [isRecording, setIsRecording] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
   
   // Filter States
   const [showFilters, setShowFilters] = useState(false);
@@ -171,26 +172,34 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       setTimeout(() => setCopiedMessageId(null), 2000); // Reset after 2 seconds
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, isDoc: boolean) => {
-    const file = e.target.files?.[0];
-    setUploadError(null);
+  const processFile = (file: File) => {
+      setUploadError(null);
 
-    if (file) {
       // Size check (e.g., 5MB limit)
       if (file.size > 5 * 1024 * 1024) {
           setUploadError("File is too large. Max size is 5MB.");
-          e.target.value = ''; // Reset input
           return;
       }
 
-      // Valid mime types
-      const validTypes = isDoc 
-        ? ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'] 
-        : ['image/jpeg', 'image/png', 'image/webp'];
+      // Valid mime types - Updated to supported types only
+      const validTypes = [
+          'application/pdf', 
+          'text/plain', 
+          'image/jpeg', 
+          'image/png', 
+          'image/webp'
+      ];
 
-      if (!validTypes.includes(file.type) && !file.name.endsWith('.docx')) { // Basic check for docx sometimes missing mime type
-          setUploadError(isDoc ? "Invalid document type. PDF, DOCX, TXT only." : "Invalid image type. JPG, PNG, WEBP only.");
-          e.target.value = '';
+      // Block DOC/DOCX explicitly to prevent errors
+      if (file.name.endsWith('.doc') || file.name.endsWith('.docx')) {
+          setUploadError(language === Language.UZ 
+              ? "Kechirasiz, .doc/.docx formatlar hozircha qo'llab-quvvatlanmaydi. Iltimos PDF yoki Rasm yuklang." 
+              : "Sorry, .doc/.docx formats are not supported yet. Please upload PDF or Image.");
+          return;
+      }
+
+      if (!validTypes.includes(file.type)) {
+          setUploadError("Invalid file type. Only PDF, TXT, and Images (JPG, PNG) are supported.");
           return;
       }
 
@@ -200,7 +209,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
             const base64String = (reader.result as string).split(',')[1];
             setSelectedAttachment({
                 name: file.name,
-                mimeType: file.type || (file.name.endsWith('.docx') ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : 'application/octet-stream'),
+                mimeType: file.type || 'application/octet-stream',
                 data: base64String
             });
         } catch (err) {
@@ -212,7 +221,32 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
           setUploadError("Error reading file.");
       }
       reader.readAsDataURL(file);
-    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) processFile(file);
+    e.target.value = ''; // Reset input
+  };
+
+  // Drag and Drop Handlers
+  const handleDragOver = (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragging(false);
+      const file = e.dataTransfer.files[0];
+      if (file) {
+          processFile(file);
+      }
   };
 
   // --- Voice Recording Logic ---
@@ -377,7 +411,21 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   }, [messages, searchQuery, filterRole, filterDate]);
 
   return (
-    <div className={`flex flex-col h-full shadow-xl rounded-2xl overflow-hidden border border-gray-200 ${isOdilbekMode ? 'bg-amber-50/30' : 'bg-white'}`}>
+    <div 
+        className={`flex flex-col h-full shadow-xl rounded-2xl overflow-hidden border border-gray-200 relative ${isOdilbekMode ? 'bg-amber-50/30' : 'bg-white'}`}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+    >
+      {/* Drag Overlay */}
+      {isDragging && (
+          <div className="absolute inset-0 z-50 bg-blue-500/20 backdrop-blur-sm border-4 border-blue-500 border-dashed rounded-2xl flex items-center justify-center">
+              <div className="bg-white p-6 rounded-2xl shadow-xl animate-bounce">
+                  <p className="text-xl font-bold text-blue-600">Drop files here</p>
+                  <p className="text-sm text-gray-500">PDF, Images, TXT supported</p>
+              </div>
+          </div>
+      )}
       
       {/* Search and Filter Bar */}
       {messages.length > 0 && (
@@ -771,6 +819,37 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
             </div>
         )}
 
+        {/* Selected File Preview - ADDED HERE */}
+        {selectedAttachment && (
+            <div className="flex items-center space-x-2 bg-blue-50 p-2 rounded-lg mb-2 border border-blue-100 animate-fade-in mx-2">
+                <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                    {selectedAttachment.mimeType.startsWith('image/') ? (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 00-2-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    ) : (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    )}
+                </div>
+                <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-blue-800 truncate">{selectedAttachment.name}</p>
+                    <p className="text-[10px] text-blue-500 truncate">{selectedAttachment.mimeType}</p>
+                </div>
+                <button 
+                    onClick={() => setSelectedAttachment(null)}
+                    className="p-1 hover:bg-blue-100 rounded-full text-blue-400 hover:text-blue-600"
+                >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+        )}
+
+        {/* Upload Error Message */}
+        {uploadError && (
+            <div className="bg-red-50 text-red-600 text-xs p-2 rounded-lg mb-2 flex items-center animate-fade-in mx-2">
+                <svg className="w-4 h-4 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                {uploadError}
+            </div>
+        )}
+
         <div className="flex items-end space-x-2">
           {/* Main Input Container */}
           <div className="flex-1 bg-white rounded-3xl border border-gray-200 shadow-sm focus-within:shadow-md focus-within:ring-2 focus-within:ring-blue-100 focus-within:border-blue-400 transition-all flex items-center p-1.5 md:p-2">
@@ -780,15 +859,15 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 <input 
                     type="file" 
                     ref={fileInputRef} 
-                    onChange={(e) => handleFileChange(e, false)} 
+                    onChange={handleFileChange} 
                     accept="image/jpeg,image/png,image/webp" 
                     className="hidden" 
                 />
                  <input 
                     type="file" 
                     ref={docInputRef} 
-                    onChange={(e) => handleFileChange(e, true)} 
-                    accept=".pdf,.doc,.docx,.txt" 
+                    onChange={handleFileChange} 
+                    accept=".pdf,.txt" // Restricted to PDF and TXT
                     className="hidden" 
                 />
                 
@@ -798,14 +877,14 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                     className="p-2 text-gray-400 hover:text-blue-600 transition-colors rounded-full hover:bg-gray-100 active:scale-95"
                     title="Upload Image"
                 >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 00-2-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                 </button>
                 
                 {/* File Button */}
                 <button 
                     onClick={() => docInputRef.current?.click()}
                     className="p-2 text-gray-400 hover:text-blue-600 transition-colors rounded-full hover:bg-gray-100 active:scale-95"
-                    title="Upload Document"
+                    title="Upload Document (PDF/TXT)"
                 >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
                 </button>

@@ -43,6 +43,19 @@ const getAIClient = () => {
   return new GoogleGenAI({ apiKey });
 };
 
+// --- RETRY HELPER ---
+const retry = async <T>(fn: () => Promise<T>, retries = 2, delay = 1000): Promise<T> => {
+  try {
+    return await fn();
+  } catch (err) {
+    if (retries > 0) {
+      await new Promise(r => setTimeout(r, delay));
+      return retry(fn, retries - 1, delay * 2); // Exponential backoff
+    }
+    throw err;
+  }
+};
+
 // --- CLIENT-SIDE LOGIC IMPLEMENTATIONS ---
 
 export const verifyPaymentScreenshot = async (base64Image: string, expectedAmount: string) => {
@@ -229,15 +242,18 @@ export const generateLegalResponse = async (
   try {
     const modelName = isPro ? 'gemini-3-pro-preview' : 'gemini-3-flash-preview';
     
-    const response = await ai.models.generateContent({
-      model: modelName,
-      contents: { role: 'user', parts: parts },
-      config: {
-        systemInstruction: baseSystemInstruction + `\n*** ZERO HALLUCINATION PROTOCOL ***\n1. You MUST use the Google Search tool.\n2. You MUST cite "lex.uz" or "norma.uz" sources.\n3. If you cannot find a law in the search results, DO NOT INVENT ONE. State: "I could not find the specific official document."`,
-        tools: [{ googleSearch: {} }], 
-        thinkingConfig: isPro ? { thinkingBudget: 1024 } : undefined
-      }
-    });
+    // WRAP IN RETRY LOGIC TO PREVENT RANDOM FAILURES
+    const response = await retry(async () => {
+        return await ai.models.generateContent({
+          model: modelName,
+          contents: { role: 'user', parts: parts },
+          config: {
+            systemInstruction: baseSystemInstruction + `\n*** ZERO HALLUCINATION PROTOCOL ***\n1. You MUST use the Google Search tool.\n2. You MUST cite "lex.uz" or "norma.uz" sources.\n3. If you cannot find a law in the search results, DO NOT INVENT ONE. State: "I could not find the specific official document."`,
+            tools: [{ googleSearch: {} }], 
+            thinkingConfig: isPro ? { thinkingBudget: 1024 } : undefined
+          }
+        });
+    }, 2, 1000); // Retry 2 times with 1s delay
 
     const text = response.text;
     const sources: Source[] = [];
