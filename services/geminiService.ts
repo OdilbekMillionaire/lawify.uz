@@ -69,6 +69,51 @@ export const verifyPaymentScreenshot = async (base64Image: string, expectedAmoun
   }
 };
 
+export const verifyLegalAdvice = async (originalPrompt: string, aiResponse: string, language: string) => {
+  try {
+    const ai = getAIClient();
+    const systemInstruction = `
+      You are a Senior Legal Auditor for Uzbekistan Law.
+      Language: ${language}.
+      
+      YOUR TASK:
+      1. Review the "Original User Question" and the "AI's Advice".
+      2. Verify the legal accuracy of the advice against "lex.uz" using Google Search.
+      3. Identify if any laws mentioned are outdated, repealed, or misinterpreted.
+      4. Provide a "Verification Report".
+      
+      OUTPUT FORMAT:
+      If correct: "✅ **VERIFIED:** The advice accurately reflects [Law Name]."
+      If partial: "⚠️ **WARNING:** The advice is mostly correct but missed [Details]."
+      If incorrect: "❌ **CORRECTION:** The advice quoted an old law. The current law is [New Law]."
+      
+      Be strict. Use Google Search to double-check every article number mentioned.
+    `;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-pro-preview', // Always use Pro for verification
+      contents: {
+        role: 'user',
+        parts: [
+          { text: `[Original User Question]: ${originalPrompt}` },
+          { text: `[AI's Advice to Verify]: ${aiResponse}` },
+          { text: `Please audit this advice.` }
+        ]
+      },
+      config: {
+        systemInstruction: systemInstruction,
+        tools: [{ googleSearch: {} }],
+        thinkingConfig: { thinkingBudget: 2048 } // High budget for deep auditing
+      }
+    });
+
+    return response.text || "Verification failed.";
+  } catch (e) {
+    console.error("Verification Error", e);
+    return "Verification system unavailable (Client Error).";
+  }
+};
+
 export const generateOdilbekResponse = async (prompt: string, language: Language, chatHistory: string, legalContext: string) => {
     try {
         const ai = getAIClient();

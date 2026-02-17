@@ -32,6 +32,15 @@ const App: React.FC = () => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
 
+  // --- VIP CONFIGURATION ---
+  // Add the exact emails of users who paid for Unlimited Lawyer Pro here.
+  // They will be automatically upgraded upon login.
+  const VIP_EMAILS = [
+      'rustameshboev1983@gmail.com',
+      'temurp635@gmail.com', // Added VIP User
+      'admin@lawify.uz'
+  ];
+
   // Initialize Auth
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -69,7 +78,8 @@ const App: React.FC = () => {
                 const expiryTime = new Date(data.subscription_end_date).getTime();
                 const now = Date.now();
                 
-                if (expiryTime < now) {
+                // VIPs are exempt from expiration checks here because the VIP logic below will re-upgrade them anyway
+                if (expiryTime < now && !VIP_EMAILS.includes(currentUser.email)) {
                     // Subscription has expired! Downgrade immediately.
                     console.log("Subscription expired. Downgrading to free...");
                     
@@ -86,11 +96,9 @@ const App: React.FC = () => {
                 }
             }
 
-            // 2. VIP PERMANENT PRO LOGIC
-            // Special rule for the VIP investor
-            const VIP_EMAIL = 'rustameshboev1983@gmail.com';
-            
-            if (currentUser.email === VIP_EMAIL) {
+            // 2. VIP PERMANENT PRO LOGIC (AUTO-PROMOTION)
+            // Checks if the current user is in the VIP list and upgrades them if needed
+            if (VIP_EMAILS.includes(currentUser.email)) {
                 const foreverDate = new Date('2099-12-31').toISOString();
                 
                 // If they are not Pro, or not Lawyer plan, or expire before 2090, force upgrade them.
@@ -113,7 +121,7 @@ const App: React.FC = () => {
             setUserProfile(data);
         } else {
             // New Profile Creation
-            const isVip = currentUser.email === 'rustameshboev1983@gmail.com';
+            const isVip = VIP_EMAILS.includes(currentUser.email || '');
             
             const newProfile = {
                 id: currentUser.id,

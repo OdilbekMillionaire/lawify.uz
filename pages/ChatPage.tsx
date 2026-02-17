@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Language, UserSettings, Message, Attachment } from '../types';
 import { TRANSLATIONS } from '../constants';
 import ChatInterface from '../components/ChatInterface';
-import { generateLegalResponse, textToSpeech } from '../services/geminiService';
+import { generateLegalResponse, textToSpeech, verifyLegalAdvice } from '../services/geminiService';
 import { saveSession } from '../services/storage';
 
 interface ChatPageProps {
@@ -229,15 +229,10 @@ const ChatPage: React.FC<ChatPageProps> = ({
 
       setIsVerifying(true);
       try {
-          const response = await fetch('/api/verify-advice', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ originalPrompt, aiResponse, language })
-          });
-          const data = await response.json();
+          const text = await verifyLegalAdvice(originalPrompt, aiResponse, language);
           
-          if (data.text) {
-              addMessage(data.text, 'model'); // Append verification as new message
+          if (text) {
+              addMessage(text, 'model'); // Append verification as new message
           }
       } catch (e) {
           console.error("Verification failed", e);

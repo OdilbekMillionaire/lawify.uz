@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 const Footer: React.FC = () => {
@@ -67,13 +68,19 @@ const Footer: React.FC = () => {
                  <div className="flex items-center space-x-3 mb-2">
                     <div className="relative">
                         <div className="absolute inset-0 bg-blue-500 blur-sm opacity-40 rounded-full"></div>
-                        <svg className="w-8 h-8 text-blue-400 relative z-10" viewBox="0 0 24 24" fill="currentColor">
-                           <path d="M12 2L15.09 9.26L22 12L15.09 14.74L12 22L8.91 14.74L2 12L8.91 9.26L12 2Z" />
+                        {/* Custom Lady Justice Logo - REPLACES GEMINI SPARKLE */}
+                        <svg className="w-8 h-8 text-blue-400 relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <circle cx="12" cy="5" r="2" strokeWidth="1.5" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 7v10M8 21h8M12 17l-4 4M12 17l4 4" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M6 9l-3 2v3m0-3l3 2v3m-3-5h3" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 7l-6 2" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 7l6-2v-2" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M18 5v6l-1 1m2-1l1 1m-1-1v4" />
                         </svg>
                     </div>
                     <div>
-                        <span className="block text-sm font-bold text-white group-hover:text-blue-300 transition-colors">Gemini 3 Pro</span>
-                        <span className="text-[10px] text-slate-500 uppercase tracking-wide font-bold">Built with Google AI</span>
+                        <span className="block text-sm font-bold text-white group-hover:text-blue-300 transition-colors">Lawify Neural Engine</span>
+                        <span className="text-[10px] text-slate-500 uppercase tracking-wide font-bold">Specialized Legal Model</span>
                     </div>
                  </div>
                  <p className="text-[11px] text-slate-500 leading-relaxed">
