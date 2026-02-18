@@ -46,6 +46,56 @@
       @media (max-width: 768px) {
         .a4-paper { width: 100%; padding: 15px; min-height: 500px; }
       }
+
+      /* ===== NEW: Landing Page Animations ===== */
+      @keyframes twinkle {
+        0%, 100% { opacity: 0.15; transform: scale(0.8); }
+        50%       { opacity: 0.85; transform: scale(1.2); }
+      }
+      @keyframes gradientShift {
+        0%   { background-position: 0%   50%; }
+        50%  { background-position: 100% 50%; }
+        100% { background-position: 0%   50%; }
+      }
+      @keyframes float {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        33%      { transform: translateY(-12px) rotate(1deg); }
+        66%      { transform: translateY(-6px)  rotate(-1deg); }
+      }
+      @keyframes scrollBounce {
+        0%, 100% { transform: translateY(0); opacity: 1; }
+        50%      { transform: translateY(6px); opacity: 0.4; }
+      }
+      @keyframes borderRotate {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+      }
+      .animate-slide-up  { animation: slideUp 0.7s ease-out forwards; }
+      .animate-float     { animation: float 6s ease-in-out infinite; }
+      .animate-twinkle   { animation: twinkle 3s ease-in-out infinite; }
+      .scroll-bounce     { animation: scrollBounce 1.5s ease-in-out infinite; }
+      .delay-400         { animation-delay: 400ms; }
+      .delay-500         { animation-delay: 500ms; }
+      .gradient-text {
+        background: linear-gradient(135deg, #ffffff 0%, #93c5fd 50%, #c4b5fd 100%);
+        background-size: 200% auto;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: gradientShift 5s ease infinite;
+      }
+      .hero-grid-bg {
+        background-image:
+          linear-gradient(rgba(59,130,246,0.05) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(59,130,246,0.05) 1px, transparent 1px);
+        background-size: 60px 60px;
+      }
+      .card-3d {
+        transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.4s ease;
+      }
+      .card-3d:hover {
+        transform: perspective(900px) rotateX(3deg) rotateY(-3deg) translateY(-4px);
+      }
     </style>
   <script type="importmap">
 {

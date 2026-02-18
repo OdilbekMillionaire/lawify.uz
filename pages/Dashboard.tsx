@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Language } from '../types';
 import { TRANSLATIONS, DID_YOU_KNOW_FACTS } from '../constants';
@@ -13,349 +13,833 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
   const navigate = useNavigate();
   const t = TRANSLATIONS[language];
   const facts = DID_YOU_KNOW_FACTS[language];
-  
+
   const [currentFactIndex, setCurrentFactIndex] = useState(0);
 
   useEffect(() => {
-      const interval = setInterval(() => {
-          setCurrentFactIndex((prev) => (prev + 1) % facts.length);
-      }, 10000); // 10s duration for comfortable reading
-      return () => clearInterval(interval);
+    const interval = setInterval(() => {
+      setCurrentFactIndex((prev) => (prev + 1) % facts.length);
+    }, 10000);
+    return () => clearInterval(interval);
   }, [facts.length]);
 
+  // Stable star positions — useMemo prevents regeneration on re-renders
+  const stars = useMemo(() =>
+    Array.from({ length: 55 }, (_, i) => ({
+      id: i,
+      left: (i * 37.3 + 11) % 100,
+      top: (i * 53.7 + 7) % 100,
+      size: (i % 3) + 1,
+      delay: (i * 0.3) % 5,
+      duration: 2 + (i % 4),
+      color: i % 3 === 0 ? '#60a5fa' : i % 3 === 1 ? '#a78bfa' : '#e2e8f0',
+    }))
+  , []);
+
   const quickLinks = [
-    { label: t.qlFamily, icon: "👨‍👩‍👧‍👦", prompt: t.qlFamilyPrompt },
-    { label: t.qlLabor, icon: "👷‍♂️", prompt: t.qlLaborPrompt },
-    { label: t.qlCriminal, icon: "⚖️", prompt: t.qlCriminalPrompt },
-    { label: t.qlHousing, icon: "🏠", prompt: t.qlHousingPrompt },
-    { label: t.qlBusiness, icon: "💼", prompt: t.qlBusinessPrompt },
-    { label: t.qlAdmin, icon: "📋", prompt: t.qlAdminPrompt },
-    { label: t.qlBank, icon: "🏦", prompt: t.qlBankPrompt },
-    { label: t.qlHealth, icon: "🏥", prompt: t.qlHealthPrompt },
-    { label: t.qlEdu, icon: "🎓", prompt: t.qlEduPrompt },
-    { label: t.qlCustoms, icon: "🛃", prompt: t.qlCustomsPrompt },
-    { label: t.qlTax, icon: "💸", prompt: t.qlTaxPrompt },
-    { label: t.qlPension, icon: "👴", prompt: t.qlPensionPrompt },
+    { label: t.qlFamily,   icon: "👨‍👩‍👧‍👦", prompt: t.qlFamilyPrompt },
+    { label: t.qlLabor,    icon: "👷‍♂️",   prompt: t.qlLaborPrompt },
+    { label: t.qlCriminal, icon: "⚖️",    prompt: t.qlCriminalPrompt },
+    { label: t.qlHousing,  icon: "🏠",    prompt: t.qlHousingPrompt },
+    { label: t.qlBusiness, icon: "💼",    prompt: t.qlBusinessPrompt },
+    { label: t.qlAdmin,    icon: "📋",    prompt: t.qlAdminPrompt },
+    { label: t.qlBank,     icon: "🏦",    prompt: t.qlBankPrompt },
+    { label: t.qlHealth,   icon: "🏥",    prompt: t.qlHealthPrompt },
+    { label: t.qlEdu,      icon: "🎓",    prompt: t.qlEduPrompt },
+    { label: t.qlCustoms,  icon: "🛃",    prompt: t.qlCustomsPrompt },
+    { label: t.qlTax,      icon: "💸",    prompt: t.qlTaxPrompt },
+    { label: t.qlPension,  icon: "👴",    prompt: t.qlPensionPrompt },
   ];
 
   const handleQuickLink = (prompt: string) => {
-      navigate('/chat', { state: { initialPrompt: prompt } });
+    navigate('/chat', { state: { initialPrompt: prompt } });
   };
 
   const handleFactClick = (fact: any) => {
-      let prompt = "";
-      if (language === Language.UZ) {
-          prompt = `Men "${fact.title}" haqida batafsil ma'lumot olmoqchiman.`;
-      } else if (language === Language.RU) {
-          prompt = `Я хочу узнать подробнее о теме: "${fact.title}".`;
-      } else {
-          prompt = `I would like to know more about "${fact.title}".`;
-      }
-      navigate('/chat', { state: { initialPrompt: prompt } });
+    let prompt = "";
+    if (language === Language.UZ) {
+      prompt = `Men "${fact.title}" haqida batafsil ma'lumot olmoqchiman.`;
+    } else if (language === Language.RU) {
+      prompt = `Я хочу узнать подробнее о теме: "${fact.title}".`;
+    } else {
+      prompt = `I would like to know more about "${fact.title}".`;
+    }
+    navigate('/chat', { state: { initialPrompt: prompt } });
   };
 
   const nextFact = () => setCurrentFactIndex((prev) => (prev + 1) % facts.length);
   const prevFact = () => setCurrentFactIndex((prev) => (prev - 1 + facts.length) % facts.length);
 
-  const AppCard = ({ title, desc, icon, path, color, gradient, delayClass }: any) => (
-      <button 
-        onClick={() => navigate(path)}
-        className={`relative overflow-hidden group flex flex-col items-start text-left bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100 hover:shadow-2xl transition-all duration-300 transform md:hover:-translate-y-1 active:scale-95 animate-fade-in-up ${delayClass}`}
-      >
-          <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${gradient} opacity-10 rounded-bl-full transition-transform group-hover:scale-125`}></div>
-          
-          <div className={`w-12 h-12 md:w-14 md:h-14 rounded-2xl ${color} flex items-center justify-center mb-6 shadow-lg group-hover:rotate-12 transition-transform`}>
-              {icon}
-          </div>
-          
-          <h3 className="font-serif font-bold text-xl md:text-2xl text-slate-900 mb-2 group-hover:text-blue-700 transition-colors">{title}</h3>
-          <p className="text-sm text-gray-500 leading-relaxed max-w-[90%]">{desc}</p>
-          
-          <div className="mt-6 flex items-center text-sm font-semibold text-gray-400 group-hover:text-blue-600 transition-colors">
-              <span>{t.openApp}</span>
-              <svg className="w-4 h-4 ml-2 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
-          </div>
-      </button>
-  );
+  const howItWorks = [
+    {
+      title:
+        language === Language.UZ ? "Savolingizni yozing" :
+        language === Language.RU ? "Задайте вопрос" :
+        "Ask Your Question",
+      desc:
+        language === Language.UZ ? "Huquqiy muammoingizni o'zbek, rus yoki ingliz tilida erkin yozing" :
+        language === Language.RU ? "Опишите вашу правовую проблему на удобном для вас языке" :
+        "Describe your legal issue in Uzbek, Russian, or English",
+      color: '#2563eb',
+      icon: (
+        <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+        </svg>
+      ),
+    },
+    {
+      title:
+        language === Language.UZ ? "AI tahlil qiladi" :
+        language === Language.RU ? "ИИ анализирует" :
+        "AI Analyzes",
+      desc:
+        language === Language.UZ ? "Gemini AI lex.uz va norma.uz'dan real-time huquqiy ma'lumot qidiradi" :
+        language === Language.RU ? "Gemini AI ищет актуальные законы в lex.uz и norma.uz в реальном времени" :
+        "Gemini AI fetches real-time legal data from lex.uz and norma.uz",
+      color: '#7c3aed',
+      icon: (
+        <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+            d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+        </svg>
+      ),
+    },
+    {
+      title:
+        language === Language.UZ ? "Aniq javob oling" :
+        language === Language.RU ? "Получите ответ" :
+        "Get Your Answer",
+      desc:
+        language === Language.UZ ? "Huquqiy maslahat manbalar va havolalar bilan tasdiqlangan holda keladi" :
+        language === Language.RU ? "Юридический совет с подтверждёнными ссылками на законодательство" :
+        "Receive legal advice backed by verified citations and sources",
+      color: '#059669',
+      icon: (
+        <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      ),
+    },
+  ];
 
   return (
-    <div className="h-full overflow-y-auto bg-slate-50 flex flex-col">
-        <div className="flex-1 p-4 md:p-10 max-w-[90rem] mx-auto w-full space-y-12 md:space-y-16 pb-24">
-            
-            {/* HERO SECTION WITH IMMERSIVE 3D ROBOT */}
-            <div className="relative w-full flex flex-col lg:flex-row items-center justify-between min-h-[500px] md:min-h-[600px] mb-8">
-                
-                {/* Text Content */}
-                <div className="w-full lg:w-1/2 z-20 relative text-center lg:text-left pt-10 lg:pt-0 pointer-events-none">
-                    <div className="pointer-events-auto">
-                        <div className="inline-block px-4 py-1.5 rounded-full bg-blue-100 text-blue-700 font-bold text-xs tracking-wider mb-6 animate-fade-in uppercase">
-                            AI-Powered Legal Assistant
-                        </div>
-                        <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-bold text-slate-900 leading-tight tracking-tight mb-6 animate-slide-up">
-                            {t.dashboardWelcome}
-                        </h1>
-                        <p className="text-xl text-slate-500 font-light leading-relaxed max-w-xl mx-auto lg:mx-0 mb-10 animate-slide-up delay-100 border-l-4 border-blue-500 pl-6 bg-white/50 backdrop-blur-sm rounded-r-xl py-2">
-                            {t.dashboardSubtitle}
-                        </p>
-                        
-                        <div className="flex flex-wrap justify-center lg:justify-start gap-4 animate-slide-up delay-200">
-                            <button 
-                                onClick={() => navigate('/chat')}
-                                className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold shadow-lg shadow-blue-200 transition-all transform hover:scale-105 flex items-center"
-                            >
-                                <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
-                                {t.navChat}
-                            </button>
-                            <button 
-                                onClick={() => navigate('/library')}
-                                className="px-8 py-4 bg-white border border-gray-200 text-slate-700 rounded-2xl font-bold hover:bg-gray-50 transition-all shadow-sm"
-                            >
-                                {t.navTemplates}
-                            </button>
-                        </div>
+    <div className="h-full overflow-y-auto flex flex-col" style={{ background: '#0a0f1e' }}>
+
+      {/* ═══════════════════════════════════════
+          SECTION 1 — CINEMATIC HERO
+      ═══════════════════════════════════════ */}
+      <section
+        className="relative min-h-screen flex flex-col lg:flex-row items-center overflow-hidden"
+        style={{ background: 'linear-gradient(135deg, #0a0f1e 0%, #0d1a3a 55%, #0c1525 100%)' }}
+      >
+        {/* Background grid */}
+        <div className="absolute inset-0 hero-grid-bg pointer-events-none" />
+
+        {/* Stars */}
+        {stars.map(s => (
+          <div
+            key={s.id}
+            className="absolute rounded-full pointer-events-none animate-twinkle"
+            style={{
+              left: `${s.left}%`,
+              top: `${s.top}%`,
+              width: `${s.size}px`,
+              height: `${s.size}px`,
+              background: s.color,
+              animationDelay: `${s.delay}s`,
+              animationDuration: `${s.duration}s`,
+            }}
+          />
+        ))}
+
+        {/* Glow orbs */}
+        <div
+          className="absolute pointer-events-none animate-float"
+          style={{
+            top: '15%', left: '10%',
+            width: '420px', height: '420px',
+            background: 'radial-gradient(circle, rgba(59,130,246,0.13) 0%, transparent 70%)',
+            filter: 'blur(50px)',
+          }}
+        />
+        <div
+          className="absolute pointer-events-none animate-float"
+          style={{
+            bottom: '10%', right: '20%',
+            width: '300px', height: '300px',
+            background: 'radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 70%)',
+            filter: 'blur(40px)',
+            animationDelay: '2s',
+          }}
+        />
+
+        {/* ── Left text pane ── */}
+        <div className="w-full lg:w-[48%] z-20 relative px-6 md:px-12 lg:pl-16 lg:pr-8 pt-20 pb-8 lg:py-0 text-center lg:text-left">
+
+          {/* Live badge */}
+          <div
+            className="inline-flex items-center px-4 py-2 rounded-full mb-8 animate-fade-in"
+            style={{
+              background: 'rgba(59,130,246,0.12)',
+              border: '1px solid rgba(59,130,246,0.28)',
+              backdropFilter: 'blur(10px)',
+            }}
+          >
+            <span className="w-2 h-2 bg-emerald-400 rounded-full mr-2 animate-pulse" />
+            <span className="text-blue-300 font-bold text-xs uppercase tracking-widest">
+              AI-Powered Legal Assistant
+            </span>
+          </div>
+
+          {/* Main heading */}
+          <h1
+            className="gradient-text font-serif animate-slide-up"
+            style={{
+              fontSize: 'clamp(2.6rem, 6.5vw, 5.2rem)',
+              fontWeight: 700,
+              lineHeight: 1.1,
+              marginBottom: '1.5rem',
+            }}
+          >
+            {t.dashboardWelcome}
+          </h1>
+
+          {/* Subtitle */}
+          <p
+            className="text-lg md:text-xl leading-relaxed max-w-xl mx-auto lg:mx-0 mb-10 animate-slide-up delay-100"
+            style={{ color: 'rgba(148,163,184,0.9)' }}
+          >
+            {t.dashboardSubtitle}
+          </p>
+
+          {/* CTA buttons */}
+          <div className="flex flex-wrap justify-center lg:justify-start gap-4 animate-slide-up delay-200">
+            <button
+              onClick={() => navigate('/chat')}
+              className="relative px-8 py-4 rounded-2xl font-bold text-white overflow-hidden group transition-all duration-300 hover:scale-105"
+              style={{
+                background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
+                boxShadow: '0 0 35px rgba(59,130,246,0.4)',
+              }}
+            >
+              <span
+                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                style={{ background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)' }}
+              />
+              <span className="relative flex items-center space-x-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                    d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                </svg>
+                <span>{t.navChat}</span>
+              </span>
+            </button>
+
+            <button
+              onClick={() => navigate('/library')}
+              className="px-8 py-4 rounded-2xl font-bold transition-all duration-300 hover:scale-105"
+              style={{
+                background: 'rgba(255,255,255,0.07)',
+                border: '1px solid rgba(255,255,255,0.16)',
+                color: 'rgba(255,255,255,0.88)',
+                backdropFilter: 'blur(10px)',
+              }}
+            >
+              {t.navTemplates}
+            </button>
+          </div>
+
+          {/* Social proof strip */}
+          <div className="flex flex-wrap justify-center lg:justify-start gap-8 mt-12 animate-slide-up delay-300">
+            {[
+              { label: '15k+',  desc: t.statUsers },
+              { label: '85k+',  desc: t.statDocs },
+              { label: '99.8%', desc: t.statAccuracy },
+              { label: '3',     desc: t.statLanguages },
+            ].map((s, i) => (
+              <div key={i} className="text-center lg:text-left">
+                <div
+                  className="text-2xl font-black"
+                  style={{
+                    background: 'linear-gradient(135deg, #60a5fa, #a78bfa)',
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                  }}
+                >{s.label}</div>
+                <div className="text-xs text-slate-500 mt-0.5">{s.desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Right: Spline robot ── */}
+        <div className="w-full lg:w-[52%] h-[420px] md:h-[560px] lg:h-screen z-10 relative flex items-center justify-center">
+          <div
+            className="w-full h-full relative"
+            style={{ filter: 'drop-shadow(0 0 70px rgba(59,130,246,0.28))' }}
+          >
+            <iframe
+              src="https://my.spline.design/nexbotrobotcharacterconcept-wZSAPju6UR2ZkjxujstTmNOR/"
+              frameBorder="0"
+              width="100%"
+              height="100%"
+              title="Lawify AI Robot"
+              style={{ border: 'none' }}
+            />
+            {/* Watermark blocker — matches hero bg */}
+            <div
+              className="absolute bottom-2 right-2 w-44 h-14 z-50 rounded-tl-xl"
+              style={{ background: 'linear-gradient(135deg, #0a0f1e, #0d1a3a)' }}
+            />
+          </div>
+
+          {/* Floating tech badges */}
+          <div
+            className="absolute top-16 left-6 md:left-10 hidden md:block animate-float"
+            style={{ animationDelay: '0s' }}
+          >
+            <div
+              className="px-4 py-2 rounded-xl text-sm font-bold"
+              style={{
+                background: 'rgba(16,185,129,0.14)',
+                border: '1px solid rgba(16,185,129,0.28)',
+                backdropFilter: 'blur(10px)',
+                color: '#34d399',
+              }}
+            >
+              Gemini AI + RAG
+            </div>
+          </div>
+          <div
+            className="absolute bottom-28 left-6 md:left-10 hidden md:block animate-float"
+            style={{ animationDelay: '1.8s' }}
+          >
+            <div
+              className="px-4 py-2 rounded-xl text-sm font-bold"
+              style={{
+                background: 'rgba(139,92,246,0.14)',
+                border: '1px solid rgba(139,92,246,0.28)',
+                backdropFilter: 'blur(10px)',
+                color: '#c4b5fd',
+              }}
+            >
+              lex.uz · norma.uz
+            </div>
+          </div>
+        </div>
+
+        {/* Scroll indicator */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center z-20">
+          <span className="text-slate-600 text-[10px] mb-2 uppercase tracking-widest">scroll</span>
+          <div className="w-5 h-9 border-2 border-slate-700 rounded-full flex justify-center pt-1.5">
+            <div className="w-1 h-2.5 bg-blue-500 rounded-full scroll-bounce" />
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════
+          LIGHT CONTENT AREA
+      ═══════════════════════════════════════ */}
+      <div className="bg-slate-50 flex-1">
+        <div className="p-4 md:p-10 max-w-[90rem] mx-auto w-full space-y-16 md:space-y-24 pb-28">
+
+          {/* ═══════════════════════════════════════
+              SECTION 2 — CORE FEATURE CARDS (dark gradient)
+          ═══════════════════════════════════════ */}
+          <section className="space-y-8 pt-6">
+            <div className="text-center space-y-3">
+              <div
+                className="inline-block px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest"
+                style={{ background: 'linear-gradient(135deg, #dbeafe, #ede9fe)', color: '#4338ca' }}
+              >
+                Core Features
+              </div>
+              <h2 className="text-3xl md:text-4xl font-serif font-bold text-slate-900">
+                {language === Language.UZ ? "Barcha kerakli vositalar" :
+                 language === Language.RU ? "Всё что вам нужно" :
+                 "Everything You Need"}
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {[
+                {
+                  title: t.navChat,
+                  desc: t.quickChatDesc,
+                  path: '/chat',
+                  gradient: 'linear-gradient(145deg, #1e3a8a 0%, #1e1b4b 100%)',
+                  glow: 'rgba(59,130,246,0.35)',
+                  badge: 'AI-Powered',
+                  icon: (
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                        d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/>
+                    </svg>
+                  ),
+                },
+                {
+                  title: t.odilbekTitle,
+                  desc: t.odilbekSubtitle,
+                  path: '/odilbek',
+                  gradient: 'linear-gradient(145deg, #78350f 0%, #451a03 100%)',
+                  glow: 'rgba(245,158,11,0.35)',
+                  badge: 'Simplified',
+                  icon: <span className="text-4xl">👨‍🏫</span>,
+                },
+                {
+                  title: t.navTemplates,
+                  desc: t.quickTemplatesDesc,
+                  path: '/library',
+                  gradient: 'linear-gradient(145deg, #064e3b 0%, #022c22 100%)',
+                  glow: 'rgba(16,185,129,0.35)',
+                  badge: '100+ Templates',
+                  icon: (
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                  ),
+                },
+              ].map((card, i) => (
+                <button
+                  key={i}
+                  onClick={() => navigate(card.path)}
+                  className="card-3d group relative overflow-hidden rounded-3xl text-left active:scale-95"
+                  style={{
+                    background: card.gradient,
+                    boxShadow: `0 20px 60px ${card.glow}`,
+                  }}
+                >
+                  {/* Hover brightener */}
+                  <div
+                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    style={{ background: 'rgba(255,255,255,0.06)' }}
+                  />
+                  {/* Dot-pattern texture */}
+                  <div
+                    className="absolute inset-0 opacity-10"
+                    style={{
+                      backgroundImage: `radial-gradient(circle, rgba(255,255,255,0.4) 1px, transparent 1px)`,
+                      backgroundSize: '22px 22px',
+                    }}
+                  />
+
+                  <div className="relative p-8 md:p-10 flex flex-col h-64">
+                    <div className="flex items-start justify-between mb-auto">
+                      <div
+                        className="w-14 h-14 rounded-2xl flex items-center justify-center"
+                        style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)' }}
+                      >
+                        {card.icon}
+                      </div>
+                      <span
+                        className="px-3 py-1 rounded-full text-xs font-black"
+                        style={{ background: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.9)' }}
+                      >
+                        {card.badge}
+                      </span>
                     </div>
-                </div>
 
-                {/* 3D Robot Container - Expanded & Seamless */}
-                <div className="w-full lg:w-3/5 h-[400px] md:h-[600px] lg:absolute lg:right-[-5%] lg:top-1/2 lg:-translate-y-1/2 z-10 flex items-center justify-center">
-                     <iframe 
-                        src='https://my.spline.design/nexbotrobotcharacterconcept-wZSAPju6UR2ZkjxujstTmNOR/' 
-                        frameBorder='0' 
-                        width='100%' 
-                        height='100%'
-                        title="Lawify AI Robot"
-                        className="w-full h-full pointer-events-auto"
-                        style={{ border: 'none' }}
-                     ></iframe>
-                     
-                     {/* Watermark Blocker: Matches background color to hide Spline logo */}
-                     <div className="absolute bottom-4 right-4 w-40 h-14 bg-slate-50 z-50 rounded-tl-2xl"></div>
-                </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 relative z-20">
-                <AppCard 
-                    title={t.navChat}
-                    desc={t.quickChatDesc}
-                    path="/chat"
-                    color="bg-blue-600 text-white"
-                    gradient="from-blue-400 to-indigo-600"
-                    icon={<svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path></svg>}
-                    delayClass="delay-100"
-                />
-                 <AppCard 
-                    title={t.odilbekTitle}
-                    desc={t.odilbekSubtitle}
-                    path="/odilbek"
-                    color="bg-amber-500 text-white"
-                    gradient="from-amber-400 to-orange-600"
-                    icon={
-                        <span className="text-4xl" style={{ fontFamily: '"Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"' }}>👨‍🏫</span>
-                    }
-                    delayClass="delay-200"
-                />
-                 <AppCard 
-                    title={t.navTemplates}
-                    desc={t.quickTemplatesDesc}
-                    path="/library"
-                    color="bg-emerald-600 text-white"
-                    gradient="from-emerald-400 to-green-600"
-                    icon={<svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>}
-                    delayClass="delay-300"
-                />
-            </div>
-
-            <div className="space-y-6 animate-fade-in-up delay-200 relative z-20">
-                <div className="flex items-center space-x-4">
-                    <h3 className="text-lg md:text-xl font-bold text-slate-800 uppercase tracking-wide">{t.quickLinksTitle}</h3>
-                    <div className="h-px bg-gray-200 flex-1"></div>
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4">
-                    {quickLinks.map((link, idx) => (
-                        <button
-                            key={idx}
-                            onClick={() => handleQuickLink(link.prompt)}
-                            className="flex flex-col items-center justify-center p-3 md:p-4 bg-white border border-gray-200 rounded-2xl hover:border-blue-400 hover:shadow-lg hover:bg-blue-50 transition-all group h-28 md:h-32 active:scale-95"
+                    <div className="mt-auto">
+                      <h3 className="text-2xl font-serif font-bold text-white mb-2">{card.title}</h3>
+                      <p className="text-sm leading-relaxed mb-5" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                        {card.desc}
+                      </p>
+                      <div className="flex items-center text-sm font-bold" style={{ color: 'rgba(255,255,255,0.8)' }}>
+                        <span>{t.openApp}</span>
+                        <svg
+                          className="w-4 h-4 ml-2 transform group-hover:translate-x-2 transition-transform duration-300"
+                          fill="none" stroke="currentColor" viewBox="0 0 24 24"
                         >
-                            <span className="text-2xl md:text-3xl mb-2 md:mb-3 group-hover:scale-125 transition-transform duration-300 filter drop-shadow-sm">{link.icon}</span>
-                            <span className="text-[10px] md:text-xs font-bold text-slate-600 group-hover:text-blue-800 text-center leading-tight px-1">{link.label}</span>
-                        </button>
-                    ))}
-                </div>
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </section>
+
+          {/* ═══════════════════════════════════════
+              SECTION 3 — HOW IT WORKS
+          ═══════════════════════════════════════ */}
+          <section className="space-y-12">
+            <div className="text-center space-y-3">
+              <div
+                className="inline-block px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest"
+                style={{ background: 'linear-gradient(135deg, #dbeafe, #ede9fe)', color: '#4338ca' }}
+              >
+                Process
+              </div>
+              <h2 className="text-3xl md:text-4xl font-serif font-bold text-slate-900">
+                {language === Language.UZ ? "Qanday ishlaydi?" :
+                 language === Language.RU ? "Как это работает?" :
+                 "How It Works"}
+              </h2>
             </div>
 
-            {/* Facts Carousel with 80 Tiny Moving Dots */}
-            <div className="relative h-96 md:h-72 overflow-hidden rounded-3xl shadow-2xl animate-fade-in-up delay-300 group z-20">
-                {facts.map((fact, index) => (
-                    <div 
-                        key={index}
-                        className={`absolute inset-0 transition-all duration-1000 ease-in-out bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-900 p-6 md:p-10 text-white flex flex-col justify-center ${index === currentFactIndex ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full pointer-events-none'}`}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+              {/* Connecting line — desktop only */}
+              <div
+                className="absolute top-12 left-[calc(16.67%+1.5rem)] right-[calc(16.67%+1.5rem)] h-px hidden md:block"
+                style={{
+                  background: 'linear-gradient(90deg, #2563eb40, #7c3aed60, #05966940)',
+                }}
+              />
+
+              {howItWorks.map((step, i) => (
+                <div key={i} className="flex flex-col items-center text-center group">
+                  <div
+                    className="w-24 h-24 rounded-full flex items-center justify-center mb-6 relative z-10 transition-transform duration-300 group-hover:scale-110"
+                    style={{
+                      background: `radial-gradient(circle, ${step.color}22, ${step.color}0a)`,
+                      border: `2px solid ${step.color}40`,
+                      boxShadow: `0 0 40px ${step.color}20`,
+                      color: step.color,
+                    }}
+                  >
+                    {step.icon}
+                    <div
+                      className="absolute -top-2 -right-2 w-7 h-7 rounded-full text-xs font-black text-white flex items-center justify-center"
+                      style={{ background: step.color }}
                     >
-                        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
-                        <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl -ml-10 -mb-10"></div>
-                        
-                        <div className="relative z-10 max-w-4xl">
-                            <div className="flex items-center justify-between mb-4 md:mb-6">
-                                <span className="px-3 py-1 bg-blue-500/20 text-blue-300 text-[10px] md:text-xs font-bold uppercase tracking-widest rounded-full border border-blue-500/30 backdrop-blur-sm flex items-center">
-                                    <span className="mr-2 text-base md:text-lg">💡</span>
-                                    {t.didYouKnowTag}
-                                </span>
-                            </div>
-                            <h3 className="text-xl md:text-3xl font-serif font-bold mb-3 md:mb-4 leading-tight">{fact.title}</h3>
-                            <p className="text-slate-300 text-sm md:text-lg leading-relaxed mb-6 md:mb-8 border-l-2 border-slate-600 pl-4 line-clamp-4 md:line-clamp-2">
-                                {fact.content}
-                            </p>
-                            <div className="flex items-center space-x-6">
-                                <button 
-                                    onClick={() => handleFactClick(fact)}
-                                    className="inline-flex items-center space-x-2 text-white font-bold hover:text-blue-300 transition-colors group-hover:translate-x-2 duration-300 text-sm md:text-base"
-                                >
-                                    <span>{fact.button}</span>
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
-                                </button>
-                                
-                                {/* Quick Manual Nav */}
-                                <div className="hidden md:flex items-center space-x-2 ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button onClick={prevFact} className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg></button>
-                                    <button onClick={nextFact} className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg></button>
-                                </div>
-                            </div>
-                        </div>
+                      {i + 1}
                     </div>
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-900 mb-2">{step.title}</h3>
+                  <p className="text-sm text-slate-500 leading-relaxed max-w-xs">{step.desc}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* ═══════════════════════════════════════
+              SECTION 4 — QUICK LINKS
+          ═══════════════════════════════════════ */}
+          <section className="space-y-6">
+            <div className="flex items-center space-x-4">
+              <h3 className="text-lg md:text-xl font-bold text-slate-800 uppercase tracking-wide">
+                {t.quickLinksTitle}
+              </h3>
+              <div className="h-px bg-gray-200 flex-1" />
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4">
+              {quickLinks.map((link, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handleQuickLink(link.prompt)}
+                  className="flex flex-col items-center justify-center p-3 md:p-4 bg-white border border-gray-100 rounded-2xl transition-all duration-300 group h-28 md:h-32 active:scale-95 hover:-translate-y-1"
+                  style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}
+                  onMouseEnter={e => {
+                    (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 8px 30px rgba(59,130,246,0.14)';
+                    (e.currentTarget as HTMLButtonElement).style.borderColor = '#93c5fd';
+                  }}
+                  onMouseLeave={e => {
+                    (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)';
+                    (e.currentTarget as HTMLButtonElement).style.borderColor = '#f3f4f6';
+                  }}
+                >
+                  <span className="text-2xl md:text-3xl mb-2 md:mb-3 group-hover:scale-125 transition-transform duration-300 filter drop-shadow-sm">
+                    {link.icon}
+                  </span>
+                  <span className="text-[10px] md:text-xs font-bold text-slate-600 group-hover:text-blue-700 text-center leading-tight px-1 transition-colors">
+                    {link.label}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </section>
+
+          {/* ═══════════════════════════════════════
+              SECTION 5 — FACTS CAROUSEL (redesigned)
+          ═══════════════════════════════════════ */}
+          <section
+            className="relative h-[420px] md:h-80 overflow-hidden rounded-3xl shadow-2xl group"
+            style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)' }}
+          >
+            {/* Glow decor */}
+            <div
+              className="absolute top-0 right-0 w-80 h-80 pointer-events-none"
+              style={{
+                background: 'radial-gradient(circle, rgba(99,102,241,0.14) 0%, transparent 70%)',
+                transform: 'translate(30%, -30%)',
+              }}
+            />
+            <div
+              className="absolute bottom-0 left-0 w-60 h-60 pointer-events-none"
+              style={{
+                background: 'radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%)',
+                transform: 'translate(-25%, 25%)',
+              }}
+            />
+
+            {facts.map((fact, index) => (
+              <div
+                key={index}
+                className={`absolute inset-0 transition-all duration-1000 ease-in-out p-6 md:p-12 flex flex-col justify-center ${
+                  index === currentFactIndex
+                    ? 'opacity-100 translate-x-0'
+                    : 'opacity-0 translate-x-full pointer-events-none'
+                }`}
+              >
+                <div className="relative z-10 max-w-4xl">
+                  <div className="flex items-center justify-between mb-5">
+                    <span
+                      className="px-3 py-1.5 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest flex items-center"
+                      style={{
+                        background: 'rgba(99,102,241,0.2)',
+                        border: '1px solid rgba(99,102,241,0.3)',
+                        color: '#a5b4fc',
+                      }}
+                    >
+                      <span className="mr-1.5">💡</span>
+                      {t.didYouKnowTag}
+                    </span>
+                    <span className="text-xs text-slate-600 font-mono">
+                      {index + 1} / {facts.length}
+                    </span>
+                  </div>
+
+                  <h3 className="text-xl md:text-3xl font-serif font-bold text-white mb-4 leading-tight">
+                    {fact.title}
+                  </h3>
+                  <p className="text-slate-400 text-sm md:text-base leading-relaxed mb-8 line-clamp-3 border-l-2 border-indigo-700 pl-4">
+                    {fact.content}
+                  </p>
+
+                  <div className="flex items-center justify-between">
+                    <button
+                      onClick={() => handleFactClick(fact)}
+                      className="flex items-center space-x-2 font-bold text-sm group/btn transition-all duration-300"
+                      style={{ color: '#818cf8' }}
+                    >
+                      <span className="group-hover/btn:text-white transition-colors">{fact.button}</span>
+                      <svg
+                        className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform"
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                      </svg>
+                    </button>
+
+                    <div className="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={prevFact}
+                        className="p-2 rounded-full transition-colors"
+                        style={{ background: 'rgba(255,255,255,0.1)' }}
+                        onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.2)'}
+                        onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.1)'}
+                      >
+                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                      </button>
+                      <button
+                        onClick={nextFact}
+                        className="p-2 rounded-full transition-colors"
+                        style={{ background: 'rgba(255,255,255,0.1)' }}
+                        onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.2)'}
+                        onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.1)'}
+                      >
+                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {/* Dots — desktop only */}
+            <div className="absolute bottom-4 left-6 right-6 hidden md:flex flex-wrap justify-center gap-1 z-20 pointer-events-auto">
+              {facts.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentFactIndex(idx)}
+                  className={`h-1 rounded-full transition-all duration-300 flex-shrink-0 ${
+                    idx === currentFactIndex ? 'w-4 bg-indigo-400' : 'w-1 bg-slate-700 hover:bg-slate-500'
+                  }`}
+                  aria-label={`Slide ${idx + 1}`}
+                />
+              ))}
+            </div>
+          </section>
+
+          {/* ═══════════════════════════════════════
+              SECTION 6 — TECHNOLOGY SHOWCASE (dark)
+          ═══════════════════════════════════════ */}
+          <section
+            className="rounded-3xl overflow-hidden"
+            style={{ background: 'linear-gradient(135deg, #0f172a 0%, #0d1a3a 100%)' }}
+          >
+            <div className="p-8 md:p-12">
+              {/* Header row */}
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-10 gap-4">
+                <div>
+                  <div className="text-xs font-black uppercase tracking-widest text-blue-400 mb-2">
+                    {t.techTitle}
+                  </div>
+                  <h2 className="text-2xl md:text-3xl font-serif font-bold text-white">
+                    {language === Language.UZ ? "Eng yaxshi texnologiyalarda qurilgan" :
+                     language === Language.RU ? "Построено на лучших технологиях" :
+                     "Built on the Best"}
+                  </h2>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+                  <span className="text-sm text-emerald-400 font-bold">{t.statSystemOp}</span>
+                </div>
+              </div>
+
+              {/* Tech tiles */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+                {[
+                  { name: 'Google Gemini', sub: 'AI Engine',       icon: '🤖', color: '#4285f4' },
+                  { name: 'RAG System',    sub: 'Real-time search', icon: '🔍', color: '#34a853' },
+                  { name: 'Supabase',      sub: 'Database & Auth',  icon: '⚡', color: '#3ecf8e' },
+                  { name: 'lex.uz · norma.uz', sub: 'Official Sources', icon: '📜', color: '#a78bfa' },
+                ].map((tech, i) => (
+                  <div
+                    key={i}
+                    className="p-4 md:p-5 rounded-2xl transition-all duration-300 hover:-translate-y-1 cursor-default"
+                    style={{
+                      background: 'rgba(255,255,255,0.05)',
+                      border: `1px solid ${tech.color}30`,
+                    }}
+                  >
+                    <div className="text-3xl mb-3">{tech.icon}</div>
+                    <div className="font-bold text-white text-sm">{tech.name}</div>
+                    <div className="text-xs mt-1 font-medium" style={{ color: tech.color }}>{tech.sub}</div>
+                  </div>
                 ))}
+              </div>
 
-                {/* High-Density Dot Indicator Container - Hidden on mobile to save vertical space */}
-                <div className="absolute bottom-4 left-6 right-6 flex-wrap justify-center gap-1 z-20 pointer-events-auto hidden md:flex">
-                    {facts.map((_, idx) => (
-                        <button
-                            key={idx}
-                            onClick={() => setCurrentFactIndex(idx)}
-                            className={`h-1 rounded-full transition-all duration-300 flex-shrink-0 shadow-sm ${
-                                idx === currentFactIndex 
-                                    ? 'bg-white w-4 shadow-white/50' 
-                                    : 'bg-white/20 w-1 hover:bg-white/40'
-                            }`}
-                            aria-label={`Go to slide ${idx + 1}`}
-                        />
-                    ))}
-                </div>
+              {/* Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-8 border-t" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+                {[
+                  { value: '15k+',  label: t.statUsers },
+                  { value: '85k+',  label: t.statDocs },
+                  { value: '24/7',  label: t.statAIAvailability },
+                  { value: '99.8%', label: t.statAccuracy },
+                ].map((stat, i) => (
+                  <div key={i} className="text-center">
+                    <div
+                      className="text-3xl md:text-4xl font-black mb-1"
+                      style={{
+                        background: 'linear-gradient(135deg, #60a5fa, #a78bfa)',
+                        backgroundClip: 'text',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                      }}
+                    >{stat.value}</div>
+                    <div className="text-xs text-slate-500">{stat.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* ═══════════════════════════════════════
+              SECTION 7 — VISION / ROADMAP
+          ═══════════════════════════════════════ */}
+          <section className="space-y-8">
+            <div className="flex items-center space-x-4">
+              <h3 className="text-lg md:text-xl font-bold text-slate-800 uppercase tracking-wide">
+                {t.visTitle}
+              </h3>
+              <div className="h-px bg-gray-200 flex-1" />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-fade-in-up delay-300 relative z-20">
-                <div className="bg-white p-6 md:p-8 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-center">
-                    <h3 className="text-lg md:text-xl font-bold text-slate-900 mb-6 flex items-center">
-                        <span className="w-2 h-8 bg-blue-50 rounded-full mr-3 border-l-4 border-blue-500"></span>
-                        {t.techTitle}
-                    </h3>
-                    <div className="space-y-4">
-                        <div className="flex items-center p-3 bg-gray-50 rounded-xl">
-                            <div className="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center mr-4">
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            </div>
-                            <div>
-                                <p className="font-bold text-slate-800">{t.statAccuracy}</p>
-                                <p className="text-xs text-slate-500">99.8% based on lex.uz</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center p-3 bg-gray-50 rounded-xl">
-                            <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mr-4">
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                            </div>
-                            <div>
-                                <p className="font-bold text-slate-800">{t.techSecure}</p>
-                                <p className="text-xs text-slate-500">End-to-End Encryption</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center p-3 bg-gray-50 rounded-xl">
-                            <div className="w-10 h-10 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center mr-4">
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                            </div>
-                            <div>
-                                <p className="font-bold text-slate-800">{t.techModel}</p>
-                                <p className="text-xs text-slate-500">{t.techModelSub}</p>
-                            </div>
-                        </div>
-                    </div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+              {[
+                {
+                  title: t.visAutoAgents,
+                  desc: t.visAutoAgentsDesc,
+                  bg: 'linear-gradient(135deg, #eff6ff, #dbeafe)',
+                  accent: '#2563eb',
+                  icon: (
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                        d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                    </svg>
+                  ),
+                },
+                {
+                  title: t.visCourtAPI,
+                  desc: t.visCourtAPIDesc,
+                  bg: 'linear-gradient(135deg, #faf5ff, #ede9fe)',
+                  accent: '#7c3aed',
+                  icon: (
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                        d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/>
+                    </svg>
+                  ),
+                },
+                {
+                  title: t.visBlockchain,
+                  desc: t.visBlockchainDesc,
+                  bg: 'linear-gradient(135deg, #f0fdf4, #dcfce7)',
+                  accent: '#059669',
+                  icon: (
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                    </svg>
+                  ),
+                },
+                {
+                  title: t.visAIJudge,
+                  desc: t.visAIJudgeDesc,
+                  bg: 'linear-gradient(135deg, #fff7ed, #ffedd5)',
+                  accent: '#d97706',
+                  icon: (
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                  ),
+                },
+              ].map((card, i) => (
+                <div
+                  key={i}
+                  className="p-6 rounded-2xl border transition-all duration-300 hover:-translate-y-1 group cursor-default"
+                  style={{
+                    background: card.bg,
+                    borderColor: `${card.accent}20`,
+                    boxShadow: `0 4px 20px ${card.accent}10`,
+                  }}
+                >
+                  <div
+                    className="w-12 h-12 rounded-xl flex items-center justify-center mb-5 transition-transform duration-300 group-hover:scale-110"
+                    style={{ background: `${card.accent}18`, color: card.accent }}
+                  >
+                    {card.icon}
+                  </div>
+                  <div
+                    className="inline-block px-2 py-0.5 rounded-full text-xs font-black mb-3"
+                    style={{ background: `${card.accent}18`, color: card.accent }}
+                  >
+                    Soon
+                  </div>
+                  <h4 className="font-bold text-slate-900 mb-2 uppercase text-xs tracking-wide">
+                    {card.title}
+                  </h4>
+                  <p className="text-sm text-slate-500 leading-relaxed">{card.desc}</p>
                 </div>
-
-                <div className="bg-slate-900 p-6 md:p-8 rounded-3xl shadow-xl text-white relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/20 rounded-full blur-3xl -mr-16 -mt-16"></div>
-                    <div className="relative z-10 h-full flex flex-col justify-between">
-                        <div>
-                            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-8">{t.statPlatformImpact}</h3>
-                            <div className="grid grid-cols-2 gap-8">
-                                <div>
-                                    <p className="text-3xl md:text-4xl font-bold text-white mb-1">15k+</p>
-                                    <p className="text-xs text-slate-400">{t.statUsers}</p>
-                                </div>
-                                <div>
-                                    <p className="text-3xl md:text-4xl font-bold text-white mb-1">85k+</p>
-                                    <p className="text-xs text-slate-400">{t.statDocs}</p>
-                                </div>
-                                <div>
-                                    <p className="text-3xl md:text-4xl font-bold text-white mb-1">24/7</p>
-                                    <p className="text-xs text-slate-400">{t.statAIAvailability}</p>
-                                </div>
-                                <div>
-                                    <p className="text-3xl md:text-4xl font-bold text-white mb-1">3</p>
-                                    <p className="text-xs text-slate-400">{t.statLanguages}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="mt-8 pt-8 border-t border-slate-800 flex justify-between items-center">
-                            <span className="text-xs text-slate-500">{t.footerCopyright}</span>
-                            <div className="flex space-x-3">
-                                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                                <span className="text-xs text-green-400 font-bold">{t.statSystemOp}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+              ))}
             </div>
-
-            <div className="space-y-8 animate-fade-in-up delay-300 relative z-20">
-                <div className="flex items-center space-x-4">
-                    <h3 className="text-lg md:text-xl font-bold text-slate-800 uppercase tracking-wide">{t.visTitle}</h3>
-                    <div className="h-px bg-gray-200 flex-1"></div>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-start group">
-                        <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
-                            <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                        </div>
-                        <h4 className="font-bold text-slate-900 mb-2 group-hover:text-blue-700 transition-colors uppercase text-sm tracking-wide">{t.visAutoAgents}</h4>
-                        <p className="text-sm text-gray-500 leading-relaxed">{t.visAutoAgentsDesc}</p>
-                    </div>
-
-                    <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-start group">
-                        <div className="w-14 h-14 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
-                            <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path></svg>
-                        </div>
-                        <h4 className="font-bold text-slate-900 mb-2 group-hover:text-purple-700 transition-colors uppercase text-sm tracking-wide">{t.visCourtAPI}</h4>
-                        <p className="text-sm text-gray-500 leading-relaxed">{t.visCourtAPIDesc}</p>
-                    </div>
-
-                    <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-start group">
-                        <div className="w-14 h-14 bg-green-50 text-green-600 rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
-                            <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-                        </div>
-                        <h4 className="font-bold text-slate-900 mb-2 group-hover:text-green-700 transition-colors uppercase text-sm tracking-wide">{t.visBlockchain}</h4>
-                        <p className="text-sm text-gray-500 leading-relaxed">{t.visBlockchainDesc}</p>
-                    </div>
-
-                    <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-start group">
-                        <div className="w-14 h-14 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
-                            <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        </div>
-                        <h4 className="font-bold text-slate-900 mb-2 group-hover:text-orange-700 transition-colors uppercase text-sm tracking-wide">{t.visAIJudge}</h4>
-                        <p className="text-sm text-gray-500 leading-relaxed">{t.visAIJudgeDesc}</p>
-                    </div>
-                </div>
-            </div>
+          </section>
 
         </div>
         <Footer />
+      </div>
     </div>
   );
 };
