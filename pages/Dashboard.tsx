@@ -80,18 +80,60 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
 
   return (
     <div className="h-full overflow-y-auto bg-slate-50 flex flex-col">
-        <div className="flex-1 p-6 md:p-10 max-w-7xl mx-auto w-full space-y-12 md:space-y-16 pb-24">
+        <div className="flex-1 p-4 md:p-10 max-w-[90rem] mx-auto w-full space-y-12 md:space-y-16 pb-24">
             
-            <div className="space-y-4 animate-fade-in pt-4">
-                <h1 className="text-3xl md:text-5xl lg:text-6xl font-serif font-bold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 pb-2">
-                    {t.dashboardWelcome}
-                </h1>
-                <p className="text-base md:text-xl text-slate-500 max-w-3xl font-light leading-relaxed border-l-4 border-blue-500 pl-4 md:pl-6">
-                    {t.dashboardSubtitle}
-                </p>
+            {/* HERO SECTION WITH IMMERSIVE 3D ROBOT */}
+            <div className="relative w-full flex flex-col lg:flex-row items-center justify-between min-h-[500px] md:min-h-[600px] mb-8">
+                
+                {/* Text Content */}
+                <div className="w-full lg:w-1/2 z-20 relative text-center lg:text-left pt-10 lg:pt-0 pointer-events-none">
+                    <div className="pointer-events-auto">
+                        <div className="inline-block px-4 py-1.5 rounded-full bg-blue-100 text-blue-700 font-bold text-xs tracking-wider mb-6 animate-fade-in uppercase">
+                            AI-Powered Legal Assistant
+                        </div>
+                        <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-bold text-slate-900 leading-tight tracking-tight mb-6 animate-slide-up">
+                            {t.dashboardWelcome}
+                        </h1>
+                        <p className="text-xl text-slate-500 font-light leading-relaxed max-w-xl mx-auto lg:mx-0 mb-10 animate-slide-up delay-100 border-l-4 border-blue-500 pl-6 bg-white/50 backdrop-blur-sm rounded-r-xl py-2">
+                            {t.dashboardSubtitle}
+                        </p>
+                        
+                        <div className="flex flex-wrap justify-center lg:justify-start gap-4 animate-slide-up delay-200">
+                            <button 
+                                onClick={() => navigate('/chat')}
+                                className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold shadow-lg shadow-blue-200 transition-all transform hover:scale-105 flex items-center"
+                            >
+                                <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+                                {t.navChat}
+                            </button>
+                            <button 
+                                onClick={() => navigate('/library')}
+                                className="px-8 py-4 bg-white border border-gray-200 text-slate-700 rounded-2xl font-bold hover:bg-gray-50 transition-all shadow-sm"
+                            >
+                                {t.navTemplates}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* 3D Robot Container - Expanded & Seamless */}
+                <div className="w-full lg:w-3/5 h-[400px] md:h-[600px] lg:absolute lg:right-[-5%] lg:top-1/2 lg:-translate-y-1/2 z-10 flex items-center justify-center">
+                     <iframe 
+                        src='https://my.spline.design/nexbotrobotcharacterconcept-wZSAPju6UR2ZkjxujstTmNOR/' 
+                        frameBorder='0' 
+                        width='100%' 
+                        height='100%'
+                        title="Lawify AI Robot"
+                        className="w-full h-full pointer-events-auto"
+                        style={{ border: 'none' }}
+                     ></iframe>
+                     
+                     {/* Watermark Blocker: Matches background color to hide Spline logo */}
+                     <div className="absolute bottom-4 right-4 w-40 h-14 bg-slate-50 z-50 rounded-tl-2xl"></div>
+                </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 relative z-20">
                 <AppCard 
                     title={t.navChat}
                     desc={t.quickChatDesc}
@@ -123,7 +165,7 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
                 />
             </div>
 
-            <div className="space-y-6 animate-fade-in-up delay-200">
+            <div className="space-y-6 animate-fade-in-up delay-200 relative z-20">
                 <div className="flex items-center space-x-4">
                     <h3 className="text-lg md:text-xl font-bold text-slate-800 uppercase tracking-wide">{t.quickLinksTitle}</h3>
                     <div className="h-px bg-gray-200 flex-1"></div>
@@ -143,7 +185,7 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
             </div>
 
             {/* Facts Carousel with 80 Tiny Moving Dots */}
-            <div className="relative h-96 md:h-72 overflow-hidden rounded-3xl shadow-2xl animate-fade-in-up delay-300 group">
+            <div className="relative h-96 md:h-72 overflow-hidden rounded-3xl shadow-2xl animate-fade-in-up delay-300 group z-20">
                 {facts.map((fact, index) => (
                     <div 
                         key={index}
@@ -199,7 +241,7 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-fade-in-up delay-300">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-fade-in-up delay-300 relative z-20">
                 <div className="bg-white p-6 md:p-8 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-center">
                     <h3 className="text-lg md:text-xl font-bold text-slate-900 mb-6 flex items-center">
                         <span className="w-2 h-8 bg-blue-50 rounded-full mr-3 border-l-4 border-blue-500"></span>
@@ -271,7 +313,7 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
                 </div>
             </div>
 
-            <div className="space-y-8 animate-fade-in-up delay-300">
+            <div className="space-y-8 animate-fade-in-up delay-300 relative z-20">
                 <div className="flex items-center space-x-4">
                     <h3 className="text-lg md:text-xl font-bold text-slate-800 uppercase tracking-wide">{t.visTitle}</h3>
                     <div className="h-px bg-gray-200 flex-1"></div>
