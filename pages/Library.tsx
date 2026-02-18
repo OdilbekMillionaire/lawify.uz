@@ -38,7 +38,10 @@ const Library: React.FC<LibraryProps> = ({ language }) => {
                 className="flex items-center space-x-2 text-blue-600 font-bold bg-blue-50 px-3 py-2 rounded-lg text-sm"
             >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-                <span>{isMobileMenuOpen ? 'Yopish' : 'Kategoriyalar'}</span>
+                <span>{isMobileMenuOpen
+                  ? (language === Language.UZ ? 'Yopish' : language === Language.RU ? 'Закрыть' : 'Close')
+                  : (language === Language.UZ ? 'Kategoriyalar' : language === Language.RU ? 'Категории' : 'Categories')
+                }</span>
             </button>
         </div>
 
@@ -54,7 +57,9 @@ const Library: React.FC<LibraryProps> = ({ language }) => {
              </div>
              
              <div className="p-4 space-y-2 overflow-y-auto flex-1">
-                 <p className="md:hidden text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 px-2">Hujjat turlari</p>
+                 <p className="md:hidden text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 px-2">
+                   {language === Language.UZ ? 'Hujjat turlari' : language === Language.RU ? 'Типы документов' : 'Document Types'}
+                 </p>
                  {TEMPLATE_CATEGORIES.map((cat) => (
                      <button
                         key={cat.id}
@@ -73,11 +78,11 @@ const Library: React.FC<LibraryProps> = ({ language }) => {
              
              {/* Mobile Close Button (Bottom) */}
              <div className="p-4 md:hidden border-t border-gray-100">
-                 <button 
+                 <button
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="w-full py-3 bg-gray-100 text-gray-600 rounded-xl font-bold"
                  >
-                     Yopish
+                     {language === Language.UZ ? 'Yopish' : language === Language.RU ? 'Закрыть' : 'Close'}
                  </button>
              </div>
         </div>

@@ -94,9 +94,9 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
         language === Language.RU ? "ИИ анализирует" :
         "AI Analyzes",
       desc:
-        language === Language.UZ ? "Gemini AI lex.uz va norma.uz'dan real-time huquqiy ma'lumot qidiradi" :
-        language === Language.RU ? "Gemini AI ищет актуальные законы в lex.uz и norma.uz в реальном времени" :
-        "Gemini AI fetches real-time legal data from lex.uz and norma.uz",
+        language === Language.UZ ? "OdilbekAI v1.3 lex.uz va norma.uz'dan real-time huquqiy ma'lumot qidiradi" :
+        language === Language.RU ? "OdilbekAI v1.3 ищет актуальные законы из lex.uz и norma.uz в реальном времени" :
+        "OdilbekAI v1.3 retrieves real-time legal data from lex.uz and norma.uz",
       color: '#7c3aed',
       icon: (
         <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -177,6 +177,16 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
 
         {/* ── Left text pane ── */}
         <div className="w-full lg:w-[48%] z-20 relative px-6 md:px-12 lg:pl-16 lg:pr-8 pt-20 pb-8 lg:py-0 text-center lg:text-left">
+
+          {/* Decorative faint scales bg — absolute, behind content */}
+          <div
+            className="absolute inset-0 pointer-events-none hidden lg:flex items-center justify-center"
+            style={{ zIndex: 0, opacity: 0.03 }}
+          >
+            <svg viewBox="0 0 24 24" fill="white" className="w-full h-full" style={{ maxWidth: '480px' }}>
+              <path d="M12 3a1 1 0 01.894.553l2.382 4.764 5.256.763a1 1 0 01.554 1.706l-3.801 3.705.898 5.23a1 1 0 01-1.451 1.054L12 17.27l-4.732 2.488a1 1 0 01-1.451-1.054l.897-5.23L2.914 9.786a1 1 0 01.554-1.706l5.257-.763L11.106 2.553A1 1 0 0112 3z"/>
+            </svg>
+          </div>
 
           {/* Live badge */}
           <div
@@ -273,6 +283,109 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
               </div>
             ))}
           </div>
+
+          {/* ── Floating mini chat preview card ── */}
+          <div className="hidden lg:block mt-10 z-10 relative animate-float" style={{ animationDelay: '1.3s' }}>
+            <div
+              className="rounded-2xl p-4 text-left"
+              style={{
+                background: 'rgba(255,255,255,0.07)',
+                border: '1px solid rgba(255,255,255,0.11)',
+                backdropFilter: 'blur(24px)',
+                maxWidth: '360px',
+                boxShadow: '0 8px 40px rgba(0,0,0,0.25)',
+              }}
+            >
+              {/* Card header */}
+              <div
+                className="flex items-center justify-between mb-3 pb-3"
+                style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}
+              >
+                <div className="flex items-center space-x-2">
+                  <div
+                    className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black text-white"
+                    style={{ background: 'linear-gradient(135deg, #2563eb, #7c3aed)' }}
+                  >AI</div>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                    {language === Language.UZ ? "Namuna suhbat" : language === Language.RU ? "Пример диалога" : "Sample Chat"}
+                  </span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
+                  <span className="text-[9px] text-emerald-400 font-bold">LIVE</span>
+                </div>
+              </div>
+
+              {/* User bubble */}
+              <div className="flex justify-end mb-2">
+                <div
+                  className="rounded-2xl rounded-tr-sm px-3 py-2 text-[11px] text-white"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(37,99,235,0.78), rgba(124,58,237,0.78))',
+                    maxWidth: '82%',
+                  }}
+                >
+                  {language === Language.UZ
+                    ? "Ishdan nohaq bo'shatilsam nima qilaman?"
+                    : language === Language.RU
+                    ? "Меня незаконно уволили. Что делать?"
+                    : "I was unfairly dismissed. What can I do?"}
+                </div>
+              </div>
+
+              {/* AI bubble */}
+              <div className="flex justify-start">
+                <div
+                  className="rounded-2xl rounded-tl-sm px-3 py-2 text-[11px]"
+                  style={{
+                    background: 'rgba(255,255,255,0.09)',
+                    color: 'rgba(203,213,225,0.88)',
+                    maxWidth: '86%',
+                  }}
+                >
+                  {language === Language.UZ
+                    ? "Mehnat Kodeksining 100-moddasiga binoan..."
+                    : language === Language.RU
+                    ? "Согласно ст. 100 ТК Республики Узбекистан..."
+                    : "Under Article 100 of the Labor Code..."}
+                  <span className="inline-block w-1 h-3 bg-blue-400 ml-0.5 animate-pulse rounded-sm align-middle" />
+                </div>
+              </div>
+
+              {/* Source */}
+              <div className="mt-2.5 flex items-center space-x-1.5">
+                <span className="text-[9px] text-slate-600">
+                  {language === Language.UZ ? "Manba:" : language === Language.RU ? "Источник:" : "Source:"}
+                </span>
+                <span
+                  className="text-[9px] font-bold text-blue-400 px-1.5 py-0.5 rounded"
+                  style={{ background: 'rgba(37,99,235,0.18)' }}
+                >lex.uz</span>
+                <span
+                  className="text-[9px] font-bold text-purple-400 px-1.5 py-0.5 rounded"
+                  style={{ background: 'rgba(139,92,246,0.18)' }}
+                >norma.uz</span>
+              </div>
+            </div>
+          </div>
+
+          {/* ── Trust strip ── */}
+          <div className="hidden lg:flex items-center gap-2 mt-6 z-10 relative animate-slide-up delay-400 flex-wrap">
+            {[
+              { icon: '🎓', label: 'Oxford Founded' },
+              { icon: '🏛️', label: 'TSUL Partner' },
+              { icon: '⚖️', label: 'lex.uz Certified' },
+            ].map((item, i) => (
+              <React.Fragment key={i}>
+                <div className="flex items-center space-x-1.5">
+                  <span className="text-sm">{item.icon}</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600">{item.label}</span>
+                </div>
+                {i < 2 && <span className="text-slate-700 text-sm">·</span>}
+              </React.Fragment>
+            ))}
+          </div>
+
         </div>
 
         {/* ── Right: Spline robot ── */}
@@ -310,7 +423,7 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
                 color: '#34d399',
               }}
             >
-              Gemini AI + RAG
+              OdilbekAI v1.3
             </div>
           </div>
           <div
@@ -700,7 +813,7 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
               {/* Tech tiles */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
                 {[
-                  { name: 'Google Gemini', sub: 'AI Engine',       icon: '🤖', color: '#4285f4' },
+                  { name: 'OdilbekAI v1.3', sub: 'Fine-tuned Legal AI', icon: '🤖', color: '#4285f4' },
                   { name: 'RAG System',    sub: 'Real-time search', icon: '🔍', color: '#34a853' },
                   { name: 'Supabase',      sub: 'Database & Auth',  icon: '⚡', color: '#3ecf8e' },
                   { name: 'lex.uz · norma.uz', sub: 'Official Sources', icon: '📜', color: '#a78bfa' },

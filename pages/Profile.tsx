@@ -97,7 +97,9 @@ const Profile: React.FC<ProfileProps> = ({ language, settings, setSettings, user
                        {t.profileLoginBtn}
                    </button>
                    
-                   <p className="text-xs text-gray-400 mt-4">Secure access via Supabase Auth</p>
+                   <p className="text-xs text-gray-400 mt-4">
+                       {language === Language.UZ ? 'Xavfsiz kirish imkoniyati' : language === Language.RU ? 'Безопасный вход в систему' : 'Secure authentication'}
+                   </p>
                </div>
                {/* Simplified Footer for Login Screen */}
                <div className="p-6 border-t border-gray-100 bg-gray-50 text-center">
@@ -117,11 +119,11 @@ const Profile: React.FC<ProfileProps> = ({ language, settings, setSettings, user
                     <div>
                         <h2 className="text-xl font-bold text-slate-900">{t.profileTitle}</h2>
                     </div>
-                    <button 
+                    <button
                         onClick={onLogout}
                         className="text-red-500 bg-red-50 px-3 py-1.5 rounded-lg hover:bg-red-100 font-medium text-xs transition-colors"
                     >
-                        Logout
+                        {language === Language.UZ ? 'Chiqish' : language === Language.RU ? 'Выйти' : 'Logout'}
                     </button>
                 </div>
 
@@ -169,11 +171,15 @@ const Profile: React.FC<ProfileProps> = ({ language, settings, setSettings, user
                             <div className="grid grid-cols-2 gap-3">
                                 <div className="flex flex-col items-center justify-center p-3 bg-blue-50 rounded-xl border border-blue-100">
                                     <span className="font-bold text-xl text-blue-600">{stats.consultations}</span>
-                                    <span className="text-[10px] text-blue-400 uppercase font-bold mt-1">Chats</span>
+                                    <span className="text-[10px] text-blue-400 uppercase font-bold mt-1">
+                                        {language === Language.UZ ? 'Suhbatlar' : language === Language.RU ? 'Чаты' : 'Chats'}
+                                    </span>
                                 </div>
                                 <div className="flex flex-col items-center justify-center p-3 bg-purple-50 rounded-xl border border-purple-100">
                                     <span className="font-bold text-xl text-purple-600">{stats.savedDocs}</span>
-                                    <span className="text-[10px] text-purple-400 uppercase font-bold mt-1">Docs</span>
+                                    <span className="text-[10px] text-purple-400 uppercase font-bold mt-1">
+                                        {language === Language.UZ ? 'Hujjatlar' : language === Language.RU ? 'Документы' : 'Docs'}
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -266,14 +272,18 @@ const Profile: React.FC<ProfileProps> = ({ language, settings, setSettings, user
                     <button onClick={() => setIsAvatarModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
-                    <h3 className="text-xl font-bold text-slate-900 mb-6">Choose Avatar</h3>
+                    <h3 className="text-xl font-bold text-slate-900 mb-6">
+                        {language === Language.UZ ? 'Avatar tanlang' : language === Language.RU ? 'Выберите аватар' : 'Choose Avatar'}
+                    </h3>
                     <div className="mb-6">
                          <div onClick={() => fileInputRef.current?.click()} className="border-2 border-dashed border-gray-300 hover:border-blue-400 rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer transition-colors">
                              <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept="image/*" className="hidden" />
                              <div className="w-12 h-12 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mb-2">
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                              </div>
-                             <span className="text-sm font-bold text-gray-600">Upload Photo</span>
+                             <span className="text-sm font-bold text-gray-600">
+                                 {language === Language.UZ ? 'Rasm yuklash' : language === Language.RU ? 'Загрузить фото' : 'Upload Photo'}
+                             </span>
                          </div>
                     </div>
                 </div>
