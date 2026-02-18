@@ -131,7 +131,7 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
           SECTION 1 — CINEMATIC HERO
       ═══════════════════════════════════════ */}
       <section
-        className="relative min-h-screen flex flex-col lg:flex-row items-center overflow-hidden"
+        className="relative lg:min-h-screen flex flex-col-reverse lg:flex-row items-center overflow-hidden"
         style={{ background: 'linear-gradient(135deg, #0a0f1e 0%, #0d1a3a 55%, #0c1525 100%)' }}
       >
         {/* Background grid */}
@@ -176,7 +176,7 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
         />
 
         {/* ── Left text pane ── */}
-        <div className="w-full lg:w-[48%] z-20 relative px-6 md:px-12 lg:pl-16 lg:pr-8 pt-20 pb-8 lg:py-0 text-center lg:text-left">
+        <div className="w-full lg:w-[48%] z-20 relative px-6 md:px-12 lg:pl-16 lg:pr-8 pt-8 pb-10 lg:py-0 text-center lg:text-left">
 
           {/* Decorative faint scales bg — absolute, behind content */}
           <div
@@ -389,7 +389,7 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
         </div>
 
         {/* ── Right: Spline robot ── */}
-        <div className="w-full lg:w-[52%] h-[420px] md:h-[560px] lg:h-screen z-10 relative flex items-center justify-center">
+        <div className="w-full lg:w-[52%] h-[55vw] min-h-[260px] sm:h-[420px] md:h-[560px] lg:h-screen z-10 relative flex items-center justify-center">
           <div
             className="w-full h-full relative"
             style={{ filter: 'drop-shadow(0 0 70px rgba(59,130,246,0.28))' }}
@@ -445,7 +445,7 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
         </div>
 
         {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center z-20">
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 hidden lg:flex flex-col items-center z-20">
           <span className="text-slate-600 text-[10px] mb-2 uppercase tracking-widest">scroll</span>
           <div className="w-5 h-9 border-2 border-slate-700 rounded-full flex justify-center pt-1.5">
             <div className="w-1 h-2.5 bg-blue-500 rounded-full scroll-bounce" />
