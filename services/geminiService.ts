@@ -196,8 +196,10 @@ You MUST NOT cite any law, article, or legal provision NOT in this list.
 You have NO access to external data. Do NOT use training memory for law references.
 If the retrieved laws don't fully answer the question, say so explicitly.
 
-CITATION RULE: Reference laws as [LAW N] inline.
-Example: "Mehnat kodeksining 153-moddasiga ko'ra... [LAW 1]"
+CITATION RULE: Cite each law using its actual name and article number directly inline.
+Example: "Mehnat kodeksining 153-moddasiga ko'ra..." or "Jinoyat kodeksining 66-moddasi..."
+For articles with a prime suffix, use Unicode superscripts: 126¹ (not 126-1), 141² (not 141-2).
+Do NOT write [LAW 1] or any similar tag — cite by law name and article number only.
 
 STATUS RULE: If status is "REPEALED", do NOT base advice on it.
 Write: "(eski qonun, endi amal qilmaydi)" and advise only on in-force laws.
@@ -230,13 +232,24 @@ function validateCitations(text: string, laws: VerifiedLaw[]): { hasViolations: 
   return { hasViolations: violations.length > 0, violatingCitations: [...new Set(violations)] };
 }
 
-function appendCitationWarning(text: string, citations: string[], language: Language): string {
-  const warn: Record<string, string> = {
-    uz: `\n\n---\n> **Tekshiruv ogohlantirishsi:** Quyidagi modda raqamlari rasmiy manbada tasdiqlanmagan: ${citations.join(', ')}. Bu ma'lumotlarga tayanmang — yurist bilan maslahatlashing.`,
-    ru: `\n\n---\n> **Предупреждение:** Следующие статьи не подтверждены официальным источником: ${citations.join(', ')}. Не полагайтесь на них — проконсультируйтесь с юристом.`,
-    en: `\n\n---\n> **Audit Warning:** These article numbers were not confirmed by official sources: ${citations.join(', ')}. Do not rely on them — consult a lawyer.`,
-  };
-  return text + (warn[language] ?? warn['en']);
+// Strip any residual [LAW N] tags the model may still produce despite instructions
+function stripLawTags(text: string): string {
+  return text.replace(/\s*\[LAW\s*\d+\]/gi, '');
+}
+
+// Convert hyphenated prime article numbers to Unicode superscript notation
+// e.g. "126-1-modda" → "126¹-modda", "141-2-modda" → "141²-modda"
+const SUPERSCRIPTS: Record<string, string> = {
+  '0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'
+};
+function applyPrimeNotation(text: string): string {
+  return text.replace(
+    /(\d+)-(\d+)([-\s]*(modda|moddasi|статья|article))/gi,
+    (_: string, base: string, prime: string, suffix: string) => {
+      const sup = prime.split('').map((d: string) => SUPERSCRIPTS[d] ?? d).join('');
+      return `${base}${sup}${suffix}`;
+    }
+  );
 }
 
 // ============================================================
@@ -399,7 +412,8 @@ FORMATTING:
     });
   }, 2, 1000);
 
-  return response.text || (language === 'uz' ? "Uzr, tushuna olmadim." : "Sorry, I couldn't understand.");
+  const raw = response.text || (language === 'uz' ? "Uzr, tushuna olmadim." : "Sorry, I couldn't understand.");
+  return applyPrimeNotation(stripLawTags(raw));
 }
 
 export const generateLegalResponse = async (
@@ -488,11 +502,8 @@ export const generateLegalResponse = async (
       return handleNoLawsFound(language, prompt, retrievalResult.retrievalSources);
     }
 
-    // Post-processing: validate generated text only cites retrieved laws
-    const validation = validateCitations(text, retrievalResult.laws);
-    const finalText = validation.hasViolations
-      ? appendCitationWarning(text, validation.violatingCitations, language)
-      : text;
+    // Post-processing: strip internal [LAW N] tags + apply prime notation
+    const finalText = applyPrimeNotation(stripLawTags(text));
 
     return { text: finalText, sources: retrievalResult.retrievalSources };
 

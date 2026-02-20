@@ -126,7 +126,16 @@ FORMATTING:
       }
     });
 
-    return new Response(JSON.stringify({ text: response.text || "Uzr, tushuna olmadim." }), {
+    const superscripts: Record<string, string> = {'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+    const rawText = response.text || "Uzr, tushuna olmadim.";
+    const finalText = rawText
+      .replace(/\s*\[LAW\s*\d+\]/gi, '')
+      .replace(/(\d+)-(\d+)([-\s]*(modda|moddasi|статья|article))/gi,
+        (_: string, base: string, prime: string, suffix: string) =>
+          `${base}${prime.split('').map((d: string) => superscripts[d] ?? d).join('')}${suffix}`
+      );
+
+    return new Response(JSON.stringify({ text: finalText }), {
       headers: { 'Content-Type': 'application/json' }
     });
 

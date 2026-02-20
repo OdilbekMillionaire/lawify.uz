@@ -937,6 +937,14 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
               </button>
           </div>
         </div>
+        {/* Disclaimer */}
+        <p className="text-center text-[10px] text-gray-400 mt-1.5 px-4 leading-tight">
+          {language === Language.UZ
+            ? "Lawify faqat lex.uz va norma.uz rasmiy manbalari asosida javob beradi. Bu yuridik maslahat emas — muhim qarorlarda malakali yurist bilan maslahatlashing."
+            : language === Language.RU
+            ? "Lawify отвечает только на основе официальных источников lex.uz и norma.uz. Это не юридическая консультация — по важным вопросам обратитесь к квалифицированному юристу."
+            : "Lawify responds only based on official sources lex.uz and norma.uz. This is not legal advice — consult a qualified lawyer for important decisions."}
+        </p>
       </div>
     </div>
   );

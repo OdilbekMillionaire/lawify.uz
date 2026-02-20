@@ -197,8 +197,9 @@ You MUST NOT cite any law, article, or legal provision NOT in this list.
 You have NO access to external data. Do NOT use training memory for law references.
 If the retrieved laws don't fully answer the question, say so explicitly.
 
-CITATION RULE: Reference laws as [LAW N] inline.
-Example: "Mehnat kodeksining 153-moddasiga ko'ra... [LAW 1]"
+CITATION RULE: Cite each law using its actual name and article number directly inline.
+Example: "Mehnat kodeksining 153-moddasiga ko'ra..." — no [LAW N] tags.
+For articles with a prime suffix, use Unicode superscripts: 126¹ (not 126-1), 141² (not 141-2).
 
 STATUS RULE: If status is "REPEALED", do NOT base advice on it.
 Write: "(eski qonun, endi amal qilmaydi)" and advise only on in-force laws.
@@ -239,7 +240,15 @@ ${structureLabels}
       config: genConfig
     });
 
-    const text = response.text || "No response generated.";
+    const raw = response.text || "No response generated.";
+    // Strip residual [LAW N] tags and apply prime notation (126¹ instead of 126-1)
+    const superscripts: Record<string, string> = {'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+    const text = raw
+      .replace(/\s*\[LAW\s*\d+\]/gi, '')
+      .replace(/(\d+)-(\d+)([-\s]*(modda|moddasi|статья|article))/gi,
+        (_: string, base: string, prime: string, suffix: string) =>
+          `${base}${prime.split('').map((d: string) => superscripts[d] ?? d).join('')}${suffix}`
+      );
 
     return new Response(JSON.stringify({ text, sources: retrievalSources }), {
         headers: { 'Content-Type': 'application/json' }
