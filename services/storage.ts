@@ -15,9 +15,46 @@ export const cleanText = (text: string): string => {
     .trim();
 };
 
+export const saveCommentatorResult = (
+  lawName: string,
+  articleNumber: string,
+  resultText: string
+) => {
+  const history = getHistory();
+  const id = Date.now().toString();
+  const cleanPreview = resultText
+    .replace(/\[SECTION:[^\]]*\]/g, '')
+    .replace(/\[\/SECTION\]/g, '')
+    .replace(/\*\*/g, '')
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/#/g, '')
+    .replace(/\*/g, '')
+    .trim()
+    .slice(0, 120);
+
+  const newSession: ChatSession = {
+    id,
+    title: `${lawName} — ${articleNumber}-modda`,
+    date: Date.now(),
+    preview: cleanPreview,
+    messages: [],
+    type: 'commentator',
+    customData: { lawName, articleNumber, resultText },
+  };
+
+  const existingIndex = history.findIndex(s => s.id === id);
+  if (existingIndex >= 0) {
+    history[existingIndex] = newSession;
+  } else {
+    history.unshift(newSession);
+  }
+  if (history.length > 50) history.pop();
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+};
+
 export const saveSession = (
-    messages: Message[], 
-    type: 'lawyer' | 'odilbek' | 'drafter' = 'lawyer', 
+    messages: Message[],
+    type: 'lawyer' | 'odilbek' | 'drafter' = 'lawyer',
     customTitle?: string,
     customData?: any
 ) => {

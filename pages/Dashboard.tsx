@@ -15,6 +15,7 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
   const facts = DID_YOU_KNOW_FACTS[language];
 
   const [currentFactIndex, setCurrentFactIndex] = useState(0);
+  const [splineLoaded, setSplineLoaded] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -388,57 +389,63 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
 
         </div>
 
-        {/* ── Right: Spline robot ── */}
-        <div className="w-full lg:w-[52%] h-[55vw] min-h-[260px] sm:h-[420px] md:h-[560px] lg:h-screen z-10 relative flex items-center justify-center">
-          <div
-            className="w-full h-full relative"
-            style={{ filter: 'drop-shadow(0 0 70px rgba(59,130,246,0.28))' }}
-          >
+        {/* ── Right: Spline robot with CSS fallback ── */}
+        <div className="w-full lg:w-[52%] h-[60vw] min-h-[300px] sm:h-[420px] md:h-[520px] lg:h-screen z-10 relative flex items-center justify-center order-first lg:order-last">
+          <div className="w-full h-full relative" style={{ filter: 'drop-shadow(0 0 70px rgba(59,130,246,0.28))' }}>
+            {/* Spline iframe */}
             <iframe
               src="https://my.spline.design/nexbotrobotcharacterconcept-wZSAPju6UR2ZkjxujstTmNOR/"
               frameBorder="0"
               width="100%"
               height="100%"
               title="Lawify AI Robot"
-              style={{ border: 'none' }}
+              loading="eager"
+              allow="autoplay; fullscreen; accelerometer; gyroscope"
+              onLoad={() => setSplineLoaded(true)}
+              style={{ border: 'none', opacity: splineLoaded ? 1 : 0, transition: 'opacity 0.6s ease', position: 'absolute', inset: 0 }}
             />
-            {/* Watermark blocker — matches hero bg */}
+            {/* CSS fallback — shows while Spline loads or if WebGL unavailable */}
             <div
-              className="absolute bottom-2 right-2 w-44 h-14 z-50 rounded-tl-xl"
-              style={{ background: 'linear-gradient(135deg, #0a0f1e, #0d1a3a)' }}
-            />
+              className="absolute inset-0 flex flex-col items-center justify-center"
+              style={{ opacity: splineLoaded ? 0 : 1, transition: 'opacity 0.6s ease', pointerEvents: splineLoaded ? 'none' : 'auto' }}
+            >
+              {/* Animated glow rings */}
+              <div className="relative flex items-center justify-center" style={{ width: '260px', height: '260px' }}>
+                <div className="absolute inset-0 rounded-full animate-pulse" style={{ background: 'radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%)' }} />
+                <div className="absolute rounded-full animate-ping" style={{ width: '220px', height: '220px', border: '1px solid rgba(59,130,246,0.2)', animationDuration: '3s' }} />
+                <div className="absolute rounded-full animate-ping" style={{ width: '180px', height: '180px', border: '1px solid rgba(124,58,237,0.2)', animationDuration: '2s', animationDelay: '0.5s' }} />
+                {/* Central icon */}
+                <div className="relative z-10 flex flex-col items-center justify-center rounded-full"
+                  style={{ width: '140px', height: '140px', background: 'linear-gradient(135deg, rgba(59,130,246,0.2), rgba(124,58,237,0.2))', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(20px)' }}>
+                  <svg className="w-16 h-16" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="rgba(147,197,253,0.9)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M2 17l10 5 10-5" stroke="rgba(147,197,253,0.7)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M2 12l10 5 10-5" stroke="rgba(196,181,253,0.7)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <span className="text-xs font-bold mt-1" style={{ color: '#93c5fd', letterSpacing: '0.1em' }}>AI</span>
+                </div>
+              </div>
+              {/* Floating label */}
+              <div className="mt-4 px-4 py-2 rounded-xl animate-pulse"
+                style={{ background: 'rgba(16,185,129,0.14)', border: '1px solid rgba(16,185,129,0.28)' }}>
+                <span className="text-xs font-bold" style={{ color: '#34d399' }}>OdilbekAI v1.3</span>
+              </div>
+            </div>
+            {/* Watermark blocker */}
+            <div className="absolute bottom-2 right-2 w-44 h-14 z-50 rounded-tl-xl"
+              style={{ background: 'linear-gradient(135deg, #0a0f1e, #0d1a3a)' }} />
           </div>
 
-          {/* Floating tech badges */}
-          <div
-            className="absolute top-16 left-6 md:left-10 hidden md:block animate-float"
-            style={{ animationDelay: '0s' }}
-          >
-            <div
-              className="px-4 py-2 rounded-xl text-sm font-bold"
-              style={{
-                background: 'rgba(16,185,129,0.14)',
-                border: '1px solid rgba(16,185,129,0.28)',
-                backdropFilter: 'blur(10px)',
-                color: '#34d399',
-              }}
-            >
+          {/* Floating tech badges (desktop only) */}
+          <div className="absolute top-16 left-6 md:left-10 hidden md:block animate-float" style={{ animationDelay: '0s' }}>
+            <div className="px-4 py-2 rounded-xl text-sm font-bold"
+              style={{ background: 'rgba(16,185,129,0.14)', border: '1px solid rgba(16,185,129,0.28)', backdropFilter: 'blur(10px)', color: '#34d399' }}>
               OdilbekAI v1.3
             </div>
           </div>
-          <div
-            className="absolute bottom-28 left-6 md:left-10 hidden md:block animate-float"
-            style={{ animationDelay: '1.8s' }}
-          >
-            <div
-              className="px-4 py-2 rounded-xl text-sm font-bold"
-              style={{
-                background: 'rgba(139,92,246,0.14)',
-                border: '1px solid rgba(139,92,246,0.28)',
-                backdropFilter: 'blur(10px)',
-                color: '#c4b5fd',
-              }}
-            >
+          <div className="absolute bottom-28 left-6 md:left-10 hidden md:block animate-float" style={{ animationDelay: '1.8s' }}>
+            <div className="px-4 py-2 rounded-xl text-sm font-bold"
+              style={{ background: 'rgba(139,92,246,0.14)', border: '1px solid rgba(139,92,246,0.28)', backdropFilter: 'blur(10px)', color: '#c4b5fd' }}>
               lex.uz · norma.uz
             </div>
           </div>
@@ -517,7 +524,7 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
                   ),
                 },
                 {
-                  title: language === Language.UZ ? 'AI Sharh Beruvchi' : language === Language.RU ? 'AI Комментатор' : 'AI Commentator',
+                  title: language === Language.UZ ? 'AI yuridik sharh beruvchi' : language === Language.RU ? 'AI Комментатор' : 'AI Legal Commentator',
                   desc: language === Language.UZ
                     ? "Modda raqamini bering — AI rasmiy matnni topib, yuridik sharh yozadi"
                     : language === Language.RU

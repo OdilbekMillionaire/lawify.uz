@@ -297,63 +297,123 @@ export const generateArticleCommentary = async (
 
     const langDir =
       language === Language.UZ
-        ? "O'zbek tilida javob bering. Rasmiy huquqiy uslubdan foydalaning."
+        ? "Javobni O'ZBEK TILIDA yozing. Rasmiy-huquqiy uslubdan foydalaning. Barcha matnni o'zbek tilida yozing."
         : language === Language.RU
-        ? "Отвечайте на русском языке. Используйте официальный юридический язык."
-        : "Answer in English. Use formal legal language.";
+        ? "Пишите ответ НА РУССКОМ ЯЗЫКЕ. Используйте официально-правовой стиль."
+        : "Write the entire answer in ENGLISH. Use formal legal language.";
 
     const h = {
-      article: language === Language.UZ ? "Modda Matni" : language === Language.RU ? "Текст Статьи" : "Article Text",
-      commentary: language === Language.UZ ? "Yuridik Sharh" : language === Language.RU ? "Юридический Комментарий" : "Legal Commentary",
-      practical: language === Language.UZ ? "Amaliy Qo'llanma" : language === Language.RU ? "Практическое Применение" : "Practical Application",
+      article:    language === Language.UZ ? "Rasmiy Modda Matni"       : language === Language.RU ? "Официальный Текст Статьи"    : "Official Article Text",
+      analysis:   language === Language.UZ ? "Modda Tahlili"            : language === Language.RU ? "Анализ Статьи"               : "Article Analysis",
+      official:   language === Language.UZ ? "Rasmiy Sharhlar"          : language === Language.RU ? "Официальные Комментарии"     : "Official Commentary",
+      related:    language === Language.UZ ? "Bog'liq Moddalar"         : language === Language.RU ? "Связанные Статьи"            : "Related Articles",
+      practical:  language === Language.UZ ? "Amaliy Qo'llanma"        : language === Language.RU ? "Практическое Руководство"    : "Practical Guidance",
     };
 
     const systemInstruction = `
-You are an elite Legal Commentator specializing in Uzbekistan Law.
+You are a senior legal scholar and official legal commentator specializing in the laws of Uzbekistan (O'zbekiston qonunchiligi). Your commentary is published in authoritative legal journals and referenced by courts.
+
 ${langDir}
 
-YOUR TASK:
-The user provides a law/code name and article number. You MUST:
-1. Search the web (lex.uz, norma.uz) for the EXACT verbatim text of the article.
-2. Present the COMPLETE OFFICIAL TEXT of the article as found online.
-3. Provide a thorough LEGAL COMMENTARY explaining meaning, conditions, rights, obligations, exceptions.
-4. Give PRACTICAL APPLICATION guidance for real-world use.
+CRITICAL FORMATTING RULES — STRICTLY ENFORCE:
+- DO NOT use any markdown formatting: no asterisks (*), no double asterisks (**), no hash symbols (#), no backticks (\`), no underscores for emphasis.
+- DO NOT use "**bold**" syntax anywhere in the output body.
+- For emphasis, simply write the important term normally — the reader will understand from context.
+- Use plain numbered lists (1., 2., 3.) and plain dashes (-) for bullet points.
+- Use SECTION TAGS to delimit sections. Each section MUST start with [SECTION:emoji:Title] on its own line and end with [/SECTION] on its own line.
 
-OUTPUT FORMAT (use these EXACT section headers):
-### 📋 **${h.article}**
-[Full verbatim text of the article from lex.uz or norma.uz. Include all sub-clauses.]
+YOUR MANDATORY TASK:
+The user provides a law/code name and article number. Execute these steps:
+1. SEARCH lex.uz and norma.uz for the EXACT CURRENT text of the specified article.
+2. If the article has been amended, note the latest amendment date.
+3. Write a thorough multi-section commentary (minimum 500 words total across all sections).
+4. NEVER fabricate article text. If you truly cannot find it, state which source was searched and why it may not be found.
 
-### 🔍 **${h.commentary}**
-[Paragraph-by-paragraph commentary. Explain legal concepts, reference related articles, note any amendments.]
+OUTPUT FORMAT — use exactly these section tags:
 
-### ⚡ **${h.practical}**
-[Step-by-step practical guidance. Rights of citizens, deadlines, how to apply this article in real situations.]
+[SECTION:📋:${h.article}]
+Write the COMPLETE verbatim text of the article as found on lex.uz or norma.uz. Include every paragraph, sub-clause, and numbered item. If the article has multiple parts, list them all. State the source URL at the end of this section.
+[/SECTION]
 
-RULES:
-- NEVER hallucinate. If you cannot find the article, say so clearly.
-- Use **bold** for key legal terms and important phrases.
-- Always cite the source where you found the article text.
+[SECTION:🔍:${h.analysis}]
+Provide a detailed clause-by-clause legal analysis. For each paragraph or sub-clause of the article:
+- Explain the legal meaning and scope
+- Identify the subjects of the legal relationship (who is bound, who has rights)
+- Note any legal conditions, thresholds, or deadlines
+- Point out exceptions or special cases
+- Reference any judicial practice or legal doctrine applicable in Uzbekistan
+This section must be at minimum 200 words.
+[/SECTION]
+
+[SECTION:📚:${h.official}]
+Provide official and doctrinal commentary on this article:
+- Reference any official commentary books or publications on this law (e.g., "O'zbekiston Respublikasi Mehnat Kodeksiga Sharhlar" or similar)
+- Note any positions of the Supreme Court of Uzbekistan or Constitutional Court regarding this article
+- Reference legal doctrine (huquqiy ta'limot) from Uzbek and Soviet-era legal scholarship if relevant
+- If no official commentary exists, provide a scholarly analysis referencing comparable norms in CIS countries
+[/SECTION]
+
+[SECTION:🔗:${h.related}]
+List all directly related articles:
+- Other articles in the same code that must be read together with this article
+- Articles in other laws that supplement or interact with this article
+- Any presidential decrees or government resolutions that specify procedures under this article
+Format: "Article [N] of [Law Name] — [brief explanation of the connection]"
+[/SECTION]
+
+[SECTION:⚡:${h.practical}]
+Provide concrete step-by-step practical guidance for citizens, businesses, and lawyers:
+- What rights does this article grant, and how to exercise them
+- What obligations does it impose, and what are the consequences of violation
+- Deadlines and procedural steps to follow
+- Practical examples of real-world application
+- Common mistakes to avoid
+- Which government body or court handles disputes under this article
+This section must be at minimum 150 words.
+[/SECTION]
+
+ACCURACY RULES:
+- Ground every statement in the official sources found via web search.
+- If you find the article text, cite the exact lex.uz URL.
+- If the article number in the current law differs from the user's input (due to renumbering), note both numbers.
+- Write in a professional, authoritative tone. Avoid speculative language.
     `;
 
-    const searchQuery = `"${lawName}" "${articleNumber}-modda" lex.uz norma.uz O'zbekiston`;
+    const searchQuery =
+      language === Language.UZ
+        ? `${lawName} ${articleNumber}-modda rasmiy matni lex.uz norma.uz O'zbekiston`
+        : language === Language.RU
+        ? `${lawName} статья ${articleNumber} официальный текст lex.uz norma.uz Узбекистан`
+        : `${lawName} article ${articleNumber} official text lex.uz Uzbekistan law`;
 
     const response = await retry(async () => {
       return await ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
+        model: 'gemini-2.0-flash',
         contents: {
           role: 'user',
-          parts: [{ text: `Find and comment on: "${lawName}", ${articleNumber}-modda. Search: "${searchQuery}"` }],
+          parts: [{
+            text: `Provide a full legal commentary on: ${lawName}, ${articleNumber}-modda.\n\nSearch these sources: lex.uz, norma.uz, zakon.uz\nSearch query: ${searchQuery}\n\nFollow the output format with [SECTION] tags exactly as instructed.`
+          }],
         },
         config: {
           systemInstruction,
           tools: [{ googleSearch: {} }],
+          temperature: 0.1,
         },
       });
     }, 2, 1000);
 
-    const text = response.text || '';
-    const sources: Source[] = [];
+    let text = response.text || '';
 
+    // Safety net: strip any stray markdown symbols from body text
+    // (preserve SECTION tags which use [ ] not markdown)
+    text = text
+      .replace(/(?<!\[SECTION[^\]]*\])(?<!\[\/SECTION\])\*\*/g, '')
+      .replace(/(?<!\[SECTION[^\]]*\])(?<!\[\/SECTION\])\*/g, '')
+      .replace(/^#{1,6}\s+/gm, '')
+      .replace(/`/g, '');
+
+    const sources: Source[] = [];
     if (response.candidates?.[0]?.groundingMetadata?.groundingChunks) {
       response.candidates[0].groundingMetadata.groundingChunks.forEach((chunk: any) => {
         if (chunk.web?.uri && chunk.web?.title) {
@@ -365,10 +425,10 @@ RULES:
     if (!text || text.trim().length === 0) {
       const errMsg =
         language === Language.UZ
-          ? "Kechirasiz, bu modda lex.uz'da topilmadi. Qonun nomini to'liq va to'g'ri yozing."
+          ? "Kechirasiz, bu modda lex.uz'da topilmadi. Qonun nomini to'liq va to'g'ri kiriting."
           : language === Language.RU
-          ? "Извините, статья не найдена на lex.uz. Укажите полное название закона."
-          : "Sorry, this article was not found on lex.uz. Please provide the full law name.";
+          ? "Извините, статья не найдена на lex.uz. Укажите полное и корректное название закона."
+          : "Sorry, this article was not found on lex.uz. Please provide the full and correct law name.";
       return { text: errMsg, sources: [] };
     }
 
@@ -377,10 +437,10 @@ RULES:
     console.error("Article Commentary Error:", e);
     const errMsg =
       language === Language.UZ
-        ? "Tizimda xatolik. Qaytadan urinib ko'ring."
+        ? "Tizimda xatolik yuz berdi. Qaytadan urinib ko'ring."
         : language === Language.RU
-        ? "Системная ошибка. Попробуйте снова."
-        : "System error. Please try again.";
+        ? "Произошла системная ошибка. Попробуйте снова."
+        : "A system error occurred. Please try again.";
     return { text: errMsg, sources: [] };
   }
 };

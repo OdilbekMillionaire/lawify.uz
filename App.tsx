@@ -207,7 +207,7 @@ const App: React.FC = () => {
                     <Mediation language={language} />
                 } />
                 <Route path="/commentator" element={
-                    <Commentator language={language} />
+                    <Commentator language={language} isPro={userProfile?.is_pro || false} />
                 } />
                 <Route path="/topics" element={<Topics language={language} />} />
                 <Route path="/history" element={<History language={language} />} />

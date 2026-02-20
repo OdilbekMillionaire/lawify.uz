@@ -76,7 +76,7 @@ export interface ChatSession {
   date: number;
   preview: string;
   messages: Message[];
-  type: 'lawyer' | 'odilbek' | 'drafter' | 'mediator';
+  type: 'lawyer' | 'odilbek' | 'drafter' | 'mediator' | 'commentator';
   customData?: any; // Stores document state for drafter
 }
 
