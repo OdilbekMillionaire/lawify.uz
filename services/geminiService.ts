@@ -104,7 +104,7 @@ export const verifyLegalAdvice = async (originalPrompt: string, aiResponse: stri
     `;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-pro-preview', // Always use Pro for verification
+      model: 'gemini-2.5-flash', // Always use best available for verification
       contents: {
         role: 'user',
         parts: [
@@ -154,7 +154,7 @@ ${legalContext ? `LEGAL CONTEXT ALREADY PROVIDED (simplify this):\n${legalContex
         `;
 
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash-preview',
+            model: 'gemini-2.0-flash',
             contents: {
                 role: 'user',
                 parts: [
@@ -241,7 +241,7 @@ export const generateLegalResponse = async (
 
   // --- STRICT RAG EXECUTION (No Fallback to Hallucination) ---
   try {
-    const modelName = isPro ? 'gemini-2.5-pro-preview' : 'gemini-2.5-flash-preview';
+    const modelName = isPro ? 'gemini-2.5-flash' : 'gemini-2.0-flash';
     
     // WRAP IN RETRY LOGIC TO PREVENT RANDOM FAILURES
     const response = await retry(async () => {
