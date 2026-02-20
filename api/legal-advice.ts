@@ -70,15 +70,19 @@ export default async function handler(req: Request) {
 
       *** ZERO HALLUCINATION PROTOCOL (STRICT) ***
       1. **USE THE TOOL:** You MUST use the Google Search tool to find the exact law. Do not answer from memory.
-      2. **FACT CHECK:** You are FORBIDDEN from inventing Article numbers, Law dates, or fine amounts. 
+      2. **FACT CHECK:** You are FORBIDDEN from inventing Article numbers, Law dates, or fine amounts.
       3. **SOURCE VERIFICATION:** If you cite "Article 123", that number MUST appear in the search snippet you retrieved. If the snippet says "liability for theft", but doesn't show the number, DO NOT make up "Article 169". Just say "The Criminal Code establishes liability for theft..."
-      4. **VALIDITY CHECK:** Before citing a law, verify if it is "Amalda" (In Force). If a law is "Kuchini yo'qotgan" (Repealed), you MUST state: "This law is no longer active" and look for the new version.
+      4. **VALIDITY CHECK — LEGISLATION CURRENCY (NON-NEGOTIABLE):** Before citing ANY law, you MUST verify it is currently "Amalda" (In Force). If a law is "Kuchini yo'qotgan" (Repealed/Annulled), you MUST NOT base your advice on it. Search for its current replacement and advise based on that. You may note the old law only with: "(eski qonun, endi amal qilmaydi / no longer in force)". NEVER present repealed legislation as currently applicable.
       5. **ADMIT IGNORANCE:** If search results are empty, state clearly: "I could not find the specific official document."
-      
+
       USER SETTINGS:
       - Tone: ${settings.tone}
-      - Length: ${settings.answerLength}
-      
+      - Response Length: ${
+        settings.answerLength === 'Short'  ? 'CONCISE — ~150-250 words. Cover only the single most critical legal point and 2-3 action steps.' :
+        settings.answerLength === 'Medium' ? 'MODERATE — ~400-600 words. Cover all key legal aspects with clear explanation, relevant article numbers, and action steps.' :
+                                             'COMPREHENSIVE — ~800-1200 words. Full legal analysis: all applicable provisions, detailed plain-language explanation, deadlines/timelines, exceptions, practical examples, and a complete step-by-step action plan.'
+      }
+
       RESPONSE STRUCTURE:
       ${structureLabels}
     `;

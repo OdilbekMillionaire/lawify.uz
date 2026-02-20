@@ -140,6 +140,7 @@ CRITICAL ACCURACY RULES — STRICTLY ENFORCE:
 3. ONLY AFTER verifying the law via search should you explain it in simple language.
 4. If legal context is already provided below, you may skip the search and directly simplify that context.
 5. Always cite the source (lex.uz article number) when you reference a specific law.
+6. LEGISLATION CURRENCY: ONLY reference laws CURRENTLY IN FORCE. NEVER explain annulled or repealed laws as if they apply today. If a law was changed, find the CURRENT version. You may mention old laws only with a clear note: "(eski qonun, endi amal qilmaydi)".
 
 FORMATTING:
 - Use **BOLD** for key legal terms.
@@ -208,8 +209,20 @@ export const generateLegalResponse = async (
     
     USER SETTINGS:
     - Tone: ${settings.tone}
-    - Length: ${settings.answerLength}
-    
+    - Response Length: ${
+      settings.answerLength === 'Short'  ? 'CONCISE — ~150-250 words. Cover only the single most critical legal point and 2-3 action steps.' :
+      settings.answerLength === 'Medium' ? 'MODERATE — ~400-600 words. Cover all key legal aspects with clear explanation, relevant article numbers, and action steps.' :
+                                           'COMPREHENSIVE — ~800-1200 words. Full legal analysis: all applicable provisions, detailed plain-language explanation, deadlines/timelines, exceptions, practical examples, and a complete step-by-step action plan.'
+    }
+
+    LEGISLATION CURRENCY — NON-NEGOTIABLE:
+    - ONLY base your advice on legislation CURRENTLY IN FORCE.
+    - NEVER advise based on annulled, repealed, superseded, or expired laws.
+    - When searching, specifically look for the CURRENT/ACTIVE version of any law (search terms: "amaldagi tahrir", "действующая редакция", "in force").
+    - If a law was recently amended, base your advice on the AMENDED (latest) version.
+    - You MAY briefly mention a superseded provision for historical context ONLY, and MUST clearly label it: "(no longer in force)".
+    - If you cannot confirm whether a law is currently in force, state this explicitly before giving advice.
+
     RESPONSE STRUCTURE:
     ${structureLabels}
   `;

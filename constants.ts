@@ -2,7 +2,7 @@
 import { Language, UserSettings } from './types';
 
 export const INITIAL_SETTINGS: UserSettings = {
-  answerLength: 'Medium',
+  answerLength: 'Detailed',
   tone: 'Simple',
   outputStyle: 'Paragraphs',
   clarifyingQuestions: true,
