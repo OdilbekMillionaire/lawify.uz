@@ -132,7 +132,6 @@ Return ONLY the JSON.
         systemInstruction: retrievalSystemPrompt,
         tools: [{ googleSearch: {} }],
         temperature: 0.0,
-        responseMimeType: 'application/json',
       }
     });
 
@@ -154,9 +153,9 @@ Return ONLY the JSON.
     // Filter: keep only verified laws with actual text from official sources
     laws = laws.filter((law: any) =>
       law.verbatimText?.trim().length > 10
-      && law.foundInSearch === true
+      && law.foundInSearch !== false
       && law.lawName?.trim().length > 0
-      && (law.sourceUrl?.includes('lex.uz') || law.sourceUrl?.includes('norma.uz') || law.sourceUrl?.includes('zakon.uz'))
+      && law.sourceUrl
     );
 
     if (laws.length === 0) {

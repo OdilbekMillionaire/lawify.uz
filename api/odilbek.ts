@@ -47,7 +47,6 @@ Language context: ${language}
           systemInstruction: retrievalSystemPrompt,
           tools: [{ googleSearch: {} }],
           temperature: 0.0,
-          responseMimeType: 'application/json',
         }
       });
 

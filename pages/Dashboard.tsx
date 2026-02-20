@@ -322,113 +322,86 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
             ))}
           </div>
 
-          {/* ── Floating mini chat preview card ── */}
+          {/* ── Platform Guarantees Card ── */}
           <div className="hidden lg:block mt-8 z-10 relative animate-float" style={{ animationDelay: '1.3s' }}>
             <div
-              className="rounded-2xl p-4 text-left"
+              className="rounded-2xl p-5 text-left"
               style={{
-                background: 'rgba(255,255,255,0.07)',
-                border: '1px solid rgba(255,255,255,0.13)',
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.1)',
                 backdropFilter: 'blur(28px)',
                 maxWidth: '400px',
                 boxShadow: '0 8px 40px rgba(0,0,0,0.3)',
               }}
             >
               {/* Card header */}
-              <div
-                className="flex items-center justify-between mb-3 pb-3"
-                style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}
-              >
-                <div className="flex items-center space-x-2">
-                  <div
-                    className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black text-white"
-                    style={{ background: 'linear-gradient(135deg, #2563eb, #7c3aed)' }}
-                  >AI</div>
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                    {language === Language.UZ ? "Namuna suhbat" : language === Language.RU ? "Пример диалога" : "Sample Chat"}
-                  </span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
-                  <span className="text-[9px] text-emerald-400 font-bold">LIVE</span>
-                </div>
-              </div>
-
-              {/* User bubble */}
-              <div className="flex justify-end mb-2">
+              <div className="flex items-center space-x-2 mb-4">
                 <div
-                  className="rounded-2xl rounded-tr-sm px-3 py-2 text-[11px] text-white"
-                  style={{
-                    background: 'linear-gradient(135deg, rgba(37,99,235,0.78), rgba(124,58,237,0.78))',
-                    maxWidth: '82%',
-                  }}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-sm"
+                  style={{ background: 'linear-gradient(135deg, rgba(16,185,129,0.2), rgba(59,130,246,0.2))', border: '1px solid rgba(16,185,129,0.3)' }}
                 >
-                  {language === Language.UZ
-                    ? "Ishdan nohaq bo'shatilsam nima qilaman?"
-                    : language === Language.RU
-                    ? "Меня незаконно уволили. Что делать?"
-                    : "I was unfairly dismissed. What can I do?"}
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
                 </div>
-              </div>
-
-              {/* AI bubble */}
-              <div className="flex justify-start mb-2">
-                <div
-                  className="rounded-2xl rounded-tl-sm px-3 py-2 text-[11px]"
-                  style={{
-                    background: 'rgba(255,255,255,0.09)',
-                    color: 'rgba(203,213,225,0.88)',
-                    maxWidth: '86%',
-                  }}
-                >
-                  {language === Language.UZ
-                    ? "Mehnat Kodeksining 100-moddasiga binoan, nohaq ishdan bo'shatish uchun 30 kun ichida sudga murojaat qilishingiz mumkin."
-                    : language === Language.RU
-                    ? "Согласно ст. 100 ТК РУз, у вас есть 30 дней для обращения в суд."
-                    : "Under Article 100 of the Labor Code, you have 30 days to file a claim."}
-                </div>
-              </div>
-
-              {/* Follow-up user bubble */}
-              <div className="flex justify-end mb-2">
-                <div
-                  className="rounded-2xl rounded-tr-sm px-3 py-2 text-[11px] text-white"
-                  style={{
-                    background: 'linear-gradient(135deg, rgba(37,99,235,0.65), rgba(124,58,237,0.65))',
-                    maxWidth: '60%',
-                  }}
-                >
-                  {language === Language.UZ ? "Muddati qancha?" : language === Language.RU ? "Какой срок?" : "What is the deadline?"}
-                </div>
-              </div>
-
-              {/* AI typing bubble */}
-              <div className="flex justify-start items-center space-x-2">
-                <div
-                  className="rounded-2xl rounded-tl-sm px-3 py-2"
-                  style={{ background: 'rgba(255,255,255,0.07)' }}
-                >
-                  <div className="flex space-x-1">
-                    {[0,1,2].map(i => (
-                      <span key={i} className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: `${i * 0.2}s` }} />
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Source */}
-              <div className="mt-2.5 flex items-center space-x-1.5">
-                <span className="text-[9px] text-slate-600">
-                  {language === Language.UZ ? "Manba:" : language === Language.RU ? "Источник:" : "Source:"}
+                <span className="text-[12px] font-bold uppercase tracking-wider text-slate-300">
+                  {language === Language.UZ ? "Platforma kafolatlari" : language === Language.RU ? "Гарантии платформы" : "Platform Guarantees"}
                 </span>
+              </div>
+
+              {/* Guarantee items */}
+              <div className="space-y-3">
+                {[
+                  {
+                    icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
+                    color: '#3b82f6',
+                    label: language === Language.UZ ? "Faqat lex.uz va norma.uz asosida" : language === Language.RU ? "Только на основе lex.uz и norma.uz" : "Based only on lex.uz & norma.uz",
+                  },
+                  {
+                    icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>,
+                    color: '#10b981',
+                    label: language === Language.UZ ? "Har bir modda raqami tasdiqlangan" : language === Language.RU ? "Каждый номер статьи верифицирован" : "Every article number verified",
+                  },
+                  {
+                    icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+                    color: '#a78bfa',
+                    label: language === Language.UZ ? "Faqat amaldagi qonunchilik" : language === Language.RU ? "Только действующее законодательство" : "Only in-force legislation",
+                  },
+                  {
+                    icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>,
+                    color: '#f59e0b',
+                    label: language === Language.UZ ? "3 tilda: O'zbek, Rus, Ingliz" : language === Language.RU ? "На 3 языках: Узб, Рус, Англ" : "3 languages: UZ, RU, EN",
+                  },
+                  {
+                    icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>,
+                    color: '#ef4444',
+                    label: language === Language.UZ ? "Gallyutsinatsiyaga nol tolerantlik" : language === Language.RU ? "Нулевая толерантность к галлюцинациям" : "Zero tolerance for hallucination",
+                  },
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center space-x-3">
+                    <div
+                      className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+                      style={{ background: `${item.color}15`, border: `1px solid ${item.color}30` }}
+                    >
+                      {item.icon}
+                    </div>
+                    <span className="text-[11px] text-slate-300 leading-tight">{item.label}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Source badges */}
+              <div className="mt-4 pt-3 flex items-center space-x-2" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
                 <span
-                  className="text-[9px] font-bold text-blue-400 px-1.5 py-0.5 rounded"
-                  style={{ background: 'rgba(37,99,235,0.18)' }}
+                  className="text-[9px] font-bold text-blue-400 px-2 py-1 rounded-full"
+                  style={{ background: 'rgba(37,99,235,0.15)', border: '1px solid rgba(37,99,235,0.25)' }}
                 >lex.uz</span>
                 <span
-                  className="text-[9px] font-bold text-purple-400 px-1.5 py-0.5 rounded"
-                  style={{ background: 'rgba(139,92,246,0.18)' }}
+                  className="text-[9px] font-bold text-purple-400 px-2 py-1 rounded-full"
+                  style={{ background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.25)' }}
                 >norma.uz</span>
+                <span
+                  className="text-[9px] font-bold text-emerald-400 px-2 py-1 rounded-full"
+                  style={{ background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.25)' }}
+                >gov.uz</span>
               </div>
             </div>
           </div>

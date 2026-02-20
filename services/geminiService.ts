@@ -125,7 +125,6 @@ export async function retrieveLaws(query: string, language: Language): Promise<R
         systemInstruction: RETRIEVAL_SYSTEM_PROMPT(language),
         tools: [{ googleSearch: {} }],
         temperature: 0.0,
-        responseMimeType: 'application/json',
       }
     });
   }, 2, 1000);
@@ -153,11 +152,9 @@ export async function retrieveLaws(query: string, language: Language): Promise<R
 function filterVerifiedLaws(laws: VerifiedLaw[]): VerifiedLaw[] {
   return laws.filter(law =>
     law.verbatimText?.trim().length > 10
-    && law.foundInSearch === true
+    && law.foundInSearch !== false        // Accept true or undefined, reject only explicit false
     && law.lawName?.trim().length > 0
-    && (law.sourceUrl?.includes('lex.uz')
-        || law.sourceUrl?.includes('norma.uz')
-        || law.sourceUrl?.includes('zakon.uz'))
+    && law.sourceUrl                       // Must have a source URL
   );
 }
 
@@ -642,14 +639,21 @@ ACCURACY RULES:
 - If you find the article text, cite the exact lex.uz URL.
 - If the article number in the current law differs from the user's input (due to renumbering), note both numbers.
 - Write in a professional, authoritative tone. Avoid speculative language.
+
+LEGISLATION CURRENCY — NON-NEGOTIABLE:
+- You MUST search for the CURRENT IN-FORCE version of the article. Include "amaldagi tahrir" or "действующая редакция" in your search.
+- Do NOT cite an old or repealed version of the article as if it is current.
+- If the article text you find on lex.uz shows an amendment date, that IS the current version — use it.
+- If the article has been repealed entirely, state clearly: "Bu modda kuchini yo'qotgan" / "Данная статья утратила силу" and search for the replacement.
+- Do NOT use your training data for article text. ONLY use verbatim text found via Google Search. If search returns nothing, say so.
     `;
 
     const searchQuery =
       language === Language.UZ
-        ? `${lawName} ${articleNumber}-modda rasmiy matni lex.uz norma.uz O'zbekiston`
+        ? `${lawName} ${articleNumber}-modda amaldagi tahrir rasmiy matni site:lex.uz`
         : language === Language.RU
-        ? `${lawName} статья ${articleNumber} официальный текст lex.uz norma.uz Узбекистан`
-        : `${lawName} article ${articleNumber} official text lex.uz Uzbekistan law`;
+        ? `${lawName} статья ${articleNumber} действующая редакция site:lex.uz`
+        : `${lawName} article ${articleNumber} current version in force site:lex.uz`;
 
     const response = await retry(async () => {
       return await ai.models.generateContent({
