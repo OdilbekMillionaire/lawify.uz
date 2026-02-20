@@ -19,7 +19,6 @@ import Plans from './pages/Plans';
 import OdilbekPage from './pages/OdilbekPage';
 import DocumentStudio from './pages/DocumentStudio';
 import Mediation from './pages/Mediation';
-import Commentator from './pages/Commentator';
 
 const App: React.FC = () => {
   const navigate = useNavigate();
@@ -205,9 +204,6 @@ const App: React.FC = () => {
                 } />
                 <Route path="/mediation" element={
                     <Mediation language={language} />
-                } />
-                <Route path="/commentator" element={
-                    <Commentator language={language} />
                 } />
                 <Route path="/topics" element={<Topics language={language} />} />
                 <Route path="/history" element={<History language={language} />} />

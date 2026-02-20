@@ -201,13 +201,7 @@ const Plans: React.FC<PlansProps> = ({ language, userProfile, onLogin, refreshPr
             </div>
             
             <div className="mt-12 text-center text-sm text-gray-400">
-                <p>
-                    {language === Language.UZ
-                        ? "Barcha narxlar soliqlarni o'z ichiga oladi. To'lovlar Payme/Click orqali xavfsiz amalga oshiriladi."
-                        : language === Language.RU
-                        ? "Все цены включают налоги. Платежи обрабатываются безопасно через Payme/Click."
-                        : "Prices include all applicable taxes. Secure payment processing via Payme/Click."}
-                </p>
+                <p>Prices include all applicable taxes. Secure payment processing provided by Payme/Click.</p>
             </div>
         </div>
         <Footer />
