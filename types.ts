@@ -135,3 +135,27 @@ export interface MediationCase {
   status: 'created' | 'agreed' | 'negotiating' | 'resolved';
   createdAt: number;
 }
+
+// --- ANTI-HALLUCINATION: VERIFIED LAW TYPES ---
+
+export type LawStatus = 'in_force' | 'repealed' | 'amended' | 'suspended' | 'unknown';
+
+export interface VerifiedLaw {
+  lawName: string;
+  articleNumber: string;
+  paragraph?: string;
+  adoptionDate?: string;
+  lastAmendmentDate?: string;
+  lawSerialNumber?: string;
+  status: LawStatus;
+  verbatimText: string;
+  sourceUrl: string;
+  foundInSearch: boolean;
+}
+
+export interface RetrievalResult {
+  laws: VerifiedLaw[];
+  retrievalSources: Source[];
+  noLawsFound: boolean;
+  rawRetrievalText: string;
+}

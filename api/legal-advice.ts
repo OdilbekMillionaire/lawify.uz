@@ -2,7 +2,7 @@
 import { GoogleGenAI } from "@google/genai";
 
 export const config = {
-  runtime: 'edge', 
+  runtime: 'edge',
 };
 
 export default async function handler(req: Request) {
@@ -10,29 +10,26 @@ export default async function handler(req: Request) {
 
   try {
     const { prompt, attachment, language, settings, chatHistory, additionalContext, isPro } = await req.json();
-    
-    // SECURE: Key is accessed only on the server
+
     const apiKey = process.env.API_KEY;
     if (!apiKey) return new Response(JSON.stringify({ error: 'Server configuration error' }), { status: 500 });
 
     const ai = new GoogleGenAI({ apiKey });
 
-    // --- YOUR SECRET SAUCE LOGIC ---
-    
+    // --- Clarification Logic ---
     const articleRegex = /(?:modda|article|статья)\s*\d+/i;
     const codeRegex = /(?:kodeks|code|кодекс)/i;
-    
-    // Clarification Logic
+
     if (prompt && articleRegex.test(prompt) && !codeRegex.test(prompt) && settings.clarifyingQuestions) {
        let q = "Which code is it? (Family, Criminal, Civil, etc.)";
        if (language === 'uz') q = "Bu qaysi kodeks? (Oila, Jinoyat, Fuqarolik va h.k.)";
        if (language === 'ru') q = "О каком кодексе идет речь? (Семейный, Уголовный, Гражданский и т.д.)";
-       return new Response(JSON.stringify({ text: q, sources: [] }), { 
-           headers: { 'Content-Type': 'application/json' } 
+       return new Response(JSON.stringify({ text: q, sources: [] }), {
+           headers: { 'Content-Type': 'application/json' }
        });
     }
 
-    // Language & Structure Logic
+    // --- Language & Structure Config ---
     let structureLabels = "";
     let languageDirective = "";
 
@@ -47,106 +44,205 @@ export default async function handler(req: Request) {
         structureLabels = `Use these headers: ### **Summary**, ### **According to Law**, ### **Explanation**, ### **Action Plan**`;
     }
 
-    const systemInstruction = `
-      You are LAWIFY, the official AI legal consultant for Uzbekistan.
-      Current Language Mode: ${language.toUpperCase()}.
-      ${languageDirective}
-      
-      YOUR MISSION: Provide legal advice ONLY based on facts found on 'lex.uz' and 'norma.uz'.
-      
-      *** CITATION ENFORCEMENT (CRITICAL) ***
-      You MUST cite your sources directly in the text using bracketed numbers like [1], [2] immediately following the fact or law mentioned.
-      
-      INCORRECT EXAMPLES (DO NOT DO THIS):
-      - "According to the Family Code (lex.uz)..."  <-- BAD
-      - "Article 15 says marriage age is 18."       <-- BAD (No number)
-      - "Sources:\n1. lex.uz/..."                   <-- BAD (Do not list links in body)
-
-      CORRECT EXAMPLES (DO THIS):
-      - "Oila kodeksining 15-moddasiga ko'ra, nikoh yoshi 18 yoshdir [1]."
-      - "Sudga murojaat qilish uchun davlat boji to'lanadi [2]."
-      
-      The number [1] MUST correspond to the order of the search result grounding you used.
-
-      *** ZERO HALLUCINATION PROTOCOL (STRICT) ***
-      1. **USE THE TOOL:** You MUST use the Google Search tool to find the exact law. Do not answer from memory.
-      2. **FACT CHECK:** You are FORBIDDEN from inventing Article numbers, Law dates, or fine amounts.
-      3. **SOURCE VERIFICATION:** If you cite "Article 123", that number MUST appear in the search snippet you retrieved. If the snippet says "liability for theft", but doesn't show the number, DO NOT make up "Article 169". Just say "The Criminal Code establishes liability for theft..."
-      4. **VALIDITY CHECK — LEGISLATION CURRENCY (NON-NEGOTIABLE):** Before citing ANY law, you MUST verify it is currently "Amalda" (In Force). If a law is "Kuchini yo'qotgan" (Repealed/Annulled), you MUST NOT base your advice on it. Search for its current replacement and advise based on that. You may note the old law only with: "(eski qonun, endi amal qilmaydi / no longer in force)". NEVER present repealed legislation as currently applicable.
-      5. **ADMIT IGNORANCE:** If search results are empty, state clearly: "I could not find the specific official document."
-
-      USER SETTINGS:
-      - Tone: ${settings.tone}
-      - Response Length: ${
-        settings.answerLength === 'Short'  ? 'CONCISE — ~150-250 words. Cover only the single most critical legal point and 2-3 action steps.' :
-        settings.answerLength === 'Medium' ? 'MODERATE — ~400-600 words. Cover all key legal aspects with clear explanation, relevant article numbers, and action steps.' :
-                                             'COMPREHENSIVE — ~800-1200 words. Full legal analysis: all applicable provisions, detailed plain-language explanation, deadlines/timelines, exceptions, practical examples, and a complete step-by-step action plan.'
-      }
-
-      RESPONSE STRUCTURE:
-      ${structureLabels}
-    `;
-
-    // Construct Input
-    let searchContext = "";
-    // If audio is present, we tell the model to listen to it
+    // --- AUDIO FALLBACK: single-step grounded call ---
     if (attachment?.mimeType?.startsWith('audio/')) {
-        searchContext = `Listen to the attached audio. Search for the legal issues mentioned on "site:lex.uz OR site:norma.uz". Explain in ${language}.`;
-    } else {
-        // ENHANCED QUERY EXPANSION IN PROMPT
-        // We instruct the model to treat this as a task to find the law first.
-        searchContext = `
-        User Question: "${prompt}"
-        
-        TASK:
-        1. Formulate a specific search query for "lex.uz" that best answers this question under Uzbekistan Law.
-        2. Execute that search using the googleSearch tool.
-        3. Provide the answer based on the search results with [1] style citations inline.
-        `;
-    }
+      const audioSystemInstruction = `
+        You are LAWIFY, the official AI legal consultant for Uzbekistan.
+        ${languageDirective}
+        USER SETTINGS: Tone: ${settings.tone}, Length: ${settings.answerLength}.
+        RESPONSE STRUCTURE: ${structureLabels}
+        RULES: You MUST use Google Search. You MUST cite lex.uz/norma.uz sources. If you cannot find a law, DO NOT INVENT ONE.
+      `;
+      const searchContext = `Listen to the attached audio. Search for the legal issues mentioned on "site:lex.uz OR site:norma.uz". Explain in ${language}.`;
+      const audioParts: any[] = [
+        { text: searchContext },
+        ...(chatHistory ? [{ text: `[Chat History]\n${chatHistory}` }] : []),
+        ...(additionalContext ? [{ text: `[User Profile]\n${additionalContext}` }] : []),
+        { inlineData: { mimeType: attachment.mimeType, data: attachment.data } }
+      ];
 
-    const parts: any[] = [{ text: searchContext }];
+      const audioResponse = await ai.models.generateContent({
+        model: isPro ? 'gemini-2.5-flash' : 'gemini-2.0-flash',
+        contents: { role: 'user', parts: audioParts },
+        config: { systemInstruction: audioSystemInstruction, tools: [{ googleSearch: {} }], temperature: 0.2 }
+      });
 
-    if (chatHistory) parts.push({ text: `[Chat History]\n${chatHistory}` });
-    if (additionalContext) parts.push({ text: `[User Profile]\n${additionalContext}` });
-    
-    if (attachment) {
-        parts.push({
-          inlineData: {
-            mimeType: attachment.mimeType,
-            data: attachment.data 
-          }
+      const audioSources: any[] = [];
+      if (audioResponse.candidates?.[0]?.groundingMetadata?.groundingChunks) {
+        audioResponse.candidates[0].groundingMetadata.groundingChunks.forEach((chunk: any) => {
+          if (chunk.web?.uri && chunk.web?.title) audioSources.push({ title: chunk.web.title, uri: chunk.web.uri });
         });
-    }
-
-    // Call Gemini
-    const modelName = isPro ? 'gemini-3-pro-preview' : 'gemini-3-flash-preview';
-    const genConfig: any = {
-      systemInstruction: systemInstruction,
-      tools: [{ googleSearch: {} }], 
-    };
-    
-    if (isPro) genConfig.thinkingConfig = { thinkingBudget: 1024 };
-
-    const response = await ai.models.generateContent({
-      model: modelName,
-      contents: { role: 'user', parts: parts },
-      config: genConfig
-    });
-
-    // Process Response
-    const text = response.text || "No response generated.";
-    const sources: any[] = [];
-    
-    if (response.candidates?.[0]?.groundingMetadata?.groundingChunks) {
-      response.candidates[0].groundingMetadata.groundingChunks.forEach((chunk: any) => {
-        if (chunk.web?.uri && chunk.web?.title) {
-          sources.push({ title: chunk.web.title, uri: chunk.web.uri });
-        }
+      }
+      return new Response(JSON.stringify({ text: audioResponse.text || "No data found.", sources: audioSources }), {
+        headers: { 'Content-Type': 'application/json' }
       });
     }
 
-    return new Response(JSON.stringify({ text, sources }), {
+    // ============================================================
+    // STEP 1: RETRIEVAL — search lex.uz, output structured JSON only
+    // ============================================================
+    const currency = language === 'uz' ? 'amaldagi tahrir'
+      : language === 'ru' ? 'действующая редакция' : 'current edition in force';
+
+    const retrievalSystemPrompt = `
+You are a LEGAL DATABASE RETRIEVAL AGENT for Uzbekistan law.
+Your ONLY function is to search lex.uz and norma.uz and transcribe what you find.
+You do NOT explain, summarize, or advise. You ONLY copy.
+
+CRITICAL RULES:
+1. You MUST execute a Google Search before generating any output.
+2. Search using site:lex.uz OR site:norma.uz operators.
+3. Do NOT cite any law not found in the current search results.
+4. Do NOT use training data to fill gaps. If text not found: set verbatimText to "" and foundInSearch to false.
+5. Include the exact lex.uz/norma.uz URL where you found the article.
+6. Verify whether the law is currently in force.
+7. Find as many relevant laws/articles as possible (aim for 2-5 provisions).
+
+OUTPUT: Respond ONLY with this exact JSON:
+{
+  "laws": [
+    {
+      "lawName": "Official full name", "articleNumber": "exact number",
+      "paragraph": "specific paragraph or null", "adoptionDate": "YYYY-MM-DD or null",
+      "lastAmendmentDate": "YYYY-MM-DD or null", "lawSerialNumber": "registration number or null",
+      "status": "in_force | repealed | amended | suspended | unknown",
+      "verbatimText": "EXACT TEXT copied from lex.uz. Empty string if not found.",
+      "sourceUrl": "https://lex.uz/docs/...", "foundInSearch": true
+    }
+  ]
+}
+If ZERO laws found: { "laws": [] }
+Language context: ${language}
+`;
+
+    const retrievalUserPrompt = `
+RETRIEVAL TASK:
+User query: "${prompt}"
+SEARCH:
+1. Search: site:lex.uz OR site:norma.uz ${prompt} ${currency}
+2. Find EACH relevant law, article number, and its full text.
+3. Check status (in force / repealed).
+Return ONLY the JSON.
+`;
+
+    const retrievalResponse = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: { role: 'user', parts: [{ text: retrievalUserPrompt }] },
+      config: {
+        systemInstruction: retrievalSystemPrompt,
+        tools: [{ googleSearch: {} }],
+        temperature: 0.0,
+        responseMimeType: 'application/json',
+      }
+    });
+
+    const rawText = retrievalResponse.text || '';
+    const retrievalSources: any[] = [];
+    if (retrievalResponse.candidates?.[0]?.groundingMetadata?.groundingChunks) {
+      retrievalResponse.candidates[0].groundingMetadata.groundingChunks.forEach((chunk: any) => {
+        if (chunk.web?.uri && chunk.web?.title)
+          retrievalSources.push({ title: chunk.web.title, uri: chunk.web.uri });
+      });
+    }
+
+    let laws: any[] = [];
+    try {
+      const parsed = JSON.parse(rawText.replace(/```json/g, '').replace(/```/g, '').trim());
+      laws = Array.isArray(parsed.laws) ? parsed.laws : [];
+    } catch { laws = []; }
+
+    // Filter: keep only verified laws with actual text from official sources
+    laws = laws.filter((law: any) =>
+      law.verbatimText?.trim().length > 10
+      && law.foundInSearch === true
+      && law.lawName?.trim().length > 0
+      && (law.sourceUrl?.includes('lex.uz') || law.sourceUrl?.includes('norma.uz') || law.sourceUrl?.includes('zakon.uz'))
+    );
+
+    if (laws.length === 0) {
+      const noLawMsg = language === 'uz'
+        ? `### Rasmiy Manba Topilmadi\n\nLex.uz va Norma.uz da quyidagi so'rovingiz bo'yicha aniq qonun moddasi topilmadi:\n> "${prompt}"\n\n**Nima qilish mumkin:**\n1. Savolni aniqroq bering.\n2. [Lex.uz](https://lex.uz) saytida o'zingiz qidiring.\n3. Malakali yurist bilan maslahatlashing.\n\n*Lawify aniq qonuniy asossiz maslahat bermaydi.*`
+        : language === 'ru'
+        ? `### Официальный источник не найден\n\nНа Lex.uz не найдена норма закона по запросу:\n> "${prompt}"\n\n**Что делать:**\n1. Уточните вопрос.\n2. Поищите на [Lex.uz](https://lex.uz).\n3. Обратитесь к юристу.\n\n*Lawify не даёт советов без правового основания.*`
+        : `### No Official Source Found\n\nNo law found on Lex.uz for:\n> "${prompt}"\n\n*Lawify does not advise without an official legal basis.*`;
+      return new Response(JSON.stringify({ text: noLawMsg, sources: retrievalSources }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // ============================================================
+    // STEP 2: GENERATION — closed-world, NO search tool
+    // ============================================================
+    const lawsContext = laws.map((law: any, i: number) => `
+[LAW ${i + 1}]
+Name: ${law.lawName}
+Article: ${law.articleNumber}${law.paragraph ? `, ${law.paragraph}` : ''}
+Adopted: ${law.adoptionDate ?? 'not found'}
+Last Amended: ${law.lastAmendmentDate ?? 'not found'}
+Serial No: ${law.lawSerialNumber ?? 'not found'}
+Status: ${law.status?.toUpperCase?.() ?? 'UNKNOWN'}
+Source: ${law.sourceUrl}
+Verbatim Text:
+"""
+${law.verbatimText}
+"""
+`).join('\n---\n');
+
+    const generationSystemPrompt = `
+You are LAWIFY, the official AI legal consultant for Uzbekistan.
+${languageDirective}
+
+ABSOLUTE CONSTRAINT — CLOSED-WORLD:
+You have been given the COMPLETE AND FINAL list of verified laws below.
+You MUST NOT cite any law, article, or legal provision NOT in this list.
+You have NO access to external data. Do NOT use training memory for law references.
+If the retrieved laws don't fully answer the question, say so explicitly.
+
+CITATION RULE: Reference laws as [LAW N] inline.
+Example: "Mehnat kodeksining 153-moddasiga ko'ra... [LAW 1]"
+
+STATUS RULE: If status is "REPEALED", do NOT base advice on it.
+Write: "(eski qonun, endi amal qilmaydi)" and advise only on in-force laws.
+
+VERIFIED LAWS FROM LEX.UZ (your ONLY allowed sources):
+${lawsContext}
+
+USER SETTINGS:
+- Tone: ${settings.tone}
+- Response Length: ${
+    settings.answerLength === 'Short'  ? 'CONCISE — ~150-250 words.' :
+    settings.answerLength === 'Medium' ? 'MODERATE — ~400-600 words.' :
+                                         'COMPREHENSIVE — ~800-1200 words with all provisions, timelines, exceptions, action plan.'
+  }
+
+RESPONSE STRUCTURE:
+${structureLabels}
+`;
+
+    const genParts: any[] = [{ text: prompt }];
+    if (chatHistory) genParts.push({ text: `[Chat History]\n${chatHistory}` });
+    if (additionalContext) genParts.push({ text: `[User Profile]\n${additionalContext}` });
+    if (attachment) {
+      genParts.push({ inlineData: { mimeType: attachment.mimeType, data: attachment.data } });
+    }
+
+    const modelName = isPro ? 'gemini-2.5-flash' : 'gemini-2.0-flash';
+    const genConfig: any = {
+      systemInstruction: generationSystemPrompt,
+      // CRITICAL: NO tools — model has zero search access
+      temperature: 0.2,
+    };
+    if (isPro) genConfig.thinkingConfig = { thinkingBudget: 8000 };
+
+    const response = await ai.models.generateContent({
+      model: modelName,
+      contents: { role: 'user', parts: genParts },
+      config: genConfig
+    });
+
+    const text = response.text || "No response generated.";
+
+    return new Response(JSON.stringify({ text, sources: retrievalSources }), {
         headers: { 'Content-Type': 'application/json' }
     });
 
