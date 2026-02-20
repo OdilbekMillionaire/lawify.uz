@@ -195,7 +195,7 @@ const App: React.FC = () => {
                         isPro={userProfile?.is_pro || false}
                     />
                 } />
-                <Route path="/odilbek" element={<OdilbekPage language={language} />} />
+                <Route path="/odilbek" element={<OdilbekPage language={language} isPro={userProfile?.is_pro || false} />} />
                 <Route path="/library" element={<Library language={language} />} />
                 <Route path="/studio" element={
                     <DocumentStudio 
@@ -235,10 +235,11 @@ const App: React.FC = () => {
             </Routes>
         </Layout>
 
-        <LiveSessionModal 
-            isOpen={isLiveOpen} 
-            onClose={() => setIsLiveOpen(false)} 
-            language={language} 
+        <LiveSessionModal
+            isOpen={isLiveOpen}
+            onClose={() => setIsLiveOpen(false)}
+            language={language}
+            isPro={userProfile?.is_pro || false}
         />
 
         <AuthModal 

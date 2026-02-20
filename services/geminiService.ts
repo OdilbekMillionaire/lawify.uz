@@ -88,23 +88,23 @@ export const verifyLegalAdvice = async (originalPrompt: string, aiResponse: stri
     const systemInstruction = `
       You are a Senior Legal Auditor for Uzbekistan Law.
       Language: ${language}.
-      
+
       YOUR TASK:
       1. Review the "Original User Question" and the "AI's Advice".
       2. Verify the legal accuracy of the advice against "lex.uz" using Google Search.
       3. Identify if any laws mentioned are outdated, repealed, or misinterpreted.
       4. Provide a "Verification Report".
-      
+
       OUTPUT FORMAT:
       If correct: "✅ **VERIFIED:** The advice accurately reflects [Law Name]."
       If partial: "⚠️ **WARNING:** The advice is mostly correct but missed [Details]."
       If incorrect: "❌ **CORRECTION:** The advice quoted an old law. The current law is [New Law]."
-      
+
       Be strict. Use Google Search to double-check every article number mentioned.
     `;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3-pro-preview', // Always use Pro for verification
+      model: 'gemini-2.5-pro-preview', // Always use Pro for verification
       contents: {
         role: 'user',
         parts: [
@@ -131,46 +131,47 @@ export const generateOdilbekResponse = async (prompt: string, language: Language
     try {
         const ai = getAIClient();
         const systemInstruction = `
-            You are Odilbek, a friendly legal translator for common people in Uzbekistan.
-            Language: ${language}.
-            
-            YOUR MISSION: 
-            The user will provide complex legal advice. 
-            Your job is to "translate" this into simple, everyday language.
+You are Odilbek — a friendly "aka" (big brother) legal translator for ordinary citizens of Uzbekistan.
+Language: ${language}.
 
-            VISUAL STYLE & FORMATTING:
-            - Use **BOLD** for key legal terms and important points.
-            - Use > Blockquotes for summarizing the "Main Point".
-            - Use clear HEADERS (like ### Tushuntirish) to structure your answer.
-            - Use lists (-) to break down steps.
-            - Make the response look clean, organized, and eye-appealing.
+CRITICAL ACCURACY RULES — STRICTLY ENFORCE:
+1. If the user asks ANY legal question directly, you MUST search lex.uz or norma.uz FIRST using Google Search before answering.
+2. NEVER invent or guess article numbers, penalties, deadlines, or legal procedures. If you cannot find the law via search, say: "Men bu qonunni rasmiy manbada topa olmadim — iltimos, yurist bilan maslahatlashing."
+3. ONLY AFTER verifying the law via search should you explain it in simple language.
+4. If legal context is already provided below, you may skip the search and directly simplify that context.
+5. Always cite the source (lex.uz article number) when you reference a specific law.
 
-            STEPS:
-            1. Scan for Legal Terms.
-            2. Explain them with simple analogies (e.g. "Sud buyrug'i is like an express ticket").
-            3. Simplify the main advice into a step-by-step guide.
-            4. Provide a practical summary.
-            
-            Tone: Friendly, supportive, "aka" (big brother) style.
-            Legal Context Provided: ${legalContext}
+FORMATTING:
+- Use **BOLD** for key legal terms.
+- Use > blockquotes for the "Main Point" summary.
+- Use ### headers (e.g., ### Tushuntirish, ### Qadamlar).
+- Use numbered lists for step-by-step guidance.
+- Make the response visually clean and easy to read.
+
+TONE: Warm, supportive, like a knowledgeable older brother — not robotic or cold.
+
+${legalContext ? `LEGAL CONTEXT ALREADY PROVIDED (simplify this):\n${legalContext}` : ''}
         `;
 
         const response = await ai.models.generateContent({
-            model: 'gemini-3-flash-preview', 
+            model: 'gemini-2.5-flash-preview',
             contents: {
                 role: 'user',
                 parts: [
-                    { text: `[Chat History]\n${chatHistory}` },
+                    ...(chatHistory ? [{ text: `[Chat History]\n${chatHistory}` }] : []),
                     { text: `[User Question/Context]: ${prompt}` }
                 ]
             },
-            config: { systemInstruction }
+            config: {
+                systemInstruction,
+                tools: [{ googleSearch: {} }],
+            }
         });
 
         return response.text || "Uzr, tushuna olmadim.";
     } catch (e) {
         console.error("Odilbek Error", e);
-        return "Connection Error";
+        return "Tizimda xatolik yuz berdi. Iltimos, qayta urinib ko'ring.";
     }
 };
 
@@ -240,7 +241,7 @@ export const generateLegalResponse = async (
 
   // --- STRICT RAG EXECUTION (No Fallback to Hallucination) ---
   try {
-    const modelName = isPro ? 'gemini-3-pro-preview' : 'gemini-3-flash-preview';
+    const modelName = isPro ? 'gemini-2.5-pro-preview' : 'gemini-2.5-flash-preview';
     
     // WRAP IN RETRY LOGIC TO PREVENT RANDOM FAILURES
     const response = await retry(async () => {
@@ -537,10 +538,10 @@ export const draftDocument = async (
     }
 };
 
-export const textToSpeech = async (text: string): Promise<AudioBuffer | null> => {
+export const textToSpeech = async (text: string, voiceName: string = 'Kore'): Promise<AudioBuffer | null> => {
     try {
         const ai = getAIClient();
-        const cleanText = text.replace(/[*#]/g, '').slice(0, 500); 
+        const cleanText = text.replace(/[*#]/g, '').slice(0, 500);
 
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash-preview-tts",
@@ -548,7 +549,7 @@ export const textToSpeech = async (text: string): Promise<AudioBuffer | null> =>
             config: {
                 responseModalities: [Modality.AUDIO],
                 speechConfig: {
-                    voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } },
+                    voiceConfig: { prebuiltVoiceConfig: { voiceName } },
                 },
             },
         });
@@ -571,6 +572,7 @@ export class LiveSessionManager {
   private onStatusChange: (status: 'listening' | 'processing' | 'speaking' | 'idle') => void;
   private onError: (error: string) => void;
   private language: Language = Language.UZ;
+  private voiceName: string = 'Kore';
   private audioContext: AudioContext | null = null;
   private currentSource: AudioBufferSourceNode | null = null;
   private active: boolean = false;
@@ -584,8 +586,9 @@ export class LiveSessionManager {
     this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({sampleRate: 24000});
   }
 
-  async start(language: Language) {
+  async start(language: Language, voiceName: string = 'Kore') {
     this.language = language;
+    this.voiceName = voiceName;
     this.active = true;
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -644,7 +647,7 @@ export class LiveSessionManager {
               true 
           );
 
-          const audioBuffer = await textToSpeech(text);
+          const audioBuffer = await textToSpeech(text, this.voiceName);
 
           if (audioBuffer && this.audioContext && this.active) {
               this.onStatusChange('speaking');

@@ -179,7 +179,7 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
         {/* ── Left text pane ── */}
         <div className="w-full lg:w-[48%] z-20 relative px-6 md:px-12 lg:pl-16 lg:pr-8 pt-8 pb-10 lg:py-0 text-center lg:text-left">
 
-          {/* Decorative faint scales bg — absolute, behind content */}
+          {/* Decorative faint scales bg */}
           <div
             className="absolute inset-0 pointer-events-none hidden lg:flex items-center justify-center"
             style={{ zIndex: 0, opacity: 0.03 }}
@@ -191,7 +191,7 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
 
           {/* Live badge */}
           <div
-            className="inline-flex items-center px-4 py-2 rounded-full mb-8 animate-fade-in"
+            className="inline-flex items-center px-4 py-2 rounded-full mb-6 animate-fade-in"
             style={{
               background: 'rgba(59,130,246,0.12)',
               border: '1px solid rgba(59,130,246,0.28)',
@@ -208,28 +208,41 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
           <h1
             className="gradient-text font-serif animate-slide-up"
             style={{
-              fontSize: 'clamp(2.6rem, 6.5vw, 5.2rem)',
+              fontSize: 'clamp(2.4rem, 6vw, 4.8rem)',
               fontWeight: 700,
               lineHeight: 1.1,
-              marginBottom: '1.5rem',
+              marginBottom: '0.5rem',
             }}
           >
             {t.dashboardWelcome}
           </h1>
 
+          {/* Animated underline accent */}
+          <div className="flex justify-center lg:justify-start mb-5 animate-slide-up">
+            <div
+              className="h-1 rounded-full"
+              style={{
+                width: '80px',
+                background: 'linear-gradient(90deg, #2563eb, #7c3aed, #2563eb)',
+                backgroundSize: '200% 100%',
+                animation: 'shimmer 3s linear infinite',
+              }}
+            />
+          </div>
+
           {/* Subtitle */}
           <p
-            className="text-lg md:text-xl leading-relaxed max-w-xl mx-auto lg:mx-0 mb-10 animate-slide-up delay-100"
+            className="text-base md:text-lg leading-relaxed max-w-xl mx-auto lg:mx-0 mb-8 animate-slide-up delay-100"
             style={{ color: 'rgba(148,163,184,0.9)' }}
           >
             {t.dashboardSubtitle}
           </p>
 
-          {/* CTA buttons */}
-          <div className="flex flex-wrap justify-center lg:justify-start gap-4 animate-slide-up delay-200">
+          {/* Primary CTA */}
+          <div className="animate-slide-up delay-200">
             <button
               onClick={() => navigate('/chat')}
-              className="relative px-8 py-4 rounded-2xl font-bold text-white overflow-hidden group transition-all duration-300 hover:scale-105"
+              className="relative px-8 py-4 rounded-2xl font-bold text-white overflow-hidden group transition-all duration-300 hover:scale-105 w-full sm:w-auto"
               style={{
                 background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
                 boxShadow: '0 0 35px rgba(59,130,246,0.4)',
@@ -239,62 +252,86 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
                 className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                 style={{ background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)' }}
               />
-              <span className="relative flex items-center space-x-2">
+              <span className="relative flex items-center justify-center space-x-2">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
                     d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
                 </svg>
-                <span>{t.navChat}</span>
+                <span>
+                  {language === Language.UZ ? "AI Yurist bilan maslahat" : language === Language.RU ? "Консультация с AI Юристом" : "Consult AI Lawyer"}
+                </span>
               </span>
-            </button>
-
-            <button
-              onClick={() => navigate('/library')}
-              className="px-8 py-4 rounded-2xl font-bold transition-all duration-300 hover:scale-105"
-              style={{
-                background: 'rgba(255,255,255,0.07)',
-                border: '1px solid rgba(255,255,255,0.16)',
-                color: 'rgba(255,255,255,0.88)',
-                backdropFilter: 'blur(10px)',
-              }}
-            >
-              {t.navTemplates}
             </button>
           </div>
 
-          {/* Social proof strip */}
-          <div className="flex flex-wrap justify-center lg:justify-start gap-8 mt-12 animate-slide-up delay-300">
+          {/* Tool chip buttons */}
+          <div className="flex flex-wrap justify-center lg:justify-start gap-2 mt-4 animate-slide-up delay-200">
             {[
-              { label: '15k+',  desc: t.statUsers },
-              { label: '85k+',  desc: t.statDocs },
-              { label: '99.8%', desc: t.statAccuracy },
-              { label: '3',     desc: t.statLanguages },
+              { icon: '👨‍🏫', label: language === Language.UZ ? 'AI Odilbek' : language === Language.RU ? 'AI Одилбек' : 'AI Odilbek', path: '/odilbek', color: 'rgba(245,158,11,0.18)', border: 'rgba(245,158,11,0.35)', text: '#fbbf24' },
+              { icon: '📝', label: language === Language.UZ ? 'AI Kotib' : language === Language.RU ? 'AI Котиб' : 'AI Drafter', path: '/studio', color: 'rgba(5,150,105,0.18)', border: 'rgba(5,150,105,0.35)', text: '#34d399' },
+              { icon: '🤝', label: language === Language.UZ ? 'AI Murosa' : language === Language.RU ? 'AI Медиатор' : 'AI Mediator', path: '/mediation', color: 'rgba(139,92,246,0.18)', border: 'rgba(139,92,246,0.35)', text: '#c4b5fd' },
+            ].map((chip, i) => (
+              <button
+                key={i}
+                onClick={() => navigate(chip.path)}
+                className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all duration-200 hover:scale-105 active:scale-95"
+                style={{ background: chip.color, border: `1px solid ${chip.border}`, color: chip.text, backdropFilter: 'blur(10px)' }}
+              >
+                <span>{chip.icon}</span>
+                <span>{chip.label}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Stats — 2×2 metric cards */}
+          <div className="grid grid-cols-2 gap-3 mt-10 animate-slide-up delay-300">
+            {[
+              { label: '15k+',  desc: t.statUsers,    icon: '👥', color: '#2563eb' },
+              { label: '85k+',  desc: t.statDocs,     icon: '📄', color: '#7c3aed' },
+              { label: '99.8%', desc: t.statAccuracy, icon: '✅', color: '#059669' },
+              { label: '3',     desc: t.statLanguages,icon: '🌐', color: '#d97706' },
             ].map((s, i) => (
-              <div key={i} className="text-center lg:text-left">
+              <div
+                key={i}
+                className="flex items-center space-x-3 px-4 py-3 rounded-2xl"
+                style={{
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  backdropFilter: 'blur(10px)',
+                }}
+              >
                 <div
-                  className="text-2xl font-black"
-                  style={{
-                    background: 'linear-gradient(135deg, #60a5fa, #a78bfa)',
-                    backgroundClip: 'text',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                  }}
-                >{s.label}</div>
-                <div className="text-xs text-slate-500 mt-0.5">{s.desc}</div>
+                  className="w-9 h-9 rounded-xl flex items-center justify-center text-base shrink-0"
+                  style={{ background: `${s.color}22`, border: `1px solid ${s.color}44` }}
+                >
+                  {s.icon}
+                </div>
+                <div className="text-left min-w-0">
+                  <div
+                    className="text-lg font-black leading-none"
+                    style={{
+                      background: 'linear-gradient(135deg, #60a5fa, #a78bfa)',
+                      backgroundClip: 'text',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                    }}
+                  >{s.label}</div>
+                  <div className="text-[10px] text-slate-500 mt-0.5 leading-tight truncate">{s.desc}</div>
+                </div>
               </div>
             ))}
           </div>
 
           {/* ── Floating mini chat preview card ── */}
-          <div className="hidden lg:block mt-10 z-10 relative animate-float" style={{ animationDelay: '1.3s' }}>
+          <div className="hidden lg:block mt-8 z-10 relative animate-float" style={{ animationDelay: '1.3s' }}>
             <div
               className="rounded-2xl p-4 text-left"
               style={{
                 background: 'rgba(255,255,255,0.07)',
-                border: '1px solid rgba(255,255,255,0.11)',
-                backdropFilter: 'blur(24px)',
-                maxWidth: '360px',
-                boxShadow: '0 8px 40px rgba(0,0,0,0.25)',
+                border: '1px solid rgba(255,255,255,0.13)',
+                backdropFilter: 'blur(28px)',
+                maxWidth: '400px',
+                boxShadow: '0 8px 40px rgba(0,0,0,0.3)',
               }}
             >
               {/* Card header */}
@@ -335,7 +372,7 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
               </div>
 
               {/* AI bubble */}
-              <div className="flex justify-start">
+              <div className="flex justify-start mb-2">
                 <div
                   className="rounded-2xl rounded-tl-sm px-3 py-2 text-[11px]"
                   style={{
@@ -345,11 +382,37 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
                   }}
                 >
                   {language === Language.UZ
-                    ? "Mehnat Kodeksining 100-moddasiga binoan..."
+                    ? "Mehnat Kodeksining 100-moddasiga binoan, nohaq ishdan bo'shatish uchun 30 kun ichida sudga murojaat qilishingiz mumkin."
                     : language === Language.RU
-                    ? "Согласно ст. 100 ТК Республики Узбекистан..."
-                    : "Under Article 100 of the Labor Code..."}
-                  <span className="inline-block w-1 h-3 bg-blue-400 ml-0.5 animate-pulse rounded-sm align-middle" />
+                    ? "Согласно ст. 100 ТК РУз, у вас есть 30 дней для обращения в суд."
+                    : "Under Article 100 of the Labor Code, you have 30 days to file a claim."}
+                </div>
+              </div>
+
+              {/* Follow-up user bubble */}
+              <div className="flex justify-end mb-2">
+                <div
+                  className="rounded-2xl rounded-tr-sm px-3 py-2 text-[11px] text-white"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(37,99,235,0.65), rgba(124,58,237,0.65))',
+                    maxWidth: '60%',
+                  }}
+                >
+                  {language === Language.UZ ? "Muddati qancha?" : language === Language.RU ? "Какой срок?" : "What is the deadline?"}
+                </div>
+              </div>
+
+              {/* AI typing bubble */}
+              <div className="flex justify-start items-center space-x-2">
+                <div
+                  className="rounded-2xl rounded-tl-sm px-3 py-2"
+                  style={{ background: 'rgba(255,255,255,0.07)' }}
+                >
+                  <div className="flex space-x-1">
+                    {[0,1,2].map(i => (
+                      <span key={i} className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: `${i * 0.2}s` }} />
+                    ))}
+                  </div>
                 </div>
               </div>
 
@@ -370,20 +433,24 @@ const Dashboard: React.FC<DashboardProps> = ({ language }) => {
             </div>
           </div>
 
-          {/* ── Trust strip ── */}
-          <div className="hidden lg:flex items-center gap-2 mt-6 z-10 relative animate-slide-up delay-400 flex-wrap">
+          {/* ── Trust strip — pill badges ── */}
+          <div className="flex flex-wrap justify-center lg:justify-start gap-2 mt-6 z-10 relative animate-slide-up delay-400">
             {[
               { icon: '🎓', label: 'Oxford Founded' },
               { icon: '🏛️', label: 'TSUL Partner' },
               { icon: '⚖️', label: 'lex.uz Certified' },
             ].map((item, i) => (
-              <React.Fragment key={i}>
-                <div className="flex items-center space-x-1.5">
-                  <span className="text-sm">{item.icon}</span>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600">{item.label}</span>
-                </div>
-                {i < 2 && <span className="text-slate-700 text-sm">·</span>}
-              </React.Fragment>
+              <div
+                key={i}
+                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full"
+                style={{
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                }}
+              >
+                <span className="text-sm">{item.icon}</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{item.label}</span>
+              </div>
             ))}
           </div>
 

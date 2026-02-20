@@ -9,9 +9,10 @@ import { saveSession, cleanText, logFeedback } from '../services/storage';
 
 interface OdilbekPageProps {
   language: Language;
+  isPro: boolean;
 }
 
-const OdilbekPage: React.FC<OdilbekPageProps> = ({ language }) => {
+const OdilbekPage: React.FC<OdilbekPageProps> = ({ language, isPro }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const t = TRANSLATIONS[language];
@@ -103,17 +104,28 @@ const OdilbekPage: React.FC<OdilbekPageProps> = ({ language }) => {
   };
 
   const handleSendMessage = async (text: string, attachment?: Attachment) => {
+    if (attachment && !isPro) {
+        alert(language === Language.UZ
+            ? "Fayl yuklash faqat Pro foydalanuvchilar uchun! Iltimos, obuna bo'ling."
+            : language === Language.RU
+            ? "Загрузка файлов доступна только Pro пользователям!"
+            : "File upload is a Pro feature! Please upgrade.");
+        return;
+    }
     addMessage(text, 'user', attachment);
     setIsLoading(true);
 
     try {
         const historyStr = messages.map(m => `${m.role}: ${m.text}`).join('\n');
-        
+        const attachmentContext = attachment
+            ? `\n[Foydalanuvchi fayl yukladi: ${attachment.name} (${attachment.mimeType}). Agar tasvir yoki hujjat bo'lsa, uning mazmuniga asoslanib javob ber.]`
+            : '';
+
         const responseText = await generateOdilbekResponse(
-            text, 
-            language, 
+            text + attachmentContext,
+            language,
             historyStr,
-            "" 
+            ""
         );
 
         addMessage(responseText, 'model');
@@ -225,8 +237,8 @@ const OdilbekPage: React.FC<OdilbekPageProps> = ({ language }) => {
                 onFeedback={handleFeedback}
                 onTTS={handleTTS}
                 isOdilbekMode={true}
-                isPro={true} // Odilbek is unlimited for everyone
-                usageCount={0} 
+                isPro={isPro}
+                usageCount={0}
             />
           </div>
        </div>

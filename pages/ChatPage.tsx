@@ -242,101 +242,221 @@ const ChatPage: React.FC<ChatPageProps> = ({
       }
   };
 
+  const quickSuggestions = language === 'uz'
+    ? ["Ishdan nohaq bo'shatildim", "Aliment undirish tartibi", "Uy-joy nizosi bo'yicha huquqlarim"]
+    : language === 'ru'
+    ? ["Незаконное увольнение", "Порядок взыскания алиментов", "Мои права при жилищном споре"]
+    : ["Wrongful termination rights", "Child support procedure", "Housing dispute rights"];
+
   return (
     <div className="flex h-full relative">
-       {/* Settings Sidebar */}
-       <div className={`fixed inset-y-0 right-0 z-20 w-80 bg-white border-l border-gray-200 transform transition-transform duration-300 ${isSettingsOpen ? 'translate-x-0' : 'translate-x-full'} overflow-y-auto`}>
-          <div className="p-6 h-full flex flex-col">
-              <div className="flex items-center justify-between mb-8">
-                  <h3 className="font-serif font-bold text-lg text-slate-800">{t.settings}</h3>
-                  <button onClick={() => setIsSettingsOpen(false)} className="text-gray-400 hover:text-gray-600">
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+
+      {/* ── Settings Sidebar (dark) ── */}
+      <div
+        className={`fixed inset-y-0 right-0 z-30 w-72 transform transition-transform duration-300 ${isSettingsOpen ? 'translate-x-0' : 'translate-x-full'} overflow-y-auto flex flex-col`}
+        style={{ background: 'linear-gradient(180deg, #0d1a3a 0%, #0a0f1e 100%)', borderLeft: '1px solid rgba(255,255,255,0.07)' }}
+      >
+        <div className="p-6 flex-1 flex flex-col">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'rgba(37,99,235,0.2)', border: '1px solid rgba(37,99,235,0.3)' }}>
+                <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+                </svg>
+              </div>
+              <h3 className="font-bold text-white text-sm uppercase tracking-wider">
+                {language === 'uz' ? 'AI Sozlamalari' : language === 'ru' ? 'Настройки AI' : 'AI Settings'}
+              </h3>
+            </div>
+            <button onClick={() => setIsSettingsOpen(false)} className="text-slate-500 hover:text-white p-1 transition-colors">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+
+          <div className="space-y-6 flex-1">
+            <div>
+              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">{t.length}</label>
+              <div className="grid grid-cols-3 gap-2">
+                {['Short', 'Medium', 'Detailed'].map((l) => (
+                  <button
+                    key={l}
+                    onClick={() => setSettings({ ...settings, answerLength: l as any })}
+                    className="py-2.5 text-[10px] uppercase font-bold rounded-xl transition-all"
+                    style={settings.answerLength === l
+                      ? { background: 'linear-gradient(135deg, #2563eb, #7c3aed)', color: 'white' }
+                      : { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(148,163,184,0.8)' }}
+                  >
+                    {l === 'Short' ? t.short : l === 'Medium' ? t.medium : t.detailed}
                   </button>
+                ))}
               </div>
-              
-              <div className="space-y-8 flex-1">
-                 <div className="space-y-3">
-                    <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">{t.length}</label>
-                    <div className="grid grid-cols-3 gap-2">
-                         {['Short', 'Medium', 'Detailed'].map((l) => (
-                            <button
-                                key={l}
-                                onClick={() => setSettings({...settings, answerLength: l as any})}
-                                className={`py-2 text-[10px] uppercase font-bold rounded-lg border transition-all ${
-                                    settings.answerLength === l 
-                                    ? 'bg-blue-600 border-blue-600 text-white shadow-md' 
-                                    : 'border-gray-200 text-gray-500 hover:bg-gray-50'
-                                }`}
-                            >
-                                {l === 'Short' ? t.short : l === 'Medium' ? t.medium : t.detailed}
-                            </button>
-                        ))}
-                    </div>
-                 </div>
-              </div>
-              <div className="text-[10px] text-gray-400 text-center mt-6">
-                  {t.disclaimer}
-              </div>
-          </div>
-       </div>
+            </div>
 
-       {isSettingsOpen && (
-           <div onClick={() => setIsSettingsOpen(false)} className="fixed inset-0 bg-black/10 backdrop-blur-sm z-10"></div>
-       )}
-       
-       {showLimitModal && (
-           <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
-                <div className="bg-white rounded-3xl p-8 w-full max-w-sm shadow-2xl relative text-center">
-                    <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">⏳</div>
-                    <h3 className="text-xl font-serif font-bold text-slate-900 mb-2">{t.limitReachedTitle}</h3>
-                    <p className="text-sm text-gray-500 mb-6 leading-relaxed">{t.limitReachedBody}</p>
-                    <div className="space-y-3">
-                        <button onClick={() => navigate('/plans')} className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-200 hover:bg-blue-700 transition-colors">{t.limitUpgrade}</button>
-                        <button onClick={() => setShowLimitModal(false)} className="w-full py-3 text-gray-500 font-medium hover:text-gray-700">{t.limitReturn}</button>
-                    </div>
+            {isPro && (
+              <div
+                className="rounded-2xl p-4"
+                style={{ background: 'rgba(37,99,235,0.1)', border: '1px solid rgba(37,99,235,0.2)' }}
+              >
+                <div className="flex items-center space-x-2 mb-2">
+                  <span className="text-yellow-400 text-sm">⚡</span>
+                  <span className="text-xs font-bold text-blue-300 uppercase tracking-wider">PRO</span>
                 </div>
-           </div>
-       )}
-
-       <div className="flex-1 flex flex-col h-full bg-white/50 relative">
-          <div className="h-14 border-b border-gray-100 flex items-center justify-between px-6 bg-white shrink-0">
-               <h2 className="font-serif font-bold text-slate-800 flex items-center">
-                   <span className="w-2 h-2 rounded-full bg-green-500 mr-2 animate-pulse"></span>
-                   Online Consultation
-                   {isPro && <span className="ml-2 bg-orange-100 text-orange-600 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">PRO</span>}
-               </h2>
-               <div className="flex items-center space-x-2">
-                   {messages.length > 0 && (
-                       <button onClick={handleClearChat} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
-                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                       </button>
-                   )}
-                   <button onClick={() => setIsSettingsOpen(true)} className="flex items-center space-x-2 text-gray-500 hover:text-blue-600 transition-colors px-3 py-1.5 rounded-lg hover:bg-gray-50">
-                       <span className="text-xs font-semibold hidden md:inline">{t.settings}</span>
-                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
-                   </button>
-               </div>
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                  {language === 'uz' ? 'Siz cheksiz so\'rovlar, fayl yuklash va AI tekshiruv xizmatlaridan foydalanasiz.' : language === 'ru' ? 'У вас безлимитные запросы, загрузка файлов и AI-верификация.' : 'You have unlimited queries, file uploads, and AI verification.'}
+                </p>
+              </div>
+            )}
           </div>
 
-          <div className="flex-1 overflow-hidden p-4 md:p-6 w-full"> 
-            <ChatInterface 
-                messages={messages} 
-                language={language} 
-                isLoading={isLoading} 
-                onSendMessage={handleSendMessage}
-                onEditMessage={handleEditMessage}
-                onRegenerate={handleRegenerate}
-                onFeedback={handleFeedback}
-                onTTS={handleTTS}
-                isPro={isPro}
-                usageCount={usageCount}
-                onAskOdilbek={handleAskOdilbek}
-                initialInputValue={prefilledPrompt}
-                onVerify={handleVerify}
-                isVerifying={isVerifying}
-            />
+          <div className="text-[10px] text-slate-600 text-center mt-6 leading-relaxed">{t.disclaimer}</div>
+        </div>
+      </div>
+
+      {isSettingsOpen && (
+        <div onClick={() => setIsSettingsOpen(false)} className="fixed inset-0 bg-black/40 backdrop-blur-sm z-20" />
+      )}
+
+      {/* ── Limit Modal ── */}
+      {showLimitModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in">
+          <div
+            className="rounded-3xl p-8 w-full max-w-sm shadow-2xl relative text-center"
+            style={{ background: 'linear-gradient(135deg, #0d1a3a, #0a0f1e)', border: '1px solid rgba(255,255,255,0.1)' }}
+          >
+            <div
+              className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl"
+              style={{ background: 'rgba(37,99,235,0.15)', border: '1px solid rgba(37,99,235,0.3)' }}
+            >⏳</div>
+            <h3 className="text-xl font-serif font-bold text-white mb-2">{t.limitReachedTitle}</h3>
+            <p className="text-sm text-slate-400 mb-6 leading-relaxed">{t.limitReachedBody}</p>
+            <div className="space-y-3">
+              <button
+                onClick={() => navigate('/plans')}
+                className="w-full font-bold py-3 rounded-xl transition-all hover:opacity-90"
+                style={{ background: 'linear-gradient(135deg, #2563eb, #7c3aed)', color: 'white' }}
+              >{t.limitUpgrade}</button>
+              <button onClick={() => setShowLimitModal(false)} className="w-full py-3 text-slate-500 font-medium hover:text-slate-300 transition-colors">{t.limitReturn}</button>
+            </div>
           </div>
-       </div>
+        </div>
+      )}
+
+      {/* ── Main area ── */}
+      <div className="flex-1 flex flex-col h-full relative" style={{ background: '#f8fafc' }}>
+
+        {/* Professional dark header */}
+        <div
+          className="shrink-0 flex items-center justify-between px-4 md:px-6 py-3 md:py-4"
+          style={{
+            background: 'linear-gradient(135deg, #0a0f1e 0%, #0d1a3a 100%)',
+            borderBottom: '1px solid rgba(255,255,255,0.07)',
+          }}
+        >
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => navigate(-1)}
+              className="p-2 rounded-xl transition-all hover:bg-white/10 text-slate-400 hover:text-white"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+              </svg>
+            </button>
+            <div
+              className="w-8 h-8 rounded-xl flex items-center justify-center text-sm font-black text-white"
+              style={{ background: 'linear-gradient(135deg, #2563eb, #7c3aed)' }}
+            >⚖️</div>
+            <div>
+              <div className="flex items-center space-x-2">
+                <span className="font-bold text-white text-sm">AI Yurist</span>
+                {isPro && (
+                  <span
+                    className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase"
+                    style={{ background: 'rgba(245,158,11,0.2)', color: '#fbbf24', border: '1px solid rgba(245,158,11,0.3)' }}
+                  >PRO</span>
+                )}
+              </div>
+              <div className="flex items-center space-x-1.5 mt-0.5">
+                <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
+                <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">
+                  {language === 'uz' ? 'Onlayn Maslahat' : language === 'ru' ? 'Онлайн Консультация' : 'Online Consultation'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-1">
+            {messages.length > 0 && (
+              <button
+                onClick={handleClearChat}
+                className="p-2 rounded-xl transition-all hover:bg-white/10 text-slate-500 hover:text-red-400"
+                title={language === 'uz' ? 'Tozalash' : 'Clear'}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+              </button>
+            )}
+            <button
+              onClick={() => setIsSettingsOpen(true)}
+              className="flex items-center space-x-1.5 px-3 py-2 rounded-xl transition-all hover:bg-white/10 text-slate-400 hover:text-white"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+              </svg>
+              <span className="text-xs font-semibold hidden sm:inline">{t.settings}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Empty state */}
+        {messages.length === 0 && !prefilledPrompt && (
+          <div className="flex-none px-4 pt-6 pb-2">
+            <div className="max-w-xl mx-auto text-center">
+              <div
+                className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-3"
+                style={{ background: 'linear-gradient(135deg, rgba(37,99,235,0.12), rgba(124,58,237,0.12))', border: '1px solid rgba(37,99,235,0.2)' }}
+              >⚖️</div>
+              <h3 className="font-serif font-bold text-slate-700 text-lg mb-1">
+                {language === 'uz' ? 'Salom! Men LAWIFY — sizning yuridik maslahatchingiz.' : language === 'ru' ? 'Здравствуйте! Я LAWIFY — ваш юридический советник.' : 'Hello! I am LAWIFY — your legal advisor.'}
+              </h3>
+              <p className="text-slate-400 text-sm mb-5">
+                {language === 'uz' ? 'Quyidagi mavzulardan birini tanlang yoki o\'z savolingizni yozing:' : language === 'ru' ? 'Выберите тему ниже или задайте свой вопрос:' : 'Pick a topic below or type your own question:'}
+              </p>
+              <div className="flex flex-wrap gap-2 justify-center">
+                {quickSuggestions.map((s, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setPrefilledPrompt(s)}
+                    className="px-4 py-2 rounded-xl text-sm font-medium transition-all hover:scale-105"
+                    style={{ background: 'rgba(37,99,235,0.07)', border: '1px solid rgba(37,99,235,0.15)', color: '#2563eb' }}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="flex-1 overflow-hidden p-3 md:p-5 w-full">
+          <ChatInterface
+            messages={messages}
+            language={language}
+            isLoading={isLoading}
+            onSendMessage={handleSendMessage}
+            onEditMessage={handleEditMessage}
+            onRegenerate={handleRegenerate}
+            onFeedback={handleFeedback}
+            onTTS={handleTTS}
+            isPro={isPro}
+            usageCount={usageCount}
+            onAskOdilbek={handleAskOdilbek}
+            initialInputValue={prefilledPrompt}
+            onVerify={handleVerify}
+            isVerifying={isVerifying}
+          />
+        </div>
+      </div>
     </div>
   );
 };
