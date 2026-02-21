@@ -107,29 +107,38 @@ Language context: ${language}
     }
 
     // ============================================================
-    // STEP 1: RETRIEVAL — search lex.uz with targeted queries from Step 0
+    // STEP 1A: GROUNDED SEARCH — natural text output (compatible with googleSearch)
+    // NOTE: googleSearch and responseMimeType:'application/json' are INCOMPATIBLE.
+    // So we do 2 calls: 1A gets raw grounded text, 1B parses it into JSON.
     // ============================================================
-    const retrievalSystemPrompt = `
-You are a LEGAL DATABASE RETRIEVAL AGENT for Uzbekistan law.
-Your ONLY function is to search lex.uz/norma.uz and transcribe what you find. You do NOT explain or advise.
-RULES: Execute Google Search. Do NOT use training data. Copy verbatim text. Check if law is in force.
-OUTPUT: JSON only: { "laws": [ { "lawName":"...", "articleNumber":"...", "paragraph":null, "adoptionDate":null, "lastAmendmentDate":null, "lawSerialNumber":null, "status":"in_force|repealed|unknown", "verbatimText":"EXACT TEXT", "sourceUrl":"https://lex.uz/...", "foundInSearch":true } ] }
-If ZERO found: { "laws": [] }. Language: ${language}
-`;
-
+    const searchInstructions = searchQueries.map((q, i) => `${i + 1}. ${q}`).join('\n');
     const retrievalUserPrompt = `
-RETRIEVAL TASK — Execute these searches:
-${searchQueries.map((q, i) => `${i + 1}. ${q}`).join('\n')}
+LEGAL RESEARCH TASK for: "${prompt}"
 
-For each search, extract the laws/articles found. Combine all results into one JSON.
-Return ONLY the JSON.
+Execute each search and for EVERY article found, write it in this format:
+
+=== ARTICLE START ===
+LAW NAME: [full official name]
+ARTICLE NUMBER: [exact number]
+PARAGRAPH: [paragraph or "none"]
+ADOPTION DATE: [YYYY-MM-DD or "unknown"]
+LAST AMENDED: [YYYY-MM-DD or "unknown"]
+SERIAL NO: [registration number or "unknown"]
+STATUS: [in_force / repealed / amended / suspended / unknown]
+SOURCE URL: [https://lex.uz/... or norma.uz URL]
+VERBATIM TEXT:
+[Copy the EXACT text of the article from lex.uz. Every word.]
+=== ARTICLE END ===
+
+SEARCHES TO EXECUTE:
+${searchInstructions}
 `;
 
     const retrievalResponse = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: { role: 'user', parts: [{ text: retrievalUserPrompt }] },
       config: {
-        systemInstruction: retrievalSystemPrompt,
+        systemInstruction: `You are a legal database retrieval agent for Uzbekistan. Search lex.uz and norma.uz. Copy verbatim article text exactly. Use === ARTICLE START/END === format. Do NOT summarize. Do NOT explain. Only copy. Language: ${language}`,
         tools: [{ googleSearch: {} }],
         temperature: 0.0,
       }
@@ -144,17 +153,33 @@ Return ONLY the JSON.
       });
     }
 
+    // ============================================================
+    // STEP 1B: JSON PARSING — no search, uses responseMimeType for reliable JSON
+    // ============================================================
+    const firstLexUrl = retrievalSources.find((s: any) => s.uri.includes('lex.uz') || s.uri.includes('norma.uz'))?.uri || '';
     let laws: any[] = [];
-    try {
-      const parsed = JSON.parse(rawText.replace(/```json/g, '').replace(/```/g, '').trim());
-      laws = Array.isArray(parsed.laws) ? parsed.laws : [];
-    } catch { laws = []; }
+
+    if (rawText.trim()) {
+      try {
+        const parseResponse = await ai.models.generateContent({
+          model: 'gemini-2.0-flash',
+          contents: { role: 'user', parts: [{ text: `Parse ALL law articles from the following research text into a JSON array:\n\n${rawText}` }] },
+          config: {
+            systemInstruction: `You are a JSON extractor. Extract every law article into a JSON array. Each object: lawName (string), articleNumber (string), paragraph (string|null), adoptionDate (string|null), lastAmendmentDate (string|null), lawSerialNumber (string|null), status ("in_force"|"repealed"|"amended"|"suspended"|"unknown"), verbatimText (string - must be non-empty), sourceUrl (string), foundInSearch (true). Output ONLY the JSON array: [{...}]. If nothing found: []`,
+            responseMimeType: 'application/json',
+            temperature: 0.0,
+          }
+        });
+        const parsed = JSON.parse(parseResponse.text || '[]');
+        const arr = Array.isArray(parsed) ? parsed : (Array.isArray(parsed.laws) ? parsed.laws : []);
+        laws = arr.map((l: any) => ({ ...l, sourceUrl: l.sourceUrl || firstLexUrl, foundInSearch: true }));
+      } catch { laws = []; }
+    }
 
     laws = laws.filter((law: any) =>
       law.verbatimText?.trim().length > 10
       && law.foundInSearch !== false
       && law.lawName?.trim().length > 0
-      && law.sourceUrl
     );
 
     // Deduplicate

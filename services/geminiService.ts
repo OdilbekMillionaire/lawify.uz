@@ -141,44 +141,100 @@ async function analyzeQuery(query: string, language: Language): Promise<QueryAna
   }
 }
 
-// --- STEP 1: MULTI-QUERY RETRIEVAL ---
-// Executes each search query from Step 0 and merges results.
-// This AI ONLY searches and copies — no explanation, no advice.
+// --- STEP 1: TWO-PHASE RETRIEVAL ---
+// Phase 1A: Grounded web search — uses googleSearch, outputs NATURAL TEXT (compatible)
+// Phase 1B: JSON parsing — NO search, uses responseMimeType:application/json (reliable)
+// This separation is required because googleSearch and responseMimeType are INCOMPATIBLE.
 
-const RETRIEVAL_SYSTEM_PROMPT = (language: Language): string => `
-You are a LEGAL DATABASE RETRIEVAL AGENT for Uzbekistan law.
-Your ONLY function is to search lex.uz and norma.uz and transcribe what you find.
-You do NOT explain, summarize, or advise. You ONLY copy.
+async function groundedWebSearch(
+  queries: string[], analysis: QueryAnalysis, query: string, language: Language, ai: any
+): Promise<{ rawText: string; sources: Source[] }> {
+  const searchInstructions = queries.map((q, i) => `${i + 1}. ${q}`).join('\n');
+  const prompt = `
+LEGAL RESEARCH TASK for: "${query}"
+Domain: ${analysis.legalDomain}
+Relevant codes: ${analysis.relevantCodes.join(', ') || 'unknown'}
 
-CRITICAL RULES:
-1. You MUST execute a Google Search before generating any output.
-2. Do NOT cite any law not found in the current search results.
-3. Do NOT use training data to fill gaps. If text not found: set verbatimText to "" and foundInSearch to false.
-4. Include the exact lex.uz/norma.uz URL where you found the article.
-5. Check whether the law is currently in force ("amaldagi tahrir").
-6. If repealed, set status to "repealed".
-7. Find ALL articles matching the search — aim for thoroughness.
+Execute each search and for EVERY article found, write it in this format:
 
-OUTPUT: Respond ONLY with this JSON:
-{
-  "laws": [
-    {
-      "lawName": "Official full name of the law",
-      "articleNumber": "exact article number from lex.uz",
-      "paragraph": "specific paragraph or null",
-      "adoptionDate": "YYYY-MM-DD or null",
-      "lastAmendmentDate": "YYYY-MM-DD or null",
-      "lawSerialNumber": "registration number or null",
-      "status": "in_force | repealed | amended | suspended | unknown",
-      "verbatimText": "EXACT VERBATIM TEXT copied from lex.uz. Empty string if not found.",
-      "sourceUrl": "https://lex.uz/docs/...",
-      "foundInSearch": true
-    }
-  ]
-}
-If ZERO laws found: { "laws": [] }
-Language context: ${language}
+=== ARTICLE START ===
+LAW NAME: [full official name]
+ARTICLE NUMBER: [exact number, e.g. 153]
+PARAGRAPH: [paragraph letter/number or "none"]
+ADOPTION DATE: [YYYY-MM-DD or "unknown"]
+LAST AMENDED: [YYYY-MM-DD or "unknown"]
+SERIAL NO: [registration number or "unknown"]
+STATUS: [in_force / repealed / amended / suspended / unknown]
+SOURCE URL: [https://lex.uz/docs/... or norma.uz URL]
+VERBATIM TEXT:
+[Copy the EXACT text of the article from lex.uz. Every word. Every clause.]
+=== ARTICLE END ===
+
+SEARCHES TO EXECUTE:
+${searchInstructions}
 `;
+
+  const response = await retry(async () => ai.models.generateContent({
+    model: 'gemini-2.5-flash',
+    contents: { role: 'user', parts: [{ text: prompt }] },
+    config: {
+      systemInstruction: `You are a legal database retrieval agent for Uzbekistan. Search lex.uz and norma.uz. Copy verbatim article text exactly as it appears. Use the structured format with === ARTICLE START/END === delimiters. Do NOT summarize. Do NOT explain. Only copy. Language: ${language}`,
+      tools: [{ googleSearch: {} }],
+      temperature: 0.0,
+    }
+  }), 2, 1000);
+
+  const sources: Source[] = [];
+  if (response.candidates?.[0]?.groundingMetadata?.groundingChunks) {
+    response.candidates[0].groundingMetadata.groundingChunks.forEach((chunk: any) => {
+      if (chunk.web?.uri && chunk.web?.title)
+        sources.push({ title: chunk.web.title, uri: chunk.web.uri });
+    });
+  }
+
+  return { rawText: response.text || '', sources };
+}
+
+async function parseIntoVerifiedLaws(rawText: string, fallbackSources: Source[], ai: any): Promise<VerifiedLaw[]> {
+  if (!rawText.trim()) return [];
+
+  const firstLexUrl = fallbackSources.find(s => s.uri.includes('lex.uz') || s.uri.includes('norma.uz'))?.uri || '';
+
+  const response = await retry(async () => ai.models.generateContent({
+    model: 'gemini-2.0-flash',
+    contents: { role: 'user', parts: [{ text: `Parse ALL law articles from the following research text into a JSON array. Extract every article found.\n\n${rawText}` }] },
+    config: {
+      systemInstruction: `You are a JSON extractor. Read the text and extract every law article into a JSON array. Each object must have:
+- lawName: string (full official law name)
+- articleNumber: string (e.g. "153", "66", "126-1")
+- paragraph: string or null
+- adoptionDate: string (YYYY-MM-DD) or null
+- lastAmendmentDate: string (YYYY-MM-DD) or null
+- lawSerialNumber: string or null
+- status: "in_force" | "repealed" | "amended" | "suspended" | "unknown"
+- verbatimText: string (the actual article text — must be non-empty)
+- sourceUrl: string (lex.uz or norma.uz URL, or "" if not found)
+- foundInSearch: true
+
+Output ONLY the JSON array: [{...}, {...}]
+If nothing found: []`,
+      responseMimeType: 'application/json',
+      temperature: 0.0,
+    }
+  }), 2, 1000);
+
+  try {
+    const parsed = JSON.parse(response.text || '[]');
+    const arr: VerifiedLaw[] = Array.isArray(parsed) ? parsed
+      : (Array.isArray((parsed as any).laws) ? (parsed as any).laws : []);
+    // Fill missing sourceUrls from grounding sources
+    return arr.map(law => ({
+      ...law,
+      sourceUrl: law.sourceUrl || firstLexUrl,
+      foundInSearch: true,
+    }));
+  } catch { return []; }
+}
 
 export async function retrieveLaws(query: string, language: Language): Promise<RetrievalResult> {
   const ai = getAIClient();
@@ -197,54 +253,13 @@ export async function retrieveLaws(query: string, language: Language): Promise<R
     };
   }
 
-  // Build a combined retrieval prompt with ALL targeted queries
-  const searchInstructions = analysis.searchQueries
-    .map((q, i) => `${i + 1}. ${q}`)
-    .join('\n');
+  // STEP 1A: Grounded web search — natural text output (compatible with googleSearch)
+  const { rawText, sources: retrievalSources } = await groundedWebSearch(
+    analysis.searchQueries, analysis, query, language, ai
+  );
 
-  const retrievalPrompt = `
-RETRIEVAL TASK:
-Original user question: "${query}"
-
-Legal domain identified: ${analysis.legalDomain}
-Relevant codes: ${analysis.relevantCodes.join(', ') || 'unknown'}
-Specific articles to find: ${analysis.specificArticles.join(', ') || 'unknown'}
-
-EXECUTE THESE SEARCHES (one by one):
-${searchInstructions}
-
-For EACH search, extract the laws/articles found. Combine all results into one JSON response.
-Return ONLY the JSON. No other text.
-`;
-
-  // STEP 1: Execute retrieval with the targeted queries
-  const response = await retry(async () => {
-    return await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: { role: 'user', parts: [{ text: retrievalPrompt }] },
-      config: {
-        systemInstruction: RETRIEVAL_SYSTEM_PROMPT(language),
-        tools: [{ googleSearch: {} }],
-        temperature: 0.0,
-      }
-    });
-  }, 2, 1000);
-
-  const rawText = response.text || '';
-  const retrievalSources: Source[] = [];
-  if (response.candidates?.[0]?.groundingMetadata?.groundingChunks) {
-    response.candidates[0].groundingMetadata.groundingChunks.forEach((chunk: any) => {
-      if (chunk.web?.uri && chunk.web?.title)
-        retrievalSources.push({ title: chunk.web.title, uri: chunk.web.uri });
-    });
-  }
-
-  let laws: VerifiedLaw[] = [];
-  try {
-    const parsed = JSON.parse(rawText.replace(/```json/g, '').replace(/```/g, '').trim());
-    laws = Array.isArray(parsed.laws) ? parsed.laws : [];
-  } catch { laws = []; }
-
+  // STEP 1B: Parse raw text into structured VerifiedLaw objects (no googleSearch, uses responseMimeType)
+  let laws = await parseIntoVerifiedLaws(rawText, retrievalSources, ai);
   laws = filterVerifiedLaws(laws);
 
   // Deduplicate by articleNumber + lawName
@@ -261,10 +276,10 @@ Return ONLY the JSON. No other text.
 
 function filterVerifiedLaws(laws: VerifiedLaw[]): VerifiedLaw[] {
   return laws.filter(law =>
-    law.verbatimText?.trim().length > 10
-    && law.foundInSearch !== false        // Accept true or undefined, reject only explicit false
-    && law.lawName?.trim().length > 0
-    && law.sourceUrl                       // Must have a source URL
+    law.verbatimText?.trim().length > 10  // Must have actual article text
+    && law.foundInSearch !== false         // Accept true or undefined, reject only explicit false
+    && law.lawName?.trim().length > 0     // Must have a law name
+    // sourceUrl is optional — filled from grounding chunks when missing
   );
 }
 

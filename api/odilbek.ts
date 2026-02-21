@@ -34,58 +34,83 @@ export default async function handler(req: Request) {
       } catch { /* fallback below */ }
       if (searchQueries.length === 0) searchQueries = [`site:lex.uz ${prompt}`];
 
-      // STEP 1: Retrieval with targeted queries
+      // STEP 1A: GROUNDED SEARCH — natural text output (compatible with googleSearch)
+      // NOTE: googleSearch and responseMimeType:'application/json' are INCOMPATIBLE.
+      // So we do 2 calls: 1A gets raw grounded text, 1B parses it into JSON.
+      const searchInstructions = searchQueries.map((q, i) => `${i + 1}. ${q}`).join('\n');
       const retrievalPrompt = `
-RETRIEVAL TASK — Execute these searches:
-${searchQueries.map((q, i) => `${i + 1}. ${q}`).join('\n')}
-For each search, extract laws/articles. Return ONLY JSON:
-{ "laws": [ { "lawName":"...", "articleNumber":"...", "status":"in_force|repealed|unknown", "verbatimText":"exact text", "sourceUrl":"https://lex.uz/..." } ] }
-If no law found: { "laws": [] }
+LEGAL RESEARCH TASK for: "${prompt}"
+
+Execute each search and for EVERY article found, write it in this format:
+
+=== ARTICLE START ===
+LAW NAME: [full official name]
+ARTICLE NUMBER: [exact number]
+STATUS: [in_force / repealed / amended / unknown]
+SOURCE URL: [https://lex.uz/... URL]
+VERBATIM TEXT:
+[Copy the EXACT text of the article from lex.uz]
+=== ARTICLE END ===
+
+SEARCHES TO EXECUTE:
+${searchInstructions}
 `;
 
       const retrievalResponse = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
         contents: { role: 'user', parts: [{ text: retrievalPrompt }] },
         config: {
-          systemInstruction: `You are a LEGAL DATABASE RETRIEVAL AGENT for Uzbekistan law. You ONLY search lex.uz and copy verbatim text. You do NOT explain. Execute Google Search. Do NOT use training data. If text not found: set verbatimText to "". Language: ${language}`,
+          systemInstruction: `You are a legal database retrieval agent for Uzbekistan. Search lex.uz and norma.uz. Copy verbatim article text exactly. Use === ARTICLE START/END === format. Do NOT summarize or explain. Language: ${language}`,
           tools: [{ googleSearch: {} }],
           temperature: 0.0,
         }
       });
 
-      try {
-        const parsed = JSON.parse(
-          (retrievalResponse.text || '{}')
-            .replace(/```json/g, '')
-            .replace(/```/g, '')
-            .trim()
-        );
-        const laws = Array.isArray(parsed.laws)
-          ? parsed.laws.filter((l: any) => l.verbatimText?.trim().length > 10)
-          : [];
+      const rawRetrievalText = retrievalResponse.text || '';
+      const groundingSources: any[] = [];
+      if (retrievalResponse.candidates?.[0]?.groundingMetadata?.groundingChunks) {
+        retrievalResponse.candidates[0].groundingMetadata.groundingChunks.forEach((chunk: any) => {
+          if (chunk.web?.uri && chunk.web?.title) groundingSources.push({ title: chunk.web.title, uri: chunk.web.uri });
+        });
+      }
 
-        if (laws.length === 0) {
-          const noLawMsg = language === 'uz'
-            ? "Men bu savol bo'yicha rasmiy qonunni lex.uz'da topa olmadim.\n\nIltimos, yurist bilan maslahatlashing yoki [lex.uz](https://lex.uz) saytida o'zingiz qidiring."
-            : language === 'ru'
-            ? "Я не нашёл официальный закон на lex.uz по вашему вопросу.\n\nОбратитесь к юристу или поищите на [lex.uz](https://lex.uz)."
-            : "I could not find an official law on lex.uz for this question.\n\nPlease consult a lawyer.";
-          return new Response(JSON.stringify({ text: noLawMsg }), {
-            headers: { 'Content-Type': 'application/json' }
+      // STEP 1B: JSON PARSING — no search, uses responseMimeType for reliable JSON
+      let laws: any[] = [];
+      const firstLexUrl = groundingSources.find((s: any) => s.uri.includes('lex.uz') || s.uri.includes('norma.uz'))?.uri || '';
+
+      if (rawRetrievalText.trim()) {
+        try {
+          const parseResponse = await ai.models.generateContent({
+            model: 'gemini-2.0-flash',
+            contents: { role: 'user', parts: [{ text: `Parse ALL law articles from the following research text into a JSON array:\n\n${rawRetrievalText}` }] },
+            config: {
+              systemInstruction: `You are a JSON extractor. Extract every law article into a JSON array. Each object: lawName (string), articleNumber (string), status ("in_force"|"repealed"|"amended"|"unknown"), verbatimText (string - must be non-empty), sourceUrl (string). Output ONLY the JSON array: [{...}]. If nothing found: []`,
+              responseMimeType: 'application/json',
+              temperature: 0.0,
+            }
           });
-        }
+          const parsed = JSON.parse(parseResponse.text || '[]');
+          const arr = Array.isArray(parsed) ? parsed : (Array.isArray(parsed.laws) ? parsed.laws : []);
+          laws = arr
+            .filter((l: any) => l.verbatimText?.trim().length > 10 && l.lawName?.trim().length > 0)
+            .map((l: any) => ({ ...l, sourceUrl: l.sourceUrl || firstLexUrl }));
+        } catch { laws = []; }
+      }
 
-        verifiedLawsBlock = laws.map((l: any, i: number) =>
-          `[LAW ${i + 1}]: ${l.lawName}, ${l.articleNumber}-modda\nStatus: ${l.status}\nText: "${l.verbatimText}"\nSource: ${l.sourceUrl}`
-        ).join('\n\n');
-      } catch {
-        const errMsg = language === 'uz'
-          ? "Tizimda xatolik. Iltimos, qayta urinib ko'ring."
-          : "System error. Please try again.";
-        return new Response(JSON.stringify({ text: errMsg }), {
+      if (laws.length === 0) {
+        const noLawMsg = language === 'uz'
+          ? "Men bu savol bo'yicha rasmiy qonunni lex.uz'da topa olmadim.\n\nIltimos, yurist bilan maslahatlashing yoki [lex.uz](https://lex.uz) saytida o'zingiz qidiring."
+          : language === 'ru'
+          ? "Я не нашёл официальный закон на lex.uz по вашему вопросу.\n\nОбратитесь к юристу или поищите на [lex.uz](https://lex.uz)."
+          : "I could not find an official law on lex.uz for this question.\n\nPlease consult a lawyer.";
+        return new Response(JSON.stringify({ text: noLawMsg }), {
           headers: { 'Content-Type': 'application/json' }
         });
       }
+
+      verifiedLawsBlock = laws.map((l: any, i: number) =>
+        `[LAW ${i + 1}]: ${l.lawName}, ${l.articleNumber}-modda\nStatus: ${l.status}\nText: "${l.verbatimText}"\nSource: ${l.sourceUrl}`
+      ).join('\n\n');
     }
 
     // ---- STEP 2: SIMPLIFICATION (NO search tool — closed world) ----
