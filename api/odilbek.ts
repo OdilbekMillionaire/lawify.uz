@@ -74,30 +74,8 @@ ${searchInstructions}
         });
       }
 
-      // STEP 1B: JSON PARSING — no search, uses responseMimeType for reliable JSON
-      let laws: any[] = [];
-      const firstLexUrl = groundingSources.find((s: any) => s.uri.includes('lex.uz') || s.uri.includes('norma.uz'))?.uri || '';
-
-      if (rawRetrievalText.trim()) {
-        try {
-          const parseResponse = await ai.models.generateContent({
-            model: 'gemini-2.0-flash',
-            contents: { role: 'user', parts: [{ text: `Parse ALL law articles from the following research text into a JSON array:\n\n${rawRetrievalText}` }] },
-            config: {
-              systemInstruction: `You are a JSON extractor. Extract every law article into a JSON array. Each object: lawName (string), articleNumber (string), status ("in_force"|"repealed"|"amended"|"unknown"), verbatimText (string - must be non-empty), sourceUrl (string). Output ONLY the JSON array: [{...}]. If nothing found: []`,
-              responseMimeType: 'application/json',
-              temperature: 0.0,
-            }
-          });
-          const parsed = JSON.parse(parseResponse.text || '[]');
-          const arr = Array.isArray(parsed) ? parsed : (Array.isArray(parsed.laws) ? parsed.laws : []);
-          laws = arr
-            .filter((l: any) => l.verbatimText?.trim().length > 10 && l.lawName?.trim().length > 0)
-            .map((l: any) => ({ ...l, sourceUrl: l.sourceUrl || firstLexUrl }));
-        } catch { laws = []; }
-      }
-
-      if (laws.length === 0) {
+      // noLawsFound: based on rawText content, NOT JSON parsing (JSON parsing is unreliable)
+      if (rawRetrievalText.trim().length < 100) {
         const noLawMsg = language === 'uz'
           ? "Men bu savol bo'yicha rasmiy qonunni lex.uz'da topa olmadim.\n\nIltimos, yurist bilan maslahatlashing yoki [lex.uz](https://lex.uz) saytida o'zingiz qidiring."
           : language === 'ru'
@@ -108,9 +86,8 @@ ${searchInstructions}
         });
       }
 
-      verifiedLawsBlock = laws.map((l: any, i: number) =>
-        `[LAW ${i + 1}]: ${l.lawName}, ${l.articleNumber}-modda\nStatus: ${l.status}\nText: "${l.verbatimText}"\nSource: ${l.sourceUrl}`
-      ).join('\n\n');
+      // Pass raw research text directly — no JSON parsing in critical path
+      verifiedLawsBlock = rawRetrievalText;
     }
 
     // ---- STEP 2: SIMPLIFICATION (NO search tool — closed world) ----
@@ -118,16 +95,16 @@ ${searchInstructions}
 You are Odilbek — a friendly "aka" (big brother) legal translator for ordinary citizens of Uzbekistan.
 Language: ${language}.
 
-YOUR ONLY JOB: Explain the VERIFIED LAWS below in simple, warm language.
+YOUR ONLY JOB: Explain the legal research below in simple, warm language that ordinary citizens understand.
 
 ABSOLUTE RULES:
-1. You MUST ONLY explain the laws provided in the VERIFIED LAWS block below.
-2. You MUST NOT mention any other law, article number, or legal fact not in that block.
-3. If the laws provided do not answer the user's question, say: "Bu savol bo'yicha rasmiy qonunni topa olmadim — yurist bilan maslahatlashing."
+1. You MUST ONLY explain laws explicitly mentioned in the LEGAL RESEARCH below.
+2. You MUST NOT mention any other law, article number, or legal fact not found in that research.
+3. If the research does not answer the user's question, say: "Bu savol bo'yicha rasmiy qonunni topa olmadim — yurist bilan maslahatlashing."
 4. Cite article numbers when explaining: "153-modda bo'yicha..."
-5. If a law's status is "repealed", note: "(eski qonun, endi amal qilmaydi)".
+5. If a law is described as repealed in the research: "(eski qonun, endi amal qilmaydi)".
 
-VERIFIED LAWS (your ONLY source):
+LEGAL RESEARCH FROM LEX.UZ (your ONLY source):
 ${verifiedLawsBlock}
 
 FORMATTING:

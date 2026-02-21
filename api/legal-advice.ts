@@ -154,44 +154,10 @@ ${searchInstructions}
     }
 
     // ============================================================
-    // STEP 1B: JSON PARSING — no search, uses responseMimeType for reliable JSON
+    // noLawsFound check: based on whether search returned meaningful content,
+    // NOT on JSON parsing (which is unreliable with grounded search output)
     // ============================================================
-    const firstLexUrl = retrievalSources.find((s: any) => s.uri.includes('lex.uz') || s.uri.includes('norma.uz'))?.uri || '';
-    let laws: any[] = [];
-
-    if (rawText.trim()) {
-      try {
-        const parseResponse = await ai.models.generateContent({
-          model: 'gemini-2.0-flash',
-          contents: { role: 'user', parts: [{ text: `Parse ALL law articles from the following research text into a JSON array:\n\n${rawText}` }] },
-          config: {
-            systemInstruction: `You are a JSON extractor. Extract every law article into a JSON array. Each object: lawName (string), articleNumber (string), paragraph (string|null), adoptionDate (string|null), lastAmendmentDate (string|null), lawSerialNumber (string|null), status ("in_force"|"repealed"|"amended"|"suspended"|"unknown"), verbatimText (string - must be non-empty), sourceUrl (string), foundInSearch (true). Output ONLY the JSON array: [{...}]. If nothing found: []`,
-            responseMimeType: 'application/json',
-            temperature: 0.0,
-          }
-        });
-        const parsed = JSON.parse(parseResponse.text || '[]');
-        const arr = Array.isArray(parsed) ? parsed : (Array.isArray(parsed.laws) ? parsed.laws : []);
-        laws = arr.map((l: any) => ({ ...l, sourceUrl: l.sourceUrl || firstLexUrl, foundInSearch: true }));
-      } catch { laws = []; }
-    }
-
-    laws = laws.filter((law: any) =>
-      law.verbatimText?.trim().length > 10
-      && law.foundInSearch !== false
-      && law.lawName?.trim().length > 0
-    );
-
-    // Deduplicate
-    const seen = new Set<string>();
-    laws = laws.filter((law: any) => {
-      const key = `${law.lawName}:${law.articleNumber}`.toLowerCase();
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
-
-    if (laws.length === 0) {
+    if (rawText.trim().length < 100) {
       const noLawMsg = language === 'uz'
         ? `### Rasmiy Manba Topilmadi\n\nLex.uz va Norma.uz da quyidagi so'rovingiz bo'yicha aniq qonun moddasi topilmadi:\n> "${prompt}"\n\n**Nima qilish mumkin:**\n1. Savolni aniqroq bering.\n2. [Lex.uz](https://lex.uz) saytida o'zingiz qidiring.\n3. Malakali yurist bilan maslahatlashing.\n\n*Lawify aniq qonuniy asossiz maslahat bermaydi.*`
         : language === 'ru'
@@ -204,41 +170,27 @@ ${searchInstructions}
 
     // ============================================================
     // STEP 2: GENERATION — closed-world, NO search tool
+    // Uses rawText directly as context — no JSON parsing in critical path
     // ============================================================
-    const lawsContext = laws.map((law: any, i: number) => `
-[LAW ${i + 1}]
-Name: ${law.lawName}
-Article: ${law.articleNumber}${law.paragraph ? `, ${law.paragraph}` : ''}
-Adopted: ${law.adoptionDate ?? 'not found'}
-Last Amended: ${law.lastAmendmentDate ?? 'not found'}
-Serial No: ${law.lawSerialNumber ?? 'not found'}
-Status: ${law.status?.toUpperCase?.() ?? 'UNKNOWN'}
-Source: ${law.sourceUrl}
-Verbatim Text:
-"""
-${law.verbatimText}
-"""
-`).join('\n---\n');
-
     const generationSystemPrompt = `
 You are LAWIFY, the official AI legal consultant for Uzbekistan.
 ${languageDirective}
 
 ABSOLUTE CONSTRAINT — CLOSED-WORLD:
-You have been given the COMPLETE AND FINAL list of verified laws below.
-You MUST NOT cite any law, article, or legal provision NOT in this list.
-You have NO access to external data. Do NOT use training memory for law references.
-If the retrieved laws don't fully answer the question, say so explicitly.
+You have been given LEGAL RESEARCH TEXT retrieved directly from lex.uz via Google Search.
+You MUST ONLY cite laws and article numbers explicitly mentioned in this research text.
+Do NOT add any law, article, or legal fact not found in the research text below.
+If the research text doesn't fully answer the question, say so explicitly.
 
-CITATION RULE: Cite each law using its actual name and article number directly inline.
+CITATION RULE: Cite each law by its actual name and article number inline.
 Example: "Mehnat kodeksining 153-moddasiga ko'ra..." — no [LAW N] tags.
 For articles with a prime suffix, use Unicode superscripts: 126¹ (not 126-1), 141² (not 141-2).
 
-STATUS RULE: If status is "REPEALED", do NOT base advice on it.
-Write: "(eski qonun, endi amal qilmaydi)" and advise only on in-force laws.
+STATUS RULE: If a law is described as repealed in the research text, do NOT base advice on it.
+Write: "(eski qonun, endi amal qilmaydi)" and advise only on currently in-force laws.
 
-VERIFIED LAWS FROM LEX.UZ (your ONLY allowed sources):
-${lawsContext}
+LEGAL RESEARCH FROM LEX.UZ (your ONLY allowed source):
+${rawText}
 
 USER SETTINGS:
 - Tone: ${settings.tone}
