@@ -271,7 +271,10 @@ export async function retrieveLaws(query: string, language: Language): Promise<R
     return true;
   });
 
-  return { laws, retrievalSources, noLawsFound: laws.length === 0, rawRetrievalText: rawText };
+  // noLawsFound is based on whether the search returned meaningful content,
+  // NOT on JSON parsing success (JSON parsing can fail even when content was found)
+  const noLawsFound = rawText.trim().length < 100;
+  return { laws, retrievalSources, noLawsFound, rawRetrievalText: rawText };
 }
 
 function filterVerifiedLaws(laws: VerifiedLaw[]): VerifiedLaw[] {
@@ -294,43 +297,28 @@ function handleNoLawsFound(language: Language, query: string, sources: Source[])
 
 const buildGenerationSystemPrompt = (
   language: Language, settings: UserSettings,
-  laws: VerifiedLaw[], structureLabels: string, languageDirective: string
+  rawLegalContext: string, structureLabels: string, languageDirective: string
 ): string => {
-  const lawsContext = laws.map((law, i) => `
-[LAW ${i + 1}]
-Name: ${law.lawName}
-Article: ${law.articleNumber}${law.paragraph ? `, ${law.paragraph}` : ''}
-Adopted: ${law.adoptionDate ?? 'not found in search'}
-Last Amended: ${law.lastAmendmentDate ?? 'not found in search'}
-Serial No: ${law.lawSerialNumber ?? 'not found in search'}
-Status: ${law.status.toUpperCase()}
-Source: ${law.sourceUrl}
-Verbatim Text:
-"""
-${law.verbatimText}
-"""
-`).join('\n---\n');
-
   return `
 You are LAWIFY, the official AI legal consultant for Uzbekistan.
 ${languageDirective}
 
 ABSOLUTE CONSTRAINT — CLOSED-WORLD:
-You have been given the COMPLETE AND FINAL list of verified laws below.
-You MUST NOT cite any law, article, or legal provision NOT in this list.
-You have NO access to external data. Do NOT use training memory for law references.
-If the retrieved laws don't fully answer the question, say so explicitly.
+You have been given LEGAL RESEARCH TEXT retrieved directly from lex.uz via Google Search.
+You MUST ONLY cite laws and article numbers that are explicitly mentioned in this research text.
+Do NOT add any law, article number, or legal fact NOT found in the research text below.
+If the research text doesn't fully answer the question, say so explicitly — do not invent.
 
-CITATION RULE: Cite each law using its actual name and article number directly inline.
+CITATION RULE: Cite each law by its actual name and article number inline.
 Example: "Mehnat kodeksining 153-moddasiga ko'ra..." or "Jinoyat kodeksining 66-moddasi..."
 For articles with a prime suffix, use Unicode superscripts: 126¹ (not 126-1), 141² (not 141-2).
-Do NOT write [LAW 1] or any similar tag — cite by law name and article number only.
+Do NOT write [LAW 1] or any similar internal tag.
 
-STATUS RULE: If status is "REPEALED", do NOT base advice on it.
-Write: "(eski qonun, endi amal qilmaydi)" and advise only on in-force laws.
+STATUS RULE: If a law is described as repealed/annulled in the research text, do NOT base advice on it.
+Write: "(eski qonun, endi amal qilmaydi)" and advise only on laws described as currently in force.
 
-VERIFIED LAWS FROM LEX.UZ (your ONLY allowed sources):
-${lawsContext}
+LEGAL RESEARCH FROM LEX.UZ (your ONLY allowed source):
+${rawLegalContext}
 
 USER SETTINGS:
 - Tone: ${settings.tone}
@@ -480,12 +468,9 @@ export const generateOdilbekResponse = async (prompt: string, language: Language
 
         // ============================================================
         // STEP 2: SIMPLIFICATION — NO search tool, closed-world
+        // Pass raw research text directly — no JSON parsing needed
         // ============================================================
-        const verifiedLawsBlock = retrievalResult.laws.map((law, i) =>
-          `[LAW ${i + 1}]: ${law.lawName}, ${law.articleNumber}-modda\nStatus: ${law.status}\nText: "${law.verbatimText}"\nSource: ${law.sourceUrl}`
-        ).join('\n\n');
-
-        return await generateOdilbekSimplification(prompt, verifiedLawsBlock, language, chatHistory, ai);
+        return await generateOdilbekSimplification(prompt, retrievalResult.rawRetrievalText, language, chatHistory, ai);
     } catch (e) {
         console.error("Odilbek Error", e);
         return "Tizimda xatolik yuz berdi. Iltimos, qayta urinib ko'ring.";
@@ -499,16 +484,16 @@ async function generateOdilbekSimplification(
 You are Odilbek — a friendly "aka" (big brother) legal translator for ordinary citizens of Uzbekistan.
 Language: ${language}.
 
-YOUR ONLY JOB: Explain the VERIFIED LAWS below in simple, warm language.
+YOUR ONLY JOB: Explain the legal research below in simple, warm language that ordinary citizens can understand.
 
 ABSOLUTE RULES:
-1. You MUST ONLY explain the laws provided in the VERIFIED LAWS block below.
-2. You MUST NOT mention any other law, article number, or legal fact not in that block.
-3. If the laws provided do not answer the user's question, say: "Bu savol bo'yicha rasmiy qonunni topa olmadim — yurist bilan maslahatlashing."
-4. You MUST cite the article number when you explain it: "153-modda bo'yicha..."
-5. If a law's status is "repealed", explain it as old law: "(eski qonun, endi amal qilmaydi)".
+1. You MUST ONLY explain laws explicitly mentioned in the LEGAL RESEARCH below.
+2. You MUST NOT mention any other law, article number, or legal fact not found in that research.
+3. If the research does not answer the user's question, say: "Bu savol bo'yicha rasmiy qonunni topa olmadim — yurist bilan maslahatlashing."
+4. Cite article numbers when explaining: "153-modda bo'yicha..."
+5. If a law is described as repealed in the research: "(eski qonun, endi amal qilmaydi)".
 
-VERIFIED LAWS (your ONLY source):
+LEGAL RESEARCH FROM LEX.UZ (your ONLY source):
 ${lawContext}
 
 FORMATTING:
@@ -596,7 +581,7 @@ export const generateLegalResponse = async (
   // STEP 2: GENERATION — closed-world, NO search tool
   // ============================================================
   const generationSystemPrompt = buildGenerationSystemPrompt(
-    language, settings, retrievalResult.laws, structureLabels, languageDirective
+    language, settings, retrievalResult.rawRetrievalText, structureLabels, languageDirective
   );
 
   const parts: any[] = [{ text: prompt }];
