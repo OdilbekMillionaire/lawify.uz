@@ -1,6 +1,6 @@
 
 import { GoogleGenAI, Type, Modality } from "@google/genai";
-import { Language, UserSettings, Attachment, Source, GeneratedDocument, DrafterResponse, VerifiedLaw, RetrievalResult } from "../types";
+import { Language, UserSettings, Attachment, Source, GeneratedDocument, DrafterResponse, VerifiedLaw, RetrievalResult, QueryAnalysis } from "../types";
 import { LEGAL_TEMPLATES } from "../data/legal_templates";
 
 // --- AUDIO HELPERS ---
@@ -57,8 +57,93 @@ const retry = async <T>(fn: () => Promise<T>, retries = 2, delay = 1000): Promis
 };
 
 // ============================================================
-// ANTI-HALLUCINATION: TWO-STEP RETRIEVE-THEN-GENERATE SYSTEM
+// ANTI-HALLUCINATION: THREE-STEP ANALYZE → RETRIEVE → GENERATE
+// Step 0: Query Intelligence AI — converts conversational input into precise legal search queries
+// Step 1: Multi-Query Retrieval — searches lex.uz with each targeted query
+// Step 2: Closed-World Generation — synthesizes answer from ONLY retrieved laws
 // ============================================================
+
+// --- STEP 0: QUERY INTELLIGENCE AI ---
+// This AI does NOT search and does NOT give legal advice.
+// It ONLY analyzes the user's question and identifies which laws/articles to look for.
+// Using training knowledge here is SAFE because it's for query planning, not legal advice.
+
+const QUERY_ANALYSIS_PROMPT = (language: Language): string => `
+You are a LEGAL QUERY ANALYST specializing in Uzbekistan law (O'zbekiston qonunchiligi).
+Your ONLY job is to analyze a user's question and determine EXACTLY which laws, codes, and articles are relevant.
+
+YOU DO NOT GIVE LEGAL ADVICE. You only identify what to search for.
+
+TASK:
+1. Read the user's question carefully.
+2. Identify the legal domain (e.g., labor law, family law, criminal law, tax law, property law, etc.).
+3. List the specific codes and laws that apply (e.g., "Mehnat kodeksi", "Oila kodeksi", "Jinoyat kodeksi", "Fuqarolik kodeksi", etc.).
+4. List specific article numbers you know are relevant (if any).
+5. Generate 3-5 precise search queries that would find the exact provisions on lex.uz.
+   - Each query MUST include the code name in Uzbek + the specific legal concept.
+   - Each query MUST include "site:lex.uz" prefix.
+   - Use the language the law is typically referenced in (Uzbek for most codes).
+
+RESPOND ONLY WITH THIS JSON:
+{
+  "legalDomain": "e.g. Mehnat huquqi (Labor Law)",
+  "relevantCodes": ["Mehnat kodeksi", "Fuqarolik protsessual kodeksi"],
+  "specificArticles": ["100-modda", "106-modda"],
+  "searchQueries": [
+    "site:lex.uz Mehnat kodeksi ishdan bo'shatish tartibi",
+    "site:lex.uz Mehnat kodeksi 100-modda nohaq bo'shatish",
+    "site:lex.uz Mehnat kodeksi ishchining huquqlari"
+  ]
+}
+
+IMPORTANT:
+- Generate at least 3 and up to 5 search queries.
+- Make queries SPECIFIC — use the actual Uzbek legal terms.
+- If the question mentions a specific article, include a query for that exact article.
+- If the question is about a common topic (e.g., divorce, dismissal, aliment), you know which code and articles apply — list them.
+- Language context: ${language}
+`;
+
+async function analyzeQuery(query: string, language: Language): Promise<QueryAnalysis> {
+  const ai = getAIClient();
+
+  const response = await ai.models.generateContent({
+    model: 'gemini-2.5-flash',
+    contents: { role: 'user', parts: [{ text: `User question: "${query}"` }] },
+    config: {
+      systemInstruction: QUERY_ANALYSIS_PROMPT(language),
+      // NO tools — uses only training knowledge for query planning (safe)
+      temperature: 0.3,
+      thinkingConfig: { thinkingBudget: 2048 },
+    }
+  });
+
+  const raw = response.text || '';
+  try {
+    const parsed = JSON.parse(raw.replace(/```json/g, '').replace(/```/g, '').trim());
+    return {
+      legalDomain: parsed.legalDomain || 'Unknown',
+      relevantCodes: Array.isArray(parsed.relevantCodes) ? parsed.relevantCodes : [],
+      specificArticles: Array.isArray(parsed.specificArticles) ? parsed.specificArticles : [],
+      searchQueries: Array.isArray(parsed.searchQueries) ? parsed.searchQueries.slice(0, 5) : [],
+    };
+  } catch {
+    // Fallback: construct basic queries from the raw input
+    return {
+      legalDomain: 'Unknown',
+      relevantCodes: [],
+      specificArticles: [],
+      searchQueries: [
+        `site:lex.uz ${query}`,
+        `site:lex.uz O'zbekiston qonunchiligi ${query}`,
+      ],
+    };
+  }
+}
+
+// --- STEP 1: MULTI-QUERY RETRIEVAL ---
+// Executes each search query from Step 0 and merges results.
+// This AI ONLY searches and copies — no explanation, no advice.
 
 const RETRIEVAL_SYSTEM_PROMPT = (language: Language): string => `
 You are a LEGAL DATABASE RETRIEVAL AGENT for Uzbekistan law.
@@ -67,15 +152,14 @@ You do NOT explain, summarize, or advise. You ONLY copy.
 
 CRITICAL RULES:
 1. You MUST execute a Google Search before generating any output.
-2. Search using site:lex.uz OR site:norma.uz operators.
-3. Do NOT cite any law not found in the current search results.
-4. Do NOT use training data to fill gaps. If text not found: set verbatimText to "" and foundInSearch to false.
-5. Include the exact lex.uz/norma.uz URL where you found the article.
-6. Verify whether the law is currently in force ("amaldagi tahrir" / "действующая редакция").
-7. If law is repealed, set status to "repealed" but still include what you found.
-8. Find as many relevant laws/articles as possible (aim for 2-5 relevant provisions).
+2. Do NOT cite any law not found in the current search results.
+3. Do NOT use training data to fill gaps. If text not found: set verbatimText to "" and foundInSearch to false.
+4. Include the exact lex.uz/norma.uz URL where you found the article.
+5. Check whether the law is currently in force ("amaldagi tahrir").
+6. If repealed, set status to "repealed".
+7. Find ALL articles matching the search — aim for thoroughness.
 
-OUTPUT: Respond ONLY with this exact JSON, no prose, no markdown:
+OUTPUT: Respond ONLY with this JSON:
 {
   "laws": [
     {
@@ -92,35 +176,52 @@ OUTPUT: Respond ONLY with this exact JSON, no prose, no markdown:
     }
   ]
 }
-
 If ZERO laws found: { "laws": [] }
 Language context: ${language}
 `;
 
-const buildRetrievalUserPrompt = (query: string, language: Language): string => {
-  const currency = language === 'uz' ? 'amaldagi tahrir'
-    : language === 'ru' ? 'действующая редакция' : 'current edition in force';
-  return `
-RETRIEVAL TASK:
-User query: "${query}"
-
-SEARCH:
-1. Search: site:lex.uz OR site:norma.uz ${query} ${currency}
-2. Find EACH relevant law, article number, and its full text.
-3. Check status (in force / repealed).
-4. Find ALL applicable laws, not just one.
-
-Return ONLY the JSON. No other text.
-`;
-};
-
 export async function retrieveLaws(query: string, language: Language): Promise<RetrievalResult> {
   const ai = getAIClient();
 
+  // STEP 0: Analyze the query to get targeted search queries
+  let analysis: QueryAnalysis;
+  try {
+    analysis = await analyzeQuery(query, language);
+  } catch (e) {
+    console.error("Query Analysis Failed, using fallback:", e);
+    analysis = {
+      legalDomain: 'Unknown',
+      relevantCodes: [],
+      specificArticles: [],
+      searchQueries: [`site:lex.uz ${query}`, `site:lex.uz O'zbekiston qonunchiligi ${query}`],
+    };
+  }
+
+  // Build a combined retrieval prompt with ALL targeted queries
+  const searchInstructions = analysis.searchQueries
+    .map((q, i) => `${i + 1}. ${q}`)
+    .join('\n');
+
+  const retrievalPrompt = `
+RETRIEVAL TASK:
+Original user question: "${query}"
+
+Legal domain identified: ${analysis.legalDomain}
+Relevant codes: ${analysis.relevantCodes.join(', ') || 'unknown'}
+Specific articles to find: ${analysis.specificArticles.join(', ') || 'unknown'}
+
+EXECUTE THESE SEARCHES (one by one):
+${searchInstructions}
+
+For EACH search, extract the laws/articles found. Combine all results into one JSON response.
+Return ONLY the JSON. No other text.
+`;
+
+  // STEP 1: Execute retrieval with the targeted queries
   const response = await retry(async () => {
     return await ai.models.generateContent({
       model: 'gemini-2.5-flash',
-      contents: { role: 'user', parts: [{ text: buildRetrievalUserPrompt(query, language) }] },
+      contents: { role: 'user', parts: [{ text: retrievalPrompt }] },
       config: {
         systemInstruction: RETRIEVAL_SYSTEM_PROMPT(language),
         tools: [{ googleSearch: {} }],
@@ -145,6 +246,15 @@ export async function retrieveLaws(query: string, language: Language): Promise<R
   } catch { laws = []; }
 
   laws = filterVerifiedLaws(laws);
+
+  // Deduplicate by articleNumber + lawName
+  const seen = new Set<string>();
+  laws = laws.filter(law => {
+    const key = `${law.lawName}:${law.articleNumber}`.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 
   return { laws, retrievalSources, noLawsFound: laws.length === 0, rawRetrievalText: rawText };
 }

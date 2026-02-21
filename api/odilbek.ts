@@ -17,34 +17,37 @@ export default async function handler(req: Request) {
     let verifiedLawsBlock = legalContext || '';
 
     if (!verifiedLawsBlock.trim()) {
-      const currency = language === 'uz' ? 'amaldagi tahrir'
-        : language === 'ru' ? 'действующая редакция' : 'current edition in force';
+      // STEP 0: Query Intelligence — figure out what to search for
+      let searchQueries: string[] = [];
+      try {
+        const analysisResp = await ai.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: { role: 'user', parts: [{ text: `User question: "${prompt}"` }] },
+          config: {
+            systemInstruction: `You are a LEGAL QUERY ANALYST for Uzbekistan law. Analyze the question, identify relevant codes/articles, generate 3-5 precise search queries with "site:lex.uz" prefix. RESPOND ONLY JSON: { "searchQueries": ["site:lex.uz ...", ...] }. Language: ${language}`,
+            temperature: 0.3,
+            thinkingConfig: { thinkingBudget: 1024 },
+          }
+        });
+        const parsed = JSON.parse((analysisResp.text || '{}').replace(/```json/g, '').replace(/```/g, '').trim());
+        searchQueries = Array.isArray(parsed.searchQueries) ? parsed.searchQueries.slice(0, 5) : [];
+      } catch { /* fallback below */ }
+      if (searchQueries.length === 0) searchQueries = [`site:lex.uz ${prompt}`];
 
+      // STEP 1: Retrieval with targeted queries
       const retrievalPrompt = `
-RETRIEVAL TASK:
-User query: "${prompt}"
-SEARCH:
-1. Search: site:lex.uz OR site:norma.uz ${prompt} ${currency}
-2. Find EACH relevant law, article number, and its full text.
-3. Check status (in force / repealed).
-Return ONLY JSON: { "laws": [ { "lawName": "...", "articleNumber": "...", "status": "in_force|repealed|unknown", "verbatimText": "exact text from lex.uz", "sourceUrl": "https://lex.uz/..." } ] }
+RETRIEVAL TASK — Execute these searches:
+${searchQueries.map((q, i) => `${i + 1}. ${q}`).join('\n')}
+For each search, extract laws/articles. Return ONLY JSON:
+{ "laws": [ { "lawName":"...", "articleNumber":"...", "status":"in_force|repealed|unknown", "verbatimText":"exact text", "sourceUrl":"https://lex.uz/..." } ] }
 If no law found: { "laws": [] }
-`;
-
-      const retrievalSystemPrompt = `
-You are a LEGAL DATABASE RETRIEVAL AGENT for Uzbekistan law.
-Your ONLY function is to search lex.uz and norma.uz and transcribe what you find.
-You do NOT explain, summarize, or advise. You ONLY copy.
-CRITICAL: You MUST execute a Google Search. Do NOT use training data.
-If text not found: set verbatimText to "".
-Language context: ${language}
 `;
 
       const retrievalResponse = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
         contents: { role: 'user', parts: [{ text: retrievalPrompt }] },
         config: {
-          systemInstruction: retrievalSystemPrompt,
+          systemInstruction: `You are a LEGAL DATABASE RETRIEVAL AGENT for Uzbekistan law. You ONLY search lex.uz and copy verbatim text. You do NOT explain. Execute Google Search. Do NOT use training data. If text not found: set verbatimText to "". Language: ${language}`,
           tools: [{ googleSearch: {} }],
           temperature: 0.0,
         }

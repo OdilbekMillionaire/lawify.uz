@@ -79,49 +79,49 @@ export default async function handler(req: Request) {
     }
 
     // ============================================================
-    // STEP 1: RETRIEVAL — search lex.uz, output structured JSON only
+    // STEP 0: QUERY INTELLIGENCE — analyze question, produce targeted search queries
     // ============================================================
-    const currency = language === 'uz' ? 'amaldagi tahrir'
-      : language === 'ru' ? 'действующая редакция' : 'current edition in force';
-
-    const retrievalSystemPrompt = `
-You are a LEGAL DATABASE RETRIEVAL AGENT for Uzbekistan law.
-Your ONLY function is to search lex.uz and norma.uz and transcribe what you find.
-You do NOT explain, summarize, or advise. You ONLY copy.
-
-CRITICAL RULES:
-1. You MUST execute a Google Search before generating any output.
-2. Search using site:lex.uz OR site:norma.uz operators.
-3. Do NOT cite any law not found in the current search results.
-4. Do NOT use training data to fill gaps. If text not found: set verbatimText to "" and foundInSearch to false.
-5. Include the exact lex.uz/norma.uz URL where you found the article.
-6. Verify whether the law is currently in force.
-7. Find as many relevant laws/articles as possible (aim for 2-5 provisions).
-
-OUTPUT: Respond ONLY with this exact JSON:
-{
-  "laws": [
-    {
-      "lawName": "Official full name", "articleNumber": "exact number",
-      "paragraph": "specific paragraph or null", "adoptionDate": "YYYY-MM-DD or null",
-      "lastAmendmentDate": "YYYY-MM-DD or null", "lawSerialNumber": "registration number or null",
-      "status": "in_force | repealed | amended | suspended | unknown",
-      "verbatimText": "EXACT TEXT copied from lex.uz. Empty string if not found.",
-      "sourceUrl": "https://lex.uz/docs/...", "foundInSearch": true
-    }
-  ]
-}
-If ZERO laws found: { "laws": [] }
+    const queryAnalysisPrompt = `
+You are a LEGAL QUERY ANALYST for Uzbekistan law. Analyze the user's question and identify which laws to search for.
+YOU DO NOT GIVE LEGAL ADVICE. You only identify what to search for on lex.uz.
+Generate 3-5 precise search queries with "site:lex.uz" prefix using actual Uzbek legal terms.
+RESPOND ONLY WITH JSON:
+{ "legalDomain": "...", "relevantCodes": [...], "specificArticles": [...], "searchQueries": ["site:lex.uz ...", ...] }
 Language context: ${language}
 `;
 
+    let searchQueries: string[] = [];
+    try {
+      const analysisResponse = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: { role: 'user', parts: [{ text: `User question: "${prompt}"` }] },
+        config: { systemInstruction: queryAnalysisPrompt, temperature: 0.3, thinkingConfig: { thinkingBudget: 2048 } }
+      });
+      const analysisRaw = (analysisResponse.text || '').replace(/```json/g, '').replace(/```/g, '').trim();
+      const analysis = JSON.parse(analysisRaw);
+      searchQueries = Array.isArray(analysis.searchQueries) ? analysis.searchQueries.slice(0, 5) : [];
+    } catch { /* fallback below */ }
+
+    if (searchQueries.length === 0) {
+      searchQueries = [`site:lex.uz ${prompt}`, `site:lex.uz O'zbekiston qonunchiligi ${prompt}`];
+    }
+
+    // ============================================================
+    // STEP 1: RETRIEVAL — search lex.uz with targeted queries from Step 0
+    // ============================================================
+    const retrievalSystemPrompt = `
+You are a LEGAL DATABASE RETRIEVAL AGENT for Uzbekistan law.
+Your ONLY function is to search lex.uz/norma.uz and transcribe what you find. You do NOT explain or advise.
+RULES: Execute Google Search. Do NOT use training data. Copy verbatim text. Check if law is in force.
+OUTPUT: JSON only: { "laws": [ { "lawName":"...", "articleNumber":"...", "paragraph":null, "adoptionDate":null, "lastAmendmentDate":null, "lawSerialNumber":null, "status":"in_force|repealed|unknown", "verbatimText":"EXACT TEXT", "sourceUrl":"https://lex.uz/...", "foundInSearch":true } ] }
+If ZERO found: { "laws": [] }. Language: ${language}
+`;
+
     const retrievalUserPrompt = `
-RETRIEVAL TASK:
-User query: "${prompt}"
-SEARCH:
-1. Search: site:lex.uz OR site:norma.uz ${prompt} ${currency}
-2. Find EACH relevant law, article number, and its full text.
-3. Check status (in force / repealed).
+RETRIEVAL TASK — Execute these searches:
+${searchQueries.map((q, i) => `${i + 1}. ${q}`).join('\n')}
+
+For each search, extract the laws/articles found. Combine all results into one JSON.
 Return ONLY the JSON.
 `;
 
@@ -150,13 +150,21 @@ Return ONLY the JSON.
       laws = Array.isArray(parsed.laws) ? parsed.laws : [];
     } catch { laws = []; }
 
-    // Filter: keep only verified laws with actual text from official sources
     laws = laws.filter((law: any) =>
       law.verbatimText?.trim().length > 10
       && law.foundInSearch !== false
       && law.lawName?.trim().length > 0
       && law.sourceUrl
     );
+
+    // Deduplicate
+    const seen = new Set<string>();
+    laws = laws.filter((law: any) => {
+      const key = `${law.lawName}:${law.articleNumber}`.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
 
     if (laws.length === 0) {
       const noLawMsg = language === 'uz'

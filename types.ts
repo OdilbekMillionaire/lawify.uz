@@ -159,3 +159,10 @@ export interface RetrievalResult {
   noLawsFound: boolean;
   rawRetrievalText: string;
 }
+
+export interface QueryAnalysis {
+  legalDomain: string;
+  relevantCodes: string[];
+  specificArticles: string[];
+  searchQueries: string[];
+}
