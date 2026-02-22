@@ -4,6 +4,7 @@ import { parse } from 'marked';
 import { Message, Language, Attachment } from '../types';
 import { TRANSLATIONS } from '../constants';
 import { cleanText } from '../services/storage';
+import AvatarModal from './AvatarModal';
 
 interface ChatInterfaceProps {
   messages: Message[];
@@ -62,6 +63,9 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   // Editing state
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editInputText, setEditInputText] = useState('');
+
+  // Avatar modal state (Pro only)
+  const [avatarModalText, setAvatarModalText] = useState<string | null>(null);
 
   // Expansion state for Read More
   const [expandedMessages, setExpandedMessages] = useState<Set<string>>(new Set());
@@ -411,7 +415,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   }, [messages, searchQuery, filterRole, filterDate]);
 
   return (
-    <div 
+    <>
+    <div
         className={`flex flex-col h-full shadow-xl rounded-2xl overflow-hidden border border-gray-200 relative ${isOdilbekMode ? 'bg-amber-50/30' : 'bg-white'}`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -745,11 +750,11 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                                  {/* PRO FEATURE: VERIFY BUTTON (DEEP ANALYSIS) */}
                                  {!isOdilbekMode && onVerify && previousUserMsg && (
                                      <div className="pt-2">
-                                         <button 
+                                         <button
                                             onClick={() => onVerify(msg.id, previousUserMsg.text, msg.text)}
                                             className={`w-full flex items-center justify-center space-x-2 py-2 rounded-xl transition-all border ${
-                                                isPro 
-                                                ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 text-blue-800 hover:shadow-md' 
+                                                isPro
+                                                ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 text-blue-800 hover:shadow-md'
                                                 : 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed opacity-80'
                                             }`}
                                             title={isPro ? t.deepAnalysis : "Upgrade to Pro for Deep Analysis"}
@@ -764,6 +769,35 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                                                      <span className="text-xs font-bold uppercase tracking-wide">{t.verifyBtn}</span>
                                                  </>
+                                             )}
+                                         </button>
+                                     </div>
+                                 )}
+
+                                 {/* PRO FEATURE: AVATAR VIDEO BUTTON */}
+                                 {!isOdilbekMode && (
+                                     <div className="pt-1">
+                                         <button
+                                            onClick={() => isPro ? setAvatarModalText(msg.text) : undefined}
+                                            disabled={!isPro}
+                                            className={`w-full flex items-center justify-center space-x-2 py-2 rounded-xl transition-all border ${
+                                                isPro
+                                                ? 'bg-gradient-to-r from-violet-50 to-purple-50 border-violet-200 text-violet-800 hover:shadow-md hover:from-violet-100 hover:to-purple-100 cursor-pointer'
+                                                : 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed opacity-70'
+                                            }`}
+                                            title={isPro ? (language === 'uz' ? 'AI Avatar orqali ko\'rish' : language === 'ru' ? 'Смотреть через AI-Аватар' : 'Watch via AI Avatar') : 'Upgrade to Pro for Avatar'}
+                                         >
+                                             {/* Video camera icon */}
+                                             <svg className={`w-4 h-4 ${isPro ? 'text-violet-600' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                             </svg>
+                                             <span className="text-xs font-bold uppercase tracking-wide">
+                                                 {language === 'uz' ? 'Avatar orqali ko\'rish' : language === 'ru' ? 'Смотреть через Аватар' : 'Watch via Avatar'}
+                                             </span>
+                                             {!isPro && (
+                                                 <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                                 </svg>
                                              )}
                                          </button>
                                      </div>
@@ -947,6 +981,16 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
         </p>
       </div>
     </div>
+
+      {/* Avatar Modal — Pro exclusive, fixed overlay */}
+      {avatarModalText && (
+        <AvatarModal
+          text={avatarModalText}
+          language={language}
+          onClose={() => setAvatarModalText(null)}
+        />
+      )}
+    </>
   );
 };
 
