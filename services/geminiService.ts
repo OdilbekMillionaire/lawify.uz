@@ -70,37 +70,38 @@ const retry = async <T>(fn: () => Promise<T>, retries = 2, delay = 1000): Promis
 
 const QUERY_ANALYSIS_PROMPT = (language: Language): string => `
 You are a LEGAL QUERY ANALYST specializing in Uzbekistan law (O'zbekiston qonunchiligi).
-Your ONLY job is to analyze a user's question and determine EXACTLY which laws, codes, and articles are relevant.
+Your ONLY job is to analyze a user's question and identify which laws and articles are relevant.
 
 YOU DO NOT GIVE LEGAL ADVICE. You only identify what to search for.
 
 TASK:
 1. Read the user's question carefully.
-2. Identify the legal domain (e.g., labor law, family law, criminal law, tax law, property law, etc.).
-3. List the specific codes and laws that apply (e.g., "Mehnat kodeksi", "Oila kodeksi", "Jinoyat kodeksi", "Fuqarolik kodeksi", etc.).
+2. Identify the legal domain (e.g., labor law, family law, criminal law, administrative law, tax law, property law, etc.).
+3. List the specific codes and laws that apply (e.g., "Mehnat kodeksi", "Oila kodeksi", "Jinoyat kodeksi", "Ma'muriy javobgarlik to'g'risidagi kodeks", "Fuqarolik kodeksi", etc.).
 4. List specific article numbers you know are relevant (if any).
-5. Generate 3-5 precise search queries that would find the exact provisions on lex.uz.
-   - Each query MUST include the code name in Uzbek + the specific legal concept.
-   - Each query MUST include "site:lex.uz" prefix.
-   - Use the language the law is typically referenced in (Uzbek for most codes).
+5. Generate 3-5 precise search queries in Uzbek or Russian that would find the relevant legal provisions.
+   - Write natural search queries — do NOT add "site:lex.uz" or any domain restriction.
+   - Each query should include the Uzbek law/code name and the legal concept.
+   - Example: "Mehnat kodeksi 100-modda nohaq bo'shatish" or "O'zbekiston pasport yo'qotish jarima Ma'muriy kodeks"
 
 RESPOND ONLY WITH THIS JSON:
 {
-  "legalDomain": "e.g. Mehnat huquqi (Labor Law)",
-  "relevantCodes": ["Mehnat kodeksi", "Fuqarolik protsessual kodeksi"],
-  "specificArticles": ["100-modda", "106-modda"],
+  "legalDomain": "e.g. Ma'muriy huquq (Administrative Law)",
+  "relevantCodes": ["Ma'muriy javobgarlik to'g'risidagi kodeks"],
+  "specificArticles": ["52-modda", "55-modda"],
   "searchQueries": [
-    "site:lex.uz Mehnat kodeksi ishdan bo'shatish tartibi",
-    "site:lex.uz Mehnat kodeksi 100-modda nohaq bo'shatish",
-    "site:lex.uz Mehnat kodeksi ishchining huquqlari"
+    "O'zbekiston pasport yo'qotish jarima Ma'muriy kodeks",
+    "O'zbekiston propiska qoidalari jarima miqdori",
+    "Ma'muriy javobgarlik kodeksi pasport hujjat yo'qotish"
   ]
 }
 
 IMPORTANT:
 - Generate at least 3 and up to 5 search queries.
-- Make queries SPECIFIC — use the actual Uzbek legal terms.
-- If the question mentions a specific article, include a query for that exact article.
-- If the question is about a common topic (e.g., divorce, dismissal, aliment), you know which code and articles apply — list them.
+- DO NOT include "site:lex.uz" in queries — let Google search freely.
+- Make queries SPECIFIC to Uzbekistan law — use actual Uzbek legal terms.
+- If the question is about administrative fines, use "Ma'muriy javobgarlik to'g'risidagi kodeks".
+- If about family/divorce: "Oila kodeksi". Labor: "Mehnat kodeksi". Criminal: "Jinoyat kodeksi". Civil: "Fuqarolik kodeksi".
 - Language context: ${language}
 `;
 
@@ -134,8 +135,8 @@ async function analyzeQuery(query: string, language: Language): Promise<QueryAna
       relevantCodes: [],
       specificArticles: [],
       searchQueries: [
-        `site:lex.uz ${query}`,
-        `site:lex.uz O'zbekiston qonunchiligi ${query}`,
+        `O'zbekiston qonunchiligi ${query}`,
+        `O'zbekiston huquqi ${query} qonun modda`,
       ],
     };
   }
@@ -150,37 +151,30 @@ async function groundedWebSearch(
   queries: string[], analysis: QueryAnalysis, query: string, language: Language, ai: any
 ): Promise<{ rawText: string; sources: Source[] }> {
   const searchInstructions = queries.map((q, i) => `${i + 1}. ${q}`).join('\n');
-  const prompt = `
-LEGAL RESEARCH TASK for: "${query}"
-Domain: ${analysis.legalDomain}
-Relevant codes: ${analysis.relevantCodes.join(', ') || 'unknown'}
+  const prompt = `You are researching Uzbekistan law to answer this question: "${query}"
 
-Execute each search and for EVERY article found, write it in this format:
+Legal domain: ${analysis.legalDomain}
+Relevant codes: ${analysis.relevantCodes.join(', ') || 'search to determine'}
 
-=== ARTICLE START ===
-LAW NAME: [full official name]
-ARTICLE NUMBER: [exact number, e.g. 153]
-PARAGRAPH: [paragraph letter/number or "none"]
-ADOPTION DATE: [YYYY-MM-DD or "unknown"]
-LAST AMENDED: [YYYY-MM-DD or "unknown"]
-SERIAL NO: [registration number or "unknown"]
-STATUS: [in_force / repealed / amended / suspended / unknown]
-SOURCE URL: [https://lex.uz/docs/... or norma.uz URL]
-VERBATIM TEXT:
-[Copy the EXACT text of the article from lex.uz. Every word. Every clause.]
-=== ARTICLE END ===
+Search for the relevant laws and articles. For each law/article you find, provide:
+- The full official name of the law
+- The article number
+- Whether it is currently in force or repealed
+- The exact text of the article as it appears in the official source
+- The URL where you found it (lex.uz, norma.uz, or zakon.uz preferred)
 
-SEARCHES TO EXECUTE:
+Search queries to use:
 ${searchInstructions}
-`;
+
+Provide comprehensive information about all relevant articles found.`;
 
   const response = await retry(async () => ai.models.generateContent({
     model: 'gemini-2.5-flash',
     contents: { role: 'user', parts: [{ text: prompt }] },
     config: {
-      systemInstruction: `You are a legal database retrieval agent for Uzbekistan. Search lex.uz and norma.uz. Copy verbatim article text exactly as it appears. Use the structured format with === ARTICLE START/END === delimiters. Do NOT summarize. Do NOT explain. Only copy. Language: ${language}`,
+      systemInstruction: `You are a legal research assistant for Uzbekistan law. Search the web and find the exact text of relevant laws and articles. Prioritize official sources: lex.uz, norma.uz, zakon.uz. Provide verbatim article text when found. Always cite your sources with URLs. Language: ${language}`,
       tools: [{ googleSearch: {} }],
-      temperature: 0.0,
+      temperature: 0.1,
     }
   }), 2, 1000);
 
@@ -249,7 +243,7 @@ export async function retrieveLaws(query: string, language: Language): Promise<R
       legalDomain: 'Unknown',
       relevantCodes: [],
       specificArticles: [],
-      searchQueries: [`site:lex.uz ${query}`, `site:lex.uz O'zbekiston qonunchiligi ${query}`],
+      searchQueries: [`O'zbekiston qonunchiligi ${query}`, `O'zbekiston huquqi ${query} qonun`],
     };
   }
 
