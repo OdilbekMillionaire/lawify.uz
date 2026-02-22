@@ -16,7 +16,7 @@ export default async function handler(req: Request) {
 
   try {
     const res = await fetch(`https://api.d-id.com/talks/${id}`, {
-      headers: { 'Authorization': `Basic ${btoa(apiKey + ':')}` },
+      headers: { 'Authorization': `Basic ${btoa(apiKey)}` },
     });
 
     if (!res.ok) {

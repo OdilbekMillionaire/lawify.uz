@@ -43,7 +43,8 @@ export default async function handler(req: Request) {
     }
 
     const voiceId = VOICE_IDS[language] ?? VOICE_IDS['en'];
-    const authHeader = `Basic ${btoa(apiKey + ':')}`;
+    // D-ID key format: base64(email):api_secret — use btoa(key) directly, NOT btoa(key + ':')
+    const authHeader = `Basic ${btoa(apiKey)}`;
 
     const res = await fetch('https://api.d-id.com/talks', {
       method: 'POST',
