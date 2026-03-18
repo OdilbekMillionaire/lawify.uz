@@ -7,7 +7,9 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     define: {
-      'process.env.API_KEY': JSON.stringify(env.API_KEY),
+      'process.env.API_KEY': JSON.stringify(env.API_KEY || process.env.API_KEY),
+      'process.env.VERTEX_CLIENT_EMAIL': JSON.stringify(env.VERTEX_CLIENT_EMAIL || process.env.VERTEX_CLIENT_EMAIL),
+      'process.env.VERTEX_PRIVATE_KEY': JSON.stringify(env.VERTEX_PRIVATE_KEY || process.env.VERTEX_PRIVATE_KEY),
     },
     server: {
       port: 3000,
