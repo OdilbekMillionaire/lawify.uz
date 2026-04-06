@@ -1,7 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = 'https://lsmmrbflyrmavounigdn.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxzbW1yYmZseXJtYXZvdW5pZ2RuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg0NzM1NDYsImV4cCI6MjA4NDA0OTU0Nn0.cSaCrIRmVrBBkm-02Wk637RLeqgF1I7tMXoz1BTIJmo';
+// ── Shared TSUL AI Supabase project (unified SSO hub) ──────────
+// Migrated from lsmmrbflyrmavounigdn → azafwaycrxnucncavhms
+// All 5 platforms now share this single auth provider.
+const supabaseUrl = 'https://azafwaycrxnucncavhms.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6YWZ3YXljcnhudWNuY2F2aG1zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk0ODY1NjEsImV4cCI6MjA4NTA2MjU2MX0.jw08Bop4qXVQ-Iyz00jHTNjUmPl-hcT2i9qRG9X1mDg';
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
